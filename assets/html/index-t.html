@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta id="kViewport" name="viewport"
+          content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Kadecot Home</title>
+    <link rel="stylesheet" href="css/jquery-mobile.css" />
+    <link rel="stylesheet" href="css/index-t.css" />
+  </head>
+
+  <body>
+    <!-- device page-  -->
+    <div id="devlist_page" data-role="page">
+      <div data-role="header">
+        <h3>Device Page</h3>
+        <a data-icon="gear" class="ui-btn-right"
+           onClick="onClickSettingsPageButton();">Settings</a>
+        <!-- tab for app and log. -->
+        <div data-role="navbar">
+          <ul>
+            <li><a href="#log_page"
+                   data-transition="none">Log</a></li>
+            <li><a href="#devlist_page" data-transition="none"
+                   class="ui-btn-active ui-state-persist">Devices</a></li>
+            <li><a href="#app_page" data-transition="none" >Apps</a></li>
+          </ul>
+        </div><!-- /tab -->
+      </div> <!-- header end -->
+
+      <div data-role="content">
+        <!-- device list view. use gradify for grad listview-->
+        <ul id="device_list_view" data-role="listview"
+            class="gridify" data-inset="true">
+        </ul>
+      </div> <!-- content end -->
+      <input type="button" value="updatedevice"
+             onclick="kHAPI.updateDevList();"></input>
+    </div> <!-- device page end -->
+
+    <!-- app page -->
+    <div id="app_page" data-role="page">
+      <div data-role="header">
+        <h3>App Page</h3>
+        <a data-icon="gear" class="ui-btn-right"
+           onClick="onClickSettingsPageButton();">Settings</a>
+
+        <!-- tab for app and log. -->
+        <div data-role="navbar">
+          <ul>
+            <li><a href="#log_page"
+                   data-transition="none">Log</a></li>
+            <li><a href="#devlist_page"
+                   data-transition="none">Devices</a></li>
+            <li><a href="#app_page" data-transition="none"
+                   class="ui-btn-active ui-state-persist">Apps</a></li>
+          </ul>
+        </div><!-- /tab -->
+      </div> <!-- header end -->
+
+      <div data-role="content">
+        <!-- app list view. use gridify for grad listview-->
+        <ul id="app_list_view" data-role="listview"
+            class="gridify" data-inset="true">
+        </ul>
+      </div> <!-- content end -->
+    </div> <!-- app page -->
+
+
+    <!-- log page -->
+    <div id="log_page" data-role="page">
+      <div data-role="header">
+        <h3>Log Page</h3>
+        <a data-icon="gear" class="ui-btn-right"
+           onClick="onClickSettingsPageButton();">Settings</a>
+
+        <!-- tab for app and log. -->
+        <div data-role="navbar">
+          <ul>
+            <li><a href="#log_page" data-transition="none"
+                   class="ui-btn-active ui-state-persist">Log</a></li>
+            <li><a href="#devlist_page"
+                   data-transition="none">Devices</a></li>
+            <li><a href="#app_page"
+                   data-transition="none">Apps</a></li>
+          </ul>
+        </div><!-- /tab -->
+      </div> <!-- header end -->
+      <div data-role="content" style="padding:2px;margin:2px">
+        <textarea id="log_area"  style="width:100%;height:100%;magin:0px;padding:0px"
+                  class="jqmNone" readonly>
+        </textarea>
+        <input id="refresh_log_button" style="padding:0px;margin:0px"
+               type="button" value="Refresh" onclick="return onClickRefreshLogButton();"/>
+      </div> <!-- content end -->
+    </div> <!-- log page -->
+
+
+    <!-- settings page for android-->
+    <div data-role="page" id="settings_page_android">
+      <div data-role="header">
+      <a data-icon="back" class="ui-btn-left" href="#devlist_page">Back</a>
+      <h3>Settings</h3>
+      </div>
+
+      Server IP<br>
+      <font size=-1>
+        You can connect this server using browser.
+      </font>
+      <input id="server_android_ip" type="text"
+             readonly="readonly" placeholder="localhost" />
+      <input id="register_android_button" type="button"
+             value="Register this network as homenetwork"
+             onclick="onClickRegisterButton();"/>
+      <hr>
+
+      Server Location
+      <input type="button" onclick="onClickGetGeoLocation();"
+             value="Allow using GPS location">
+
+      <hr>
+      Enable Persistent Mode
+      <label for="enable_persistent_android_checkbox">
+                Allow running kadecot in background.</label>
+      <input type="checkbox" id="enable_persistent_android_checkbox"/>
+
+      <hr>
+      Enable JSONP Server.
+      <label for="enable_jsonp_android_checkbox">Allow running JSONP Server.</label>
+      <input type="checkbox" id="enable_jsonp_android_checkbox"/>
+
+      <hr>
+      Enable Websocket server
+      <label for="enable_websocket_checkbox">Allow running WebSocket Server.</label>
+      <input type="checkbox" id="enable_websocket_checkbox"/>
+
+      <hr>
+      Initialize Server Setting.
+      <input type="button" value="Initialize"
+             onclick="onClickFullInitializeButton();">
+
+    </div> <!-- settings page for android end -->
+
+    <!-- settings page for browser-->
+    <div data-role="page" id="settings_page_browser">
+      <div data-role="header">
+        <a data-icon="back" class="ui-btn-left" href="#devlist_page">Back</a>
+        <h3>Settings</h3>
+      </div>
+      <div data-role="content">
+        <h3>Server Settings</h3>
+        To operate real consumer electronics,there must be Android running Kadecot as "websocket server" in the same network.
+        <input id="server_ip" type="text" placeholder="localhost">
+        <input type="button" value="Connect" id="connect_button"
+               onclick="onClickConnectButton()">
+        <hr>
+
+        Server Location
+        <input type="button" onclick="onClickGetGeoLocation();"
+               value="Allow using GPS location">
+
+        <hr>
+        Enable Persistent Mode
+        <label for="enable_persistent_browser_checkbox">
+                Allow running kadecot in background.</label>
+        <input type="checkbox" id="enable_persistent_browser_checkbox"/>
+
+        <hr>
+        Enable JSONP Server.
+        <label for="enable_jsonp_browser_checkbox">Allow running JSONP Server.</label>
+        <input type="checkbox" id="enable_jsonp_browser_checkbox"/>
+
+      </div>
+    </div> <!-- settings page for browser end -->
+
+    <!-- profile page -->
+    <div data-role="page" id="profile_page">
+      <div data-role="header">
+        <a data-icon="back" class="ui-btn-left" href="#devlist_page">Back</a>
+        <h3>Profile</h3>
+      </div>
+      profile here.
+    </div>
+
+    <!-- iframe for app. -->
+    <div data-role="page" id="app_iframe_page" height="100%" width="100%"
+                                               padding="0" margin="0">
+      <iframe id="app_iframe" height="100%" width="100%" padding="0" margin="0"
+              border="none">
+        Your browser doesn't support iframe.
+      </iframe>
+    </div>
+
+    <!-- device detail page -->
+    <div data-role="page" id="device_detail_page">
+      <div data-role="header">
+        <a data-icon="back" class="ui-btn-left" data-rel="back" onclick="kHAPI.updateDevList();">Back</a>
+        <h3>Detail</h3>
+      </div>
+      <!-- device detail content -->
+      <div data-role="content">
+        <div id="device_description"></div>
+        <hr>
+        <div id="device_remocon"></div>
+        <hr>
+        Device Nickname<br>
+        <font size=-1>
+          ex.Aircon_in_a_living_room,Light_in_a_bedroom.
+        </font>
+        <input id="nickname_input" type="text">
+        <input id="nickname_button" type="button" value="Change nickname">
+        <hr>
+        Power consumption sensor:<br>
+        <select id="device_power_logger"><option value="None">None</option></select>
+        <hr>
+        Remove Device<br>
+        <font size=-1>
+          Remove device from database.
+        </font>
+        <a id="remove_device" data-rel="back" data-role="button"
+            onclick="onClickRemoveDevice();">Remove Device</a>
+
+        <input id="get_property_button" type="button" value="Get all properties.">
+
+        <table id="property_table" data-role="table"
+                class="ui-responsive table-stroke" data-mode="reflow">
+          <thead>
+            <tr>
+              <th data-priority="1">EPC</th>
+              <th data-priority="2">Name</th>
+              <th data-priority="4">Get/Set</th>
+              <th data-priority="3">Value</th>
+            </tr>
+          </thead>
+          <tbody id="property_table_body">
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+    <!-- App settings page -->
+    <div data-role="page" id="app_settings_page">
+      <div data-role="header">
+        <a data-icon="back" class="ui-btn-left" data-rel="back">Back</a>
+        <h3>Detail</h3>
+      </div>
+      <!-- App settings content -->
+      <div data-role="content">
+        <div id="app_description"></div>
+        <hr>
+        <big>Link real device to virtual device.</big>
+        <div id="device_matching"></div>
+      </div>
+    </div>
+
+    <div data-role="dialog" id="sure"
+         data-title="Are you sure?">
+      <div data-role="content">
+        <h3 class="big-message">big</h3>
+        <p class="small-message">small</p>
+        <a href="#" class="sure-do" data-role="button"
+           data-theme="b" data-rel="back">Yes</a>
+        <a href="#" class="no" data-role="button"
+           data-theme="c" data-rel="back">No</a>
+      </div>
+    </div>
+
+    <!-- Javascript tag here for fast loading. -->
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery-mobile.js"></script>
+    <script type="text/javascript" src="js/kadecot.hapi.js"></script>
+    <script type="text/javascript" src="index-t-initialize.js"></script>
+    <script type="text/javascript" src="graph.js"></script>
+  </body>
+</html>
