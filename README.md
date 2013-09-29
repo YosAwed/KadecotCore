@@ -15,7 +15,7 @@ KadecotCoreを用いた実証実験版アプリ[Kadecot][]がGoogle Playから�
 ※本ソフトウェアの著作権は[株式会社ソニーコンピュータサイエンス研究所][]が保持しており、[MITライセンス][]で配布されています。ライセンスに従い，自由にご利用ください。  
 
 バグレポート等お待ちしています！  
-また、開発者MLみたいなものも作りたいと思っています。ご興味のある方は、ひとまずinfo@kadecot.netまで空メールを送って頂ければ幸いです。  
+また、開発者MLみたいなものも作りたいと思っています。ご興味のある方は、ひとまずinfo@kadecot.netまで空メールを送って頂ければ後日対処いたします。  
 
 [ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
 [Kadecot]: http://kadecot.net/ "Kadecot"
@@ -26,8 +26,8 @@ KadecotCoreを用いた実証実験版アプリ[Kadecot][]がGoogle Playから�
 ===========
 本プロジェクトで用いているソフトウェアとライセンス
 
-jQuery/jQuery Mobile : jQuery/jQuery Mobile License
-Java-WebSocket : MIT
+jQuery/jQuery Mobile : jQuery/jQuery Mobile License  
+Java-WebSocket : MIT  
 
 以下ライセンス文章です：
 
