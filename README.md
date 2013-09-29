@@ -1,24 +1,60 @@
 KadecotCore
 ===========
 
-�I�[�v���\�[�X��Android�p�z�[���T�[�o�[�A�v���ł��B�ȉ��̋@�\�������Ă��܂��B
+オープンソースのAndroid用ホームサーバーアプリです。以下の機能を持っています。  
 
-*[ECHONET Lite][]�v���g�R�����T�|�[�g�����Ɠd��Z���T�[��JSONP��WebSocket��WebAPI���琧��E���擾�ł���
-*���C�u�����v���W�F�N�g�Ƃ��č\�z����Ă���̂ŁA�P�̓�������v���W�F�N�g���烊���N���ėp���邱�Ƃ��\
-*�@��A�gWeb�A�v����JavaScript�ō��₷�����邽�߂̃��b�s���O���C�u����������(kadecot.js)�B�ȒP�Ȃ��̂ł����T���v����assets/html/Apps/Test/index.html�ɂ���܂��Bassets/html/js/kadecot.js�̍ŏ��̕��̃R�����g�����Q�Ƃ��������B
+*[ECHONET Lite][]プロトコルをサポートした家電やセンサーをJSONPやWebSocketのWebAPIから制御・情報取得できる  
+*ライブラリプロジェクトとして構築されているので、単体動作も他プロジェクトからリンクして用いることも可能  
+*機器連携WebアプリをJavaScriptで作りやすくするためのラッピングライブラリがある(kadecot.js)。簡単なものですがサンプルがassets/html/Apps/Test/index.htmlにあります。assets/html/js/kadecot.jsの最初の方のコメントもご参照ください。  
 
-KadecotCore��p�������؎����ŃA�v��[Kadecot][]��Google Play����z�z����Ă��܂��B
-�������̋@�\���ǉ�����Ă��܂��̂ŁA�z�[���T�[�o�[�̊J���ɋ������Ȃ��P�ɗ��p���ꂽ���ꍇ�͂�����������p���������B�i�������A2013�N9��30�����݁AKadecot�̕��ɂ�KadecotCore�͔��f����Ă��炸�A�����o�[�W�����ł̑Ή��ƂȂ�܂��B���������������BKadecot�̎����A�b�v�f�[�g��2013�N10������\�肵�Ă��܂��j
+KadecotCoreを用いた実証実験版アプリ[Kadecot][]がGoogle Playから配布されています。  
+いくつかの機能が追加されていますので、ホームサーバーの開発に興味がなく単に利用されたい場合はそちらをご利用ください。（ただし、2013年9月30日現在、Kadecotの方にはKadecotCoreは反映されておらず、次期バージョンでの対応となります。ご了承ください。Kadecotの次期アップデートは2013年10月中を予定しています）
 
-�{�A�v���͓�����[OpenECHO][]��p���Ă��܂��B��������Ɨ������I�[�v���\�[�X�Ƃ��Ĕz�z���Ă��܂��̂ŁAWebAPI�����s�v���Ƃ������͂���������Q�Ƃ��������B�Ȃ��AKadecotCore�ł́A�v���g�R����ڍ׋K�肪���݂��Ȃ��d���J�[�e���I�u�W�F�N�g���ǉ�����Ă��܂��B
+本アプリは内部で[OpenECHO][]を用いています。こちらも独立したオープンソースとして配布していますので、WebAPI等が不要だという方はそちらをご参照ください。なお、KadecotCoreでは、プロトコル上詳細規定が存在しない電動カーテンオブジェクトが追加されています。  
 
-���{�\�t�g�E�F�A�̒��쌠��[������Ѓ\�j�[�R���s���[�^�T�C�G���X������][]���ێ����Ă���A[MIT���C�Z���X][]�Ŕz�z����Ă��܂��B���C�Z���X�ɏ]���C���R�ɂ����p���������B
+※本ソフトウェアの著作権は[株式会社ソニーコンピュータサイエンス研究所][]が保持しており、[MITライセンス][]で配布されています。ライセンスに従い，自由にご利用ください。  
 
-�o�O���|�[�g�����҂����Ă��܂��I
-�܂��A�J����ML�݂����Ȃ��̂���肽���Ǝv���Ă��܂��B�������̂�����́A�ЂƂ܂�info@kadecot.net�܂ŋ󃁁[���𑗂��Ē�����΍K���ł��B
+バグレポート等お待ちしています！  
+また、開発者MLみたいなものも作りたいと思っています。ご興味のある方は、ひとまずinfo@kadecot.netまで空メールを送って頂ければ幸いです。  
 
 [ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
 [Kadecot]: http://kadecot.net/ "Kadecot"
 [OpenECHO]: https://github.com/SonyCSL/OpenECHO "OpenECHO"
-[������Ѓ\�j�[�R���s���[�^�T�C�G���X������]: http://www.sonycsl.co.jp/ "������Ѓ\�j�[�R���s���[�^�T�C�G���X������"
-[MIT���C�Z���X]: http://opensource.org/licenses/mit-license.php "MIT���C�Z���X"
+[株式会社ソニーコンピュータサイエンス研究所]: http://www.sonycsl.co.jp/ "株式会社ソニーコンピュータサイエンス研究所"
+[MITライセンス]: http://opensource.org/licenses/mit-license.php "MITライセンス"
+
+===========
+本プロジェクトで用いているソフトウェアとライセンス
+
+jQuery/jQuery Mobile : jQuery/jQuery Mobile License
+Java-WebSocket : MIT
+
+以下ライセンス文章です：
+
+===========
+jQuery/jQuery Mobile
+
+Copyright (c) 2011 John Resig, http://jquery.com/<br>
+
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+===========
+Java-WebSocket
+
+https://github.com/TooTallNate/Java-WebSocket
+
+
+MIT License (Copyright (C) 2010-2012 Nathan Rajlich)
+
+Copyright (c) 2010-2012 Nathan Rajlich
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
