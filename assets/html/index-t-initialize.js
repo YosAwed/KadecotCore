@@ -567,14 +567,14 @@ var makeDeviceLi = function(device){
         "<li id='{id}'> " +
           "<a onclick='onDeviceIconClick(\"{nickname}\");return false;'> " +
             "<div class='padding-div'></div> " +
-            "<img id='devIconImg{nickname}' src='{imageurl}' onload='queryDevStatusForIcon(\"{nickname}\");' \
+            "<img id='devIconImg{id}' src='{imageurl}' onload='queryDevStatusForIcon(\"{nickname}\");' \
                   onerror='this.src=\"index_res/icons/error.png\";'/>"+
-            " <div id='statusDiv{nickname}' style='position:absolute; top:5px; left:5px;'> "+
+            " <div id='statusDiv{id}' style='position:absolute; top:5px; left:5px;'> "+
             "{nickname}<br />"+
-            "<img id='statusPowerImg{nickname}' src='index_res/icons/PowerInactive.png'/> "+
-            "<span id='statusDivTxtArea{nickname}'></span> "+
+            "<img id='statusPowerImg{id}' src='index_res/icons/PowerInactive.png'/> "+
+            "<span id='statusDivTxtArea{id}'></span> "+
             "</div>"+
-            "<div id='devIconBottomTxt{nickname}'style='position:absolute;bottom:0px;right:5px;'></div>" +
+            "<div id='devIconBottomTxt{id}'style='position:absolute;bottom:0px;right:5px;'></div>" +
           "</a>"+
 
         "<input type='button' value='Settings' class='jqmNone'" +
@@ -605,7 +605,7 @@ function refreshManifests(manifs){
   for( var ai=0;ai<manifs.length;++ai )
     app_list_view.append(
       template.format({
-        id:manifs[ai].title
+        id:getNicknameHash(manifs[ai].title)
         ,index:ai
         ,image:manifs[ai].icon
         ,title:escapeHTML(manifs[ai].title)
@@ -643,113 +643,117 @@ var getImageUrl = function(device){
 };
 
 function queryDevStatusForIcon( nickname ){
-	var d = kHAPI.findDeviceByNickname(nickname) ;
+  var d = kHAPI.findDeviceByNickname(nickname) ;
+  var id = getNicknameHash(nickname);
+  if(d.isEmulation===true) {
+    $('#devIconBottomTxt'+id).html('Emulation') ;
+  }
+  if( d.protocol === 'ECHONET Lite' ){
+    var bCheckPower = true ;
+    var dtNum = parseInt(d.deviceType) ;
+    // PowerDistributionBoardMetering
+    if( dtNum == 0x0287 ){
+      // Instaneous watts
+      if(d.isEmulation !== true){
+        kHAPI.get( [nickname,'0xc6'] , function(ret,success){
+          if( !success ) return ;
+          if( ret.property[0].value !== undefined ){
+            var watts = echoByteArrayToInt(ret.property[0].value) ;
+            $('#devIconBottomTxt'+id).html(watts+'W') ;
+          }
+        } ) ;
+      }
+    } else if( dtNum == 0x0130 ){   // Aircon
+      if( d.isEmulation !== true && typeof d.powersensor === 'string' ){
+        var _idx = d.powersensor.indexOf('_') ;
+        if( _idx != -1 ){
+          var ts = [ d.powersensor.substring(0,_idx) , d.powersensor.substring(_idx+1) ] ;
+          var powerDev = kHAPI.findDeviceByNickname(ts[1]) ;
+          var chid = parseInt(ts[0].substring(1))-1 ;
+          if(  powerDev !== undefined && powerDev.isEmulation !== true
+               && chid >= 0 && chid < 32 )
+            kHAPI.get( [ts[1],'0x'+(0xd0+chid).toString(16) ] , function(ret,success){
+              if( !success ) return ;
+              if( ret.property[0].value !== undefined ){
+                // R phase only // (0.1A * 100V)
+                var watts = echoByteArrayToInt([ret.property[0].value[4],ret.property[0].value[5]]) * 10 ;
+                $('#devIconBottomTxt'+id).html(watts+'W') ;
+              }
+            } ) ;
+        }
+      }
+    } else if( dtNum == 0x0011 ){   // Temperature
+      // Temperature
+      kHAPI.get( [nickname,'0xe0'] , function(ret,success){
+        if( !success ) return ;
+        if( ret.property[0].value !== undefined ){
+          var temp = getTempFromECHONETLite2ByteArray(ret.property[0].value) ;
+          $('#statusDivTxtArea'+id).html('  '+temp+' deg C') ;
+        }
+      } ) ;
+    } else if( dtNum == 0x0012 ){   // Humidity
+      // Humidity
+      kHAPI.get( [nickname,'0xe0'] , function(ret,success){
+        if( !success ) return ;
+        if( ret.property[0].value !== undefined ){
+          $('#statusDivTxtArea'+id).html('  '+ret.property[0].value[0]+' %') ;
+        }
+      } ) ;
+      // Humidity
+    } else if( (0 < dtNum && dtNum <= 0x000b)              // Gas sensor to Air polution sensor
+               || ( 0x000e <= dtNum && dtNum <= 0x0010)    // Sound, Posting, Weight
+               || ( 0x0013 <= dtNum && dtNum <= 0x001a)    // Rain to Smoke
+               || ( 0x001c <= dtNum && dtNum <= 0x001d)    // Gas, VOC
+               || ( 0x0020 <= dtNum && dtNum <= 0x0021)    // Smell, Fire
+               || ( 0x0026 == dtNum )                      // Small movement
+               || ( 0x0028 <= dtNum && dtNum <= 0x0029)    // Floor, Openclose
+               || ( 0x002c == dtNum )                      // Snow
+             ){
+               kHAPI.get( [nickname,'0xb1'] , function(ret,success){
+                 if( !success ) return ;
+                 if( ret.property[0].value !== undefined ){
+                   $('#statusDivTxtArea'+id).html('  '+(ret.property[0].value[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
+                 }
+               } ) ;
+             } else if( dtNum == 0x0262 ){   // Curtain
+               // Curtain open/close
+               kHAPI.get( [nickname,'0xe0'] , function(ret,success){
+                 if( !success ) return ;
+                 if( ret.property[0].value !== undefined ){
+                   $('#devIconImg'+id)[0].onload = undefined ;
 
-	if(d.isEmulation===true)	$('#devIconBottomTxt'+nickname).html('Emulation') ;
-
-	if( d.protocol === 'ECHONET Lite' ){
-		var bCheckPower = true ;
-		var dtNum = parseInt(d.deviceType) ;
-
-		if( dtNum == 0x0287 ){	// PowerDistributionBoardMetering
-			// Instaneous watts
-			if(d.isEmulation !== true) kHAPI.get( [nickname,'0xc6'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					var watts = echoByteArrayToInt(ret.property[0].value) ;
-					$('#devIconBottomTxt'+nickname).html(watts+'W') ;
-				}
-			} ) ;
-		} else if( dtNum == 0x0130 ){	// Aircon
-			if( d.isEmulation !== true && typeof d.powersensor === 'string' ){
-				var _idx = d.powersensor.indexOf('_') ;
-				if( _idx != -1 ){
-					var ts = [ d.powersensor.substring(0,_idx) , d.powersensor.substring(_idx+1) ] ;
-					var powerDev = kHAPI.findDeviceByNickname(ts[1]) ;
-					var chid = parseInt(ts[0].substring(1))-1 ;
-					if(  powerDev !== undefined && powerDev.isEmulation !== true
-					  && chid >= 0 && chid < 32 )
-						kHAPI.get( [ts[1],'0x'+(0xd0+chid).toString(16) ] , function(ret,success){
-									if( !success ) return ;
-									if( ret.property[0].value !== undefined ){
-										// R phase only
-										var watts = echoByteArrayToInt([ret.property[0].value[4],ret.property[0].value[5]])
-											 * 10 ; // (0.1A * 100V)
-										$('#devIconBottomTxt'+nickname).html(watts+'W') ;
-									}
-								} ) ;
-				}
-			}
-		} else if( dtNum == 0x0011 ){	// Temperature
-			// Temperature
-			kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					var temp = getTempFromECHONETLite2ByteArray(ret.property[0].value) ;
-					$('#statusDivTxtArea'+nickname).html('  '+temp+' deg C') ;
-				}
-			} ) ;
-		} else if( dtNum == 0x0012 ){	// Humidity
-			// Humidity
-			kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					$('#statusDivTxtArea'+nickname).html('  '+ret.property[0].value[0]+' %') ;
-				}
-			} ) ;
-		} else if( (0 < dtNum && dtNum <= 0x000b)		// Gas sensor to Air polution sensor
-			|| ( 0x000e <= dtNum && dtNum <= 0x0010)	// Sound, Posting, Weight
-			|| ( 0x0013 <= dtNum && dtNum <= 0x001a)	// Rain to Smoke
-			|| ( 0x001c <= dtNum && dtNum <= 0x001d)	// Gas, VOC
-			|| ( 0x0020 <= dtNum && dtNum <= 0x0021)	// Smell, Fire
-			|| ( 0x0026 == dtNum )				// Small movement
-			|| ( 0x0028 <= dtNum && dtNum <= 0x0029)	// Floor, Openclose
-			|| ( 0x002c == dtNum )				// Snow
-			){// Humidity
-			kHAPI.get( [nickname,'0xb1'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					$('#statusDivTxtArea'+nickname).html('  '+(ret.property[0].value[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
-				}
-			} ) ;
-		} else if( dtNum == 0x0262 ){	// Curtain
-			// Curtain open/close
-			kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					$('#devIconImg'+nickname)[0].onload = undefined ;
-
-					if( ret.property[0].value[0] == 0x41 ) // Open
-						$('#devIconImg'+nickname)[0].src = 'index_res/icons/0x0262-open.png' ;
-					else if( ret.property[0].value[0] == 0x42 ) // Closed
-						$('#devIconImg'+nickname)[0].src = 'index_res/icons/0x0262.png' ;
-				}
-			} ) ;
-		} else if( dtNum == 0x0290 ){	// Light
-			// Power
-			kHAPI.get( [nickname,'0x80'] , function(ret,success){
-				if( !success ) return ;
-				if( ret.property[0].value !== undefined ){
-					if( ret.property[0].value[0] == 48 ){
-						$('#statusPowerImg'+nickname)[0].src = 'index_res/icons/PowerOn.png' ;
-						$('#devIconImg'+nickname)[0].onload = undefined ;
-						$('#devIconImg'+nickname)[0].src = 'index_res/icons/0x0290-on.png' ;
-					} else if( ret.property[0].value[0] == 49 )
-						$('#statusPowerImg'+nickname)[0].src = 'index_res/icons/PowerOff.png' ;
-				}
-			} ) ;
-			bCheckPower = false ;
-		}
+                   if( ret.property[0].value[0] == 0x41 ) // Open
+                     $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262-open.png' ;
+                   else if( ret.property[0].value[0] == 0x42 ) // Closed
+                     $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262.png' ;
+                 }
+               } ) ;
+             } else if( dtNum == 0x0290 ){   // Light
+               // Power
+               kHAPI.get( [nickname,'0x80'] , function(ret,success){
+                 if( !success ) return ;
+                 if( ret.property[0].value !== undefined ){
+                   if( ret.property[0].value[0] == 48 ){
+                     $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
+                     $('#devIconImg'+id)[0].onload = undefined ;
+                     $('#devIconImg'+id)[0].src = 'index_res/icons/0x0290-on.png' ;
+                   } else if( ret.property[0].value[0] == 49 )
+                     $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
+                 }
+               } ) ;
+               bCheckPower = false ;
+             }
 
     if(bCheckPower){
       // Power
       kHAPI.get( [nickname,'0x80'] , function(ret,success){
         if( !success ) return ;
         if( ret.property[0].value !== undefined ){
+
           if( ret.property[0].value[0] == 48 )
-            $('#statusPowerImg'+nickname)[0].src = 'index_res/icons/PowerOn.png' ;
+            $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
           else if( ret.property[0].value[0] == 49 )
-            $('#statusPowerImg'+nickname)[0].src = 'index_res/icons/PowerOff.png' ;
+            $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
         }
       } ) ;
     }
@@ -788,25 +792,27 @@ var onDeviceIconClick = function(nickname){
 
   if( bTogglePower ){
     // Power
-    kHAPI.get([nickname,'0x80'],function(ret){
-      console.log(JSON.stringify(ret));
-      if(ret.property[0].success){
+    kHAPI.get([nickname,'0x80'],function(ret,success){
+      if(success ){
         if(ret.property[0].value !== undefined ){
           kHAPI.set([nickname,['0x80',[ret.property[0].value[0] == 48?49:48]]]
                     ,function(){
-                      kHAPI.updateDevList();
+			//kHAPI.updateDevList();
+			queryDevStatusForIcon(nickname) ;
                     });
         }
       }else{
         kHAPI.set([nickname,['0x80',[48]]],function(){
-          kHAPI.updateDevList();
+	//kHAPI.updateDevList();
+	queryDevStatusForIcon(nickname) ;
         });
       }});
 
   }else{
-    kHAPI.updateDevList();
-    //onDeviceDetailPageOpen(nickname);
-    //toast('No function is assigned.') ;
+	//kHAPI.updateDevList();
+	queryDevStatusForIcon(nickname) ;
+	//onDeviceDetailPageOpen(nickname);
+	//toast('No function is assigned.') ;
   }
 };
 
@@ -828,8 +834,18 @@ var areYouSure = function(big,small,yestext,notext,callback){
 //     and may be followed by any number of letters,
 // digits ([0-9]), hyphens ("-"), underscores ("_"), colons (":"), and periods (".").
 // http://www.w3.org/TR/REC-html40/types.html#type-name
+// use rolling hash.
 var getNicknameHash = function(nickname){
-  return encodeURIComponent(nickname);
+  var prefix = "dev_";
+  // Math.pow(2,64).
+  var mod = 18446744073709552000;
+  var b = 1000000007;
+  var r = 0;
+  for(var i=0;i<nickname.length;i++){
+    r = r * b + nickname.charCodeAt(i);
+    r = r % mod;
+  }
+  return prefix + r;
 };
 
 var getUNIXTime = function(date){

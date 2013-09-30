@@ -242,8 +242,6 @@ var kadecot = {
 
       wa.manif.url = location.href ;
 
-      wa.strs = wa.strs_locale.ja ;
-
       wa.isInited = true ;
       wa.invokeWaitList = {} ;
 
@@ -270,6 +268,7 @@ var kadecot = {
 		"message",function(e){ kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data)); }, false);
 
 
+		wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
       return true ;
     } // kadecot._wa.init end
 
@@ -300,9 +299,6 @@ var kadecot = {
 		,kadecot.myPageURL.substring(0 , kadecot.myPageURL.lastIndexOf('/')+1)) ;
 	}
     }
-
-    ,strs : {}
- 
 
     , myPageAPI : { // this is kadecot._wa
 	// Call from MyPage

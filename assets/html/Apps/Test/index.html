@@ -6,6 +6,7 @@
     <script type='text/javascript' src='file:///android_asset/html/js/kadecot.js'></script>
     <script>
 	window.onload = function(){
+		document.getElementById("text_disp").innerHTML = 'Booting..' ;
 		kadecot.init(	{
 			"title":"テストアプリ"
 			,"subtitle":"テスト用アプリです。"
@@ -29,6 +30,7 @@
 		} , function(ao){
 			document.getElementById("text_disp").innerHTML = JSON.stringify(ao) ;
 			console.log('Access object = '+JSON.stringify(ao)) ;
+			ao.Light.Power = [48] ; // Power on
 		}
 		) ;
 	} ;
