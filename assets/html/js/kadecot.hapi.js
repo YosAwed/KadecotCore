@@ -97,6 +97,10 @@ var kHAPI = {
 				/////////////////////////
 				// Android mode only methods
 				/////////////////////////
+				kHAPI.onBackBtn = function(){
+					if( typeof kHAPI.app.running.cleanup === 'function' )
+						kHAPI.app.running.cleanup(true) ;
+				} ;
 				wrapFuncs = wrapFuncs.concat(
 				  ['fullInitialize',
 				   'enableWebSocketServer'

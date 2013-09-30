@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -238,6 +239,15 @@ public class KadecotCoreActivity extends FragmentActivity {
 		//getMenuInflater().inflate(R.menu.activity_kadecot_core, menu);
 		//return true;
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent e) {
+	    if(e.getKeyCode() == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
+	    	callJsOnKadecotMyPage("kHAPI.onBackBtn()") ;
+	    	return true ;
+	    }
+	    return super.dispatchKeyEvent(e);
 	}
 	
 	protected void startKadecot() {

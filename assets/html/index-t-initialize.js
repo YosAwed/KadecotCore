@@ -77,6 +77,7 @@ $(document).on("pagecreate",function(){
         onNotifyServerSettingsOnBrowser(network_info);
       }
     };
+
     kHAPI.updateDevList();
     kHAPI.readManifests(refreshManifests);
   });
