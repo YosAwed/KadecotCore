@@ -20,6 +20,18 @@ if(String.prototype.removeAllNewline === undefined){
     return this.replace(/\r?\n|\r/g,' ');
   };
 }
+if(Date.prototype.myLocaleString === undefined){
+  Date.prototype.myLocaleString = function(){
+    var ret = "";
+    ret += this.getMonth()+1 + "/";
+    ret += this.getDate();
+    ret += " ";
+    ret += this.getHours() + ":";
+    ret += this.getMinutes() +":";
+    ret += this.getSeconds();
+    return ret;
+  };
+}
 
 // do not apply css to settings button.
 $.mobile.page.prototype.options.keepNative = '.jqmNone';
@@ -77,7 +89,6 @@ $(document).on("pagecreate",function(){
         onNotifyServerSettingsOnBrowser(network_info);
       }
     };
-
     kHAPI.updateDevList();
     kHAPI.readManifests(refreshManifests);
   });
@@ -115,23 +126,13 @@ var onClickRefreshLogButton = function(){
 
 var getSimpleLog = function(){
   // 9/26 21:15:14
-  var myLocaleString = function(date){
-    var ret = "";
-    ret += date.getMonth()+1 + "/";
-    ret += date.getDate();
-    ret += " ";
-    ret += date.getHours() + ":";
-    ret += date.getMinutes() +":";
-    ret += date.getSeconds();
-    return ret;
-  };
   var one_hours_ago = getUNIXTime(getHour(new Date(),-1));
     if(kHAPI.queryLog !== undefined){
       kHAPI.queryLog([one_hours_ago,-1],function(raw_data){
         var str = "";
         for(var i=raw_data.length-1;i>=0;i--){
           var message = "{date} {nickname} {type} {epc} {edt} ({success})".format(
-            {date:myLocaleString(new Date(parseInt(raw_data[i].unixtime))),
+            {date:new Date(parseInt(raw_data[i].unixtime)).myLocaleString(),
              nickname:raw_data[i].nickname,
              type:raw_data[i].access_type,
              epc:raw_data[i].property_name,
@@ -417,9 +418,10 @@ var onDeviceDetailPageOpen = function(nickname){
 
 var makeDeviceRemocon = function(nickname){
   // helper function. prop is string,val is list.
-  var makeSetFunction = function(nickname,prop,val){
-    return "kHAPI.set([\"{nickname}\",[\"{prop}\",{val}]],function(msg){console.log(msg)});"
-      .format({nickname:nickname,prop:prop,val:val});
+
+  var makeButton = function(text,func){
+    return "<input type='button' onclick='{func}' value='{text}' />"
+      .format({func:func,text:text});
   };
   var makeButton = function(nickname,prop,val,text){
     return "<input type='button' onclick='{func}' value='{text}' />"
@@ -427,19 +429,26 @@ var makeDeviceRemocon = function(nickname){
   };
 
   var makeECHONETLiteDeviceRemocon = function(device){
+    var makeSetFunction = function(nickname,prop,val){
+      return "kHAPI.set([\"{nickname}\",[\"{prop}\",[{val}]]]);"
+           .format({nickname:nickname,prop:prop,val:val});
+    };
+    var makeSetButton = function(nickname,prop,val,text){
+      return makeButton(text,makeSetFunction(nickname,prop,val));
+    };
     var ret = "";
     if(device.deviceType === "0x0290"){
       // console.log("generallighting");
-      ret += makeButton(device.nickname,"0x80",[0x30],"PowerON");
-      ret += makeButton(device.nickname,"0x80",[0x31],"PowerOFF");
+      ret += makeSetButton(device.nickname,"0x80",[0x30],"PowerON");
+      ret += makeSetButton(device.nickname,"0x80",[0x31],"PowerOFF");
     }else if(device.deviceType === "0x0130"){
       // console.log("aircon");
-      ret += makeButton(device.nickname,"0x80",[0x30],"PowerON");
-      ret += makeButton(device.nickname,"0x80",[0x31],"PowerOFF");
+      ret += makeSetButton(device.nickname,"0x80",[0x30],"PowerON");
+      ret += makeSetButton(device.nickname,"0x80",[0x31],"PowerOFF");
     }else if(device.deviceType === "0x0262"){
       // console.log("curtain");
-      ret += makeButton(device.nickname,"0xe0",[0x41],"Open");
-      ret += makeButton(device.nickname,"0xe0",[0x42],"Close");
+      ret += makeSetButton(device.nickname,"0xe0",[0x41],"Open");
+      ret += makeSetButton(device.nickname,"0xe0",[0x42],"Close");
     }else{
     }
     return ret;
@@ -639,16 +648,32 @@ var getImageUrl = function(device){
       imgurl = 'index_res/icons/' + device.deviceType.substring(0,4) + ".png";
     }
   }
-
   return imgurl ;
 };
 
-function queryDevStatusForIcon( nickname ){
-  var d = kHAPI.findDeviceByNickname(nickname) ;
+function queryDevStatusForIcon( nickname , varHash){
+  var d ;
+  if( typeof nickname === 'string' ){
+	d = kHAPI.findDeviceByNickname(nickname) ;
+  } else {
+	d = nickname ;
+	nickname = d.nickname ;
+  }
   var id = getNicknameHash(nickname);
   if(d.isEmulation===true) {
     $('#devIconBottomTxt'+id).html('Emulation') ;
   }
+
+  function setIcon( propName , cbFunc ){
+	if( typeof varHash === 'object' && varHash[propName] !== undefined )
+		cbFunc( varHash[propName] ) ;
+	else
+		kHAPI.get( [nickname,propName] , function(ret,success){
+			if( !success || ret.property[0].value === undefined ) return ;
+			cbFunc(ret.property[0].value) ;
+		} ) ;
+  } ;
+
   if( d.protocol === 'ECHONET Lite' ){
     var bCheckPower = true ;
     var dtNum = parseInt(d.deviceType) ;
@@ -656,18 +681,23 @@ function queryDevStatusForIcon( nickname ){
     if( dtNum == 0x0287 ){
       // Instaneous watts
       if(d.isEmulation !== true){
-        kHAPI.get( [nickname,'0xc6'] , function(ret,success){
-          if( !success ) return ;
-          if( ret.property[0].value !== undefined ){
-            var watts = echoByteArrayToInt(ret.property[0].value) ;
-            $('#devIconBottomTxt'+id).html(watts+'W') ;
-          }
-        } ) ;
+	setIcon('0xc6',function(newval){
+		var watts = echoByteArrayToInt(newval) ;
+		$('#devIconBottomTxt'+id).html(watts+'W') ;
+	}) ;
       }
     } else if( dtNum == 0x0130 ){   // Aircon
+      // Temperature
+      setIcon( '0xb3',function(newval){
+	  var cTS = newval[0] ;
+	  if( cTS >= 0x80 ) cTS = cTS-0x100 ;
+          $('#statusDivTxtArea'+id).html('  '+cTS+' deg C') ;
+      }) ;
+
       if( d.isEmulation !== true && typeof d.powersensor === 'string' ){
         var _idx = d.powersensor.indexOf('_') ;
         if( _idx != -1 ){
+
           var ts = [ d.powersensor.substring(0,_idx) , d.powersensor.substring(_idx+1) ] ;
           var powerDev = kHAPI.findDeviceByNickname(ts[1]) ;
           var chid = parseInt(ts[0].substring(1))-1 ;
@@ -685,22 +715,15 @@ function queryDevStatusForIcon( nickname ){
       }
     } else if( dtNum == 0x0011 ){   // Temperature
       // Temperature
-      kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-        if( !success ) return ;
-        if( ret.property[0].value !== undefined ){
-          var temp = getTempFromECHONETLite2ByteArray(ret.property[0].value) ;
+	setIcon('0xe0',function(newval){
+          var temp = getTempFromECHONETLite2ByteArray(newval) ;
           $('#statusDivTxtArea'+id).html('  '+temp+' deg C') ;
-        }
-      } ) ;
+	}) ;
     } else if( dtNum == 0x0012 ){   // Humidity
       // Humidity
-      kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-        if( !success ) return ;
-        if( ret.property[0].value !== undefined ){
-          $('#statusDivTxtArea'+id).html('  '+ret.property[0].value[0]+' %') ;
-        }
-      } ) ;
-      // Humidity
+	setIcon('0xe0',function(newval){
+          $('#statusDivTxtArea'+id).html('  '+newval[0]+' %') ;
+	}) ;
     } else if( (0 < dtNum && dtNum <= 0x000b)              // Gas sensor to Air polution sensor
                || ( 0x000e <= dtNum && dtNum <= 0x0010)    // Sound, Posting, Weight
                || ( 0x0013 <= dtNum && dtNum <= 0x001a)    // Rain to Smoke
@@ -710,53 +733,44 @@ function queryDevStatusForIcon( nickname ){
                || ( 0x0028 <= dtNum && dtNum <= 0x0029)    // Floor, Openclose
                || ( 0x002c == dtNum )                      // Snow
              ){
-               kHAPI.get( [nickname,'0xb1'] , function(ret,success){
-                 if( !success ) return ;
-                 if( ret.property[0].value !== undefined ){
-                   $('#statusDivTxtArea'+id).html('  '+(ret.property[0].value[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
-                 }
-               } ) ;
+		setIcon('0xb1',function(newval){
+                   $('#statusDivTxtArea'+id).html('  '+(newval[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
+		}) ;
              } else if( dtNum == 0x0262 ){   // Curtain
                // Curtain open/close
-               kHAPI.get( [nickname,'0xe0'] , function(ret,success){
-                 if( !success ) return ;
-                 if( ret.property[0].value !== undefined ){
+		setIcon('0xe0',function(newval){
                    $('#devIconImg'+id)[0].onload = undefined ;
 
-                   if( ret.property[0].value[0] == 0x41 ) // Open
+                   if( newval[0] == 0x41 ) // Open
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262-open.png' ;
-                   else if( ret.property[0].value[0] == 0x42 ) // Closed
+                   else if( newval[0] == 0x42 ) // Closed
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262.png' ;
-                 }
-               } ) ;
+		}) ;
+
              } else if( dtNum == 0x0290 ){   // Light
                // Power
-               kHAPI.get( [nickname,'0x80'] , function(ret,success){
-                 if( !success ) return ;
-                 if( ret.property[0].value !== undefined ){
-                   if( ret.property[0].value[0] == 48 ){
+		setIcon('0x80',function(newval){
+                   $('#devIconImg'+id)[0].onload = undefined ;
+                   if( newval[0] == 48 ){
                      $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
-                     $('#devIconImg'+id)[0].onload = undefined ;
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0290-on.png' ;
-                   } else if( ret.property[0].value[0] == 49 )
+                   } else if( newval[0] == 49 ){
                      $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
-                 }
-               } ) ;
+                     $('#devIconImg'+id)[0].src = 'index_res/icons/0x0290.png' ;
+		   }
+		}) ;
+
                bCheckPower = false ;
              }
 
     if(bCheckPower){
       // Power
-      kHAPI.get( [nickname,'0x80'] , function(ret,success){
-        if( !success ) return ;
-        if( ret.property[0].value !== undefined ){
-
-          if( ret.property[0].value[0] == 48 )
+	setIcon('0x80',function(newval){
+          if( newval[0] == 48 )
             $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
-          else if( ret.property[0].value[0] == 49 )
+          else if( newval[0] == 49 )
             $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
-        }
-      } ) ;
+	}) ;
     }
 
 
@@ -767,21 +781,21 @@ var onDeviceIconClick = function(nickname){
   var d = kHAPI.findDeviceByNickname(nickname);
   // if null is substituted to handler, the power is changed.
   // if this value remains false, refresh device info.
-  // nothing happens
-  // device detail page is opened.
+
   var bTogglePower = false ;
+  var newVal ;
   if( d.protocol === 'ECHONET Lite' ){
     if( d.deviceType === '0x0262' ){// Curtain
       // Curtain open/close
       kHAPI.get([nickname,'0xe0'],function(ret,success){
-        if(!success) return;
-        if(ret.property[0].value !== undefined){
-          kHAPI.set([nickname,
-                      ['0xe0',[ret.property[0].value[0] == 0x41?0x42:0x41]]],
+        if(success == true && ret.property[0].value !== undefined)
+		newVal = [ret.property[0].value[0] == 0x41?0x42:0x41] ;
+	else	newVal = [0x41] ;
+
+	kHAPI.set([nickname,['0xe0',newVal]],
                      function(){
-            kHAPI.updateDevList();
+			queryDevStatusForIcon(d,{'0xe0':newVal}) ;
                      }) ;
-        }
       }) ;
       return ;
     } else if(d.deviceType === '0x0130'){     // Aircon
@@ -794,25 +808,17 @@ var onDeviceIconClick = function(nickname){
   if( bTogglePower ){
     // Power
     kHAPI.get([nickname,'0x80'],function(ret,success){
-      if(success ){
-        if(ret.property[0].value !== undefined ){
-          kHAPI.set([nickname,['0x80',[ret.property[0].value[0] == 48?49:48]]]
-                    ,function(){
-			//kHAPI.updateDevList();
-			queryDevStatusForIcon(nickname) ;
-                    });
-        }
-      }else{
-        kHAPI.set([nickname,['0x80',[48]]],function(){
-	//kHAPI.updateDevList();
-	queryDevStatusForIcon(nickname) ;
-        });
-      }});
+	if(success == true && ret.property[0].value !== undefined )
+		newVal = [ret.property[0].value[0] == 48?49:48] ;
+	else	newVal = [48] ;
 
-  }else{
-	//kHAPI.updateDevList();
-	queryDevStatusForIcon(nickname) ;
-	//onDeviceDetailPageOpen(nickname);
+	kHAPI.set([nickname,['0x80',newVal]]
+                    ,function(){
+			queryDevStatusForIcon(d,{'0x80':newVal}) ;
+                    });
+    });
+  } else{
+	queryDevStatusForIcon(d) ;
 	//toast('No function is assigned.') ;
   }
 };

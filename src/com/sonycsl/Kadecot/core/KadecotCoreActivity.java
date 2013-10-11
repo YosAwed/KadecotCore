@@ -241,14 +241,14 @@ public class KadecotCoreActivity extends FragmentActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
 	
-	@Override
+	/*@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 	    if(e.getKeyCode() == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
 	    	callJsOnKadecotMyPage("kHAPI.onBackBtn()") ;
 	    	return true ;
 	    }
 	    return super.dispatchKeyEvent(e);
-	}
+	}*/
 	
 	protected void startKadecot() {
 		loadUrlOnKadecotMyPage("file:///android_asset/html/index-t.html");
