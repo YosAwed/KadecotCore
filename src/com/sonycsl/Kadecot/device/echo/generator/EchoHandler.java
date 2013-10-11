@@ -1,6 +1,9 @@
 package com.sonycsl.Kadecot.device.echo.generator;
 
+import org.json.JSONObject;
+
 import com.sonycsl.Kadecot.device.DeviceDatabase;
+import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceDatabase;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
@@ -62,6 +65,10 @@ public class EchoHandler {
 				EchoDeviceDatabase.LOCAL_ADDRESS
 				, EchoUtils.getEchoClassCodeFromObjectCode(echoObjectCode) & 0xFFFF
 				, EchoUtils.getInstanceCodeFromObjectCode(echoObjectCode) & 0xFF);
+	}
+	
+	public JSONObject getDeviceInfo(EchoDeviceData data) {
+		return DeviceManager.getInstance(mContext).getDeviceInfo(data.deviceId, 0);
 	}
 
 }
