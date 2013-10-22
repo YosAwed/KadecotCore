@@ -100,6 +100,8 @@ var kHAPI = {
 				kHAPI.onBackBtn = function(){
 					if( typeof kHAPI.app.running.cleanup === 'function' )
 						kHAPI.app.running.cleanup(true) ;
+					else
+						UserApp.closeAppView() ;
 				} ;
 				wrapFuncs = wrapFuncs.concat(
 				  ['fullInitialize',
@@ -133,10 +135,12 @@ var kHAPI = {
 				})() ;
 			}
 
-			//kHAPI.local.init() ;
+			kHAPI.local.init() ;
 			kHAPI.net.init() ;
 			kHAPI.dev.init() ;
 			kHAPI.app.init() ;
+
+			kHAPI.addManifest = kHAPI.app.addManifest;
 
 			if( kHAPI.isOnAndroid ){
 				// After this,notificatoin will come from server.
@@ -153,7 +157,7 @@ var kHAPI = {
 		$.ajaxSetup({async: false});
 		for( var i=0;i<incfiles.length;++i ){
 			$.getScript('js/kadecot.hapi.'+incfiles[i] + '.js'
-			,function(){ if(--incfilenum === 0 ) init_real.call(kHAPI); } );
+			,function(){ if(--incfilenum === 0 ){init_real.call(kHAPI); }} );
 		}
 		$.ajaxSetup({async: true});
 	}
@@ -175,6 +179,7 @@ var kHAPI = {
 	, onServerDisconnected : function(){
 		console.log('Server disconnected') ;
 	}
+	// devices === false if none updated.
 	, onDevListUpdated : function(devices){
 		// var devs = kHAPI.dev.devices ;
 	}
