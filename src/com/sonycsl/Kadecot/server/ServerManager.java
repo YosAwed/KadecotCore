@@ -118,7 +118,7 @@ public class ServerManager {
 		
 		changeNotification();
 		
-		KadecotCall.informAll(Notification.ON_NOTIFY_SERVER_SETTINGS, Notification.onNotifyServerSettings(mContext));
+		Notification.informAllOnNotifyServerSettings(mContext);
 	}
 	
 	public void startWebSocketServer() {

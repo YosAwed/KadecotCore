@@ -49,7 +49,7 @@ public class NotificationProcessor {
 	}
 	
 	public void refreshList(JSONArray params) {
-		mDeviceManager.refreshList();
+		mDeviceManager.refreshList(mPermissionLevel);
 	}
 	
 

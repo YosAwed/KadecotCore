@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
+import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.eoj.device.DeviceObject;
@@ -34,7 +35,10 @@ public class EchoDiscovery {
 	protected synchronized void onDiscoverNewDevice(DeviceObject device) {
 		mEchoDeviceDatabase.addDeviceData(device);
 		
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(device);
+
+		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
+				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 	}
 	
 	

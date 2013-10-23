@@ -182,7 +182,7 @@ public class KadecotWebSocketServer {
 
 		private WebSocket ws;
 		public WebSocketCall(Context context, WebSocket ws) {
-			super(context, new RequestProcessor(context, 1), new NotificationProcessor(context, 1));
+			super(context, 1, new RequestProcessor(context, 1), new NotificationProcessor(context, 1));
 			// TODO Auto-generated constructor stub
 			this.ws = ws;
 		}

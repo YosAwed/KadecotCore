@@ -130,7 +130,7 @@ public class RequestProcessor {
 	}
 
 	public Response refreshList(JSONArray params) {
-		mDeviceManager.refreshList();
+		mDeviceManager.refreshList(mPermissionLevel);
 		return new Response(null);
 	}
 	
@@ -147,7 +147,7 @@ public class RequestProcessor {
 	}
 	
 	public Response deleteInactiveDevices(JSONArray params) {
-		return mDeviceManager.deleteInactiveDevices();
+		return mDeviceManager.deleteInactiveDevices(mPermissionLevel);
 	}
 	
 	// server settings
