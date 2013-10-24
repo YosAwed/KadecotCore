@@ -37,9 +37,11 @@ if(Date.prototype.myLocaleString === undefined){
 $.mobile.page.prototype.options.keepNative = '.jqmNone';
 $.mobile.page.prototype.options.domCache = true;
 
+// if we refresh list before it's created.
 var devlist_page_has_created = false;
 var app_page_has_created = false;
 var pagecreated = false;
+
 $(document).on("pagecreate",function(){
   $.mobile.defaultPageTransition = "none";
   $.mobile.defaultDialogTransition = "none";
@@ -62,7 +64,7 @@ $(document).on("pagecreate",function(){
       toast("Failed to connect");
     };
     kHAPI.onDevListUpdated = function(devs){
-      if(!devlist_page_has_created) return false;
+      if(!devlist_page_has_created || devs === false) return false;
       var device_list_view = $("#device_list_view");
       device_list_view.empty();
 
@@ -89,6 +91,15 @@ $(document).on("pagecreate",function(){
         onNotifyServerSettingsOnBrowser(network_info);
       }
     };
+
+    var oldOnBackBtn = kHAPI.onBackBtn ;
+    kHAPI.onBackBtn = function(){
+		if( typeof oldOnBackBtn === 'function' )
+			oldOnBackBtn() ;
+		$.mobile.changePage("#devlist_page");
+    } ;
+
+
     kHAPI.updateDevList();
     kHAPI.readManifests(refreshManifests);
   });
@@ -96,7 +107,8 @@ $(document).on("pagecreate",function(){
 
 $("#devlist_page").on("pageinit",function(){
   devlist_page_has_created = true;
-  kHAPI.updateDevList();
+  if( typeof kHAPI.updateDevList === 'function' )
+	kHAPI.updateDevList();
 });
 $("#app_page").on("pageinit",function(){
   app_page_has_created = true;
@@ -131,13 +143,14 @@ var getSimpleLog = function(){
       kHAPI.queryLog([one_hours_ago,-1],function(raw_data){
         var str = "";
         for(var i=raw_data.length-1;i>=0;i--){
-          var message = "{date} {nickname} {type} {epc} {edt} ({success})".format(
+          var message = "{date} {nickname} {type} {epc} {edt} ({success} : {message})".format(
             {date:new Date(parseInt(raw_data[i].unixtime)).myLocaleString(),
              nickname:raw_data[i].nickname,
              type:raw_data[i].access_type,
              epc:raw_data[i].property_name,
              edt:raw_data[i].property_value,
-             success:raw_data[i].success==="true"?"success":"fail"});
+             success:raw_data[i].success==="true"?"success":"fail",
+             message:(typeof raw_data[i].message==='string'?raw_data[i].message:'null')});
             str += message + "\n";
         }
         $("#log_area").val(str);
@@ -145,7 +158,7 @@ var getSimpleLog = function(){
   }
 };
 
-// events.
+// events. ---------------------------------------------------------------------
 var onClickGetGeoLocation = function(){
   "use strict";
   areYouSure("Allow using geolocation?",
@@ -155,8 +168,9 @@ var onClickGetGeoLocation = function(){
                navigator.geolocation.getCurrentPosition(
                  function(pos,t){
                    kHAPI.setLocation([pos.coords.latitude,pos.coords.longitude]);
-                   toast('Refreshed location( '+pos.coords.latitude+' , '
-                                               +pos.coords.longitude+' )' ) ;
+                   toast('Refreshed location('
+                         +pos.coords.latitude+' , '
+                         +pos.coords.longitude+' )') ;
                  }
                  ,function(error){
                    toast('Failed to collect location'+error.code+':'+error.message) ;
@@ -262,19 +276,18 @@ var onSettingsPageBrowserOpen = function(){
                     function(){kHAPI.enableJSONPServer([false]);});
 };
 
-var initialiNotifyServerSettings = true;
+var initialNotifyServerSettings = true;
 var onNotifyServerSettingsOnAndroid = function(settings){
   checkCheckBox($("#enable_websocket_checkbox"),settings.websocket);
   checkCheckBox($("#enable_persistent_android_checkbox"),settings.persistence);
   checkCheckBox($("#enable_jsonp_android_checkbox"),settings.jsonp);
 
-  if(initialiNotifyServerSettings &&
+  if(initialNotifyServerSettings &&
      settings.network.type === "WIFI" &&
      !settings.network.isDeviceAccessible){
     onClickRegisterButton(true);
   }
-  initialiNotifyServerSettings = false;
-
+  initialNotifyServerSettings = false;
 };
 
 var onNotifyServerSettingsOnBrowser = function(settings){
@@ -304,9 +317,12 @@ var checkCheckBox = function(checkbox,checked){
 };
 
 // read current device info.
-var onDeviceDetailPageOpen = function(nickname){
+//  if the device is added by iRemocon,device is not undefined.
+var onDeviceDetailPageOpen = function(nickname,device){
   $.mobile.changePage("#device_detail_page");
-  var device = kHAPI.findDeviceByNickname(nickname);
+  if(device === undefined){
+    device = kHAPI.findDeviceByNickname(nickname);
+  }
 
   var description = ("<big>{nickname}</big><br>" +
                      "Type {deviceName} <br>" +
@@ -423,10 +439,11 @@ var makeDeviceRemocon = function(nickname){
     return "<input type='button' onclick='{func}' value='{text}' />"
       .format({func:func,text:text});
   };
-  var makeButton = function(nickname,prop,val,text){
-    return "<input type='button' onclick='{func}' value='{text}' />"
-      .format({func:makeSetFunction(nickname,prop,val),text:text});
-  };
+  //var makeButton = function(nickname,prop,val,text){
+  //  return "<input type='button' onclick='{func}' value='{text}' />"
+  //    .format({func:makeSetFunction(nickname,prop,val),text:text});
+  //
+  //};
 
   var makeECHONETLiteDeviceRemocon = function(device){
     var makeSetFunction = function(nickname,prop,val){
@@ -478,7 +495,7 @@ var onAppSettingPageOpen = function(index){
                       image:manifest.icon
                      });
 
-  var matching_html = "";
+  var matching_html = (manifest.devices.length>0?"<big>Associate devices for this app.</big><br>":"");
   var select_prefix = "device_choice";
   var selected_values = [];
   for(var i=0;i<manifest.devices.length;i++){
@@ -500,7 +517,7 @@ var onAppSettingPageOpen = function(index){
     var selected_value = "none";
     for(var j=0;j<real_devices.length;j++){
       var rv = real_devices[j];
-      if(rv.deviceType === dev.deviceType){
+      if(rv.deviceType === dev.deviceType && rv.protocol === dev.protocol && rv.active === true){
         output += template_option.format({value:rv.nickname,
                                           text:escapeHTML(rv.nickname)});
         if(rv.nickname === dev.assignedDevName){
@@ -527,7 +544,6 @@ var onAppSettingPageOpen = function(index){
       return function(event,ui){
         // can overwrite?
         manifests[manifest_index].devices[index].assignedDevName = $(this).val();
-        console.log(event);
         kHAPI.addManifest(manifests[manifest_index]);
       };};
     $("*[name=" + select_prefix + i + "]").bind( "change",changed_generator(index,i));
@@ -654,10 +670,10 @@ var getImageUrl = function(device){
 function queryDevStatusForIcon( nickname , varHash){
   var d ;
   if( typeof nickname === 'string' ){
-	d = kHAPI.findDeviceByNickname(nickname) ;
+    d = kHAPI.findDeviceByNickname(nickname) ;
   } else {
-	d = nickname ;
-	nickname = d.nickname ;
+    d = nickname ;
+    nickname = d.nickname ;
   }
   var id = getNicknameHash(nickname);
   if(d.isEmulation===true) {
@@ -665,13 +681,13 @@ function queryDevStatusForIcon( nickname , varHash){
   }
 
   function setIcon( propName , cbFunc ){
-	if( typeof varHash === 'object' && varHash[propName] !== undefined )
-		cbFunc( varHash[propName] ) ;
-	else
-		kHAPI.get( [nickname,propName] , function(ret,success){
-			if( !success || ret.property[0].value === undefined ) return ;
-			cbFunc(ret.property[0].value) ;
-		} ) ;
+    if( typeof varHash === 'object' && varHash[propName] !== undefined )
+      cbFunc( varHash[propName] ) ;
+    else
+      kHAPI.get( [nickname,propName] , function(ret,success){
+        if( !success || ret.property[0].value === undefined ) return ;
+        cbFunc(ret.property[0].value) ;
+      } ) ;
   } ;
 
   if( d.protocol === 'ECHONET Lite' ){
@@ -681,17 +697,17 @@ function queryDevStatusForIcon( nickname , varHash){
     if( dtNum == 0x0287 ){
       // Instaneous watts
       if(d.isEmulation !== true){
-	setIcon('0xc6',function(newval){
-		var watts = echoByteArrayToInt(newval) ;
-		$('#devIconBottomTxt'+id).html(watts+'W') ;
-	}) ;
+        setIcon('0xc6',function(newval){
+          var watts = echoByteArrayToInt(newval) ;
+          $('#devIconBottomTxt'+id).html(watts+'W') ;
+        }) ;
       }
     } else if( dtNum == 0x0130 ){   // Aircon
       // Temperature
       setIcon( '0xb3',function(newval){
-	  var cTS = newval[0] ;
-	  if( cTS >= 0x80 ) cTS = cTS-0x100 ;
-          $('#statusDivTxtArea'+id).html('  '+cTS+' deg C') ;
+        var cTS = newval[0] ;
+        if( cTS >= 0x80 ) cTS = cTS-0x100 ;
+        $('#statusDivTxtArea'+id).html('  '+cTS+' deg C') ;
       }) ;
 
       if( d.isEmulation !== true && typeof d.powersensor === 'string' ){
@@ -715,15 +731,15 @@ function queryDevStatusForIcon( nickname , varHash){
       }
     } else if( dtNum == 0x0011 ){   // Temperature
       // Temperature
-	setIcon('0xe0',function(newval){
-          var temp = getTempFromECHONETLite2ByteArray(newval) ;
-          $('#statusDivTxtArea'+id).html('  '+temp+' deg C') ;
-	}) ;
+      setIcon('0xe0',function(newval){
+        var temp = getTempFromECHONETLite2ByteArray(newval) ;
+        $('#statusDivTxtArea'+id).html('  '+temp+' deg C') ;
+      }) ;
     } else if( dtNum == 0x0012 ){   // Humidity
       // Humidity
-	setIcon('0xe0',function(newval){
-          $('#statusDivTxtArea'+id).html('  '+newval[0]+' %') ;
-	}) ;
+      setIcon('0xe0',function(newval){
+        $('#statusDivTxtArea'+id).html('  '+newval[0]+' %') ;
+      }) ;
     } else if( (0 < dtNum && dtNum <= 0x000b)              // Gas sensor to Air polution sensor
                || ( 0x000e <= dtNum && dtNum <= 0x0010)    // Sound, Posting, Weight
                || ( 0x0013 <= dtNum && dtNum <= 0x001a)    // Rain to Smoke
@@ -733,23 +749,23 @@ function queryDevStatusForIcon( nickname , varHash){
                || ( 0x0028 <= dtNum && dtNum <= 0x0029)    // Floor, Openclose
                || ( 0x002c == dtNum )                      // Snow
              ){
-		setIcon('0xb1',function(newval){
-                   $('#statusDivTxtArea'+id).html('  '+(newval[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
-		}) ;
+               setIcon('0xb1',function(newval){
+                 $('#statusDivTxtArea'+id).html('  '+(newval[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
+               }) ;
              } else if( dtNum == 0x0262 ){   // Curtain
                // Curtain open/close
-		setIcon('0xe0',function(newval){
+               setIcon('0xe0',function(newval){
                    $('#devIconImg'+id)[0].onload = undefined ;
 
                    if( newval[0] == 0x41 ) // Open
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262-open.png' ;
                    else if( newval[0] == 0x42 ) // Closed
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0262.png' ;
-		}) ;
+               }) ;
 
              } else if( dtNum == 0x0290 ){   // Light
                // Power
-		setIcon('0x80',function(newval){
+               setIcon('0x80',function(newval){
                    $('#devIconImg'+id)[0].onload = undefined ;
                    if( newval[0] == 48 ){
                      $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
@@ -757,20 +773,20 @@ function queryDevStatusForIcon( nickname , varHash){
                    } else if( newval[0] == 49 ){
                      $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
                      $('#devIconImg'+id)[0].src = 'index_res/icons/0x0290.png' ;
-		   }
-		}) ;
+                   }
+               }) ;
 
                bCheckPower = false ;
              }
 
     if(bCheckPower){
       // Power
-	setIcon('0x80',function(newval){
+      setIcon('0x80',function(newval){
           if( newval[0] == 48 )
             $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOn.png' ;
           else if( newval[0] == 49 )
             $('#statusPowerImg'+id)[0].src = 'index_res/icons/PowerOff.png' ;
-	}) ;
+      }) ;
     }
 
 
@@ -789,13 +805,13 @@ var onDeviceIconClick = function(nickname){
       // Curtain open/close
       kHAPI.get([nickname,'0xe0'],function(ret,success){
         if(success == true && ret.property[0].value !== undefined)
-		newVal = [ret.property[0].value[0] == 0x41?0x42:0x41] ;
-	else	newVal = [0x41] ;
+          newVal = [ret.property[0].value[0] == 0x41?0x42:0x41] ;
+        else newVal = [0x41] ;
 
-	kHAPI.set([nickname,['0xe0',newVal]],
-                     function(){
-			queryDevStatusForIcon(d,{'0xe0':newVal}) ;
-                     }) ;
+        kHAPI.set([nickname,['0xe0',newVal]],
+              function(){
+                queryDevStatusForIcon(d,{'0xe0':newVal}) ;
+              }) ;
       }) ;
       return ;
     } else if(d.deviceType === '0x0130'){     // Aircon
@@ -808,36 +824,45 @@ var onDeviceIconClick = function(nickname){
   if( bTogglePower ){
     // Power
     kHAPI.get([nickname,'0x80'],function(ret,success){
-	if(success == true && ret.property[0].value !== undefined )
-		newVal = [ret.property[0].value[0] == 48?49:48] ;
-	else	newVal = [48] ;
+      if(success == true && ret.property[0].value !== undefined )
+        newVal = [ret.property[0].value[0] == 48?49:48] ;
+      else newVal = [48] ;
 
-	kHAPI.set([nickname,['0x80',newVal]]
-                    ,function(){
-			queryDevStatusForIcon(d,{'0x80':newVal}) ;
-                    });
+      kHAPI.set([nickname,['0x80',newVal]]
+                ,function(){
+                  queryDevStatusForIcon(d,{'0x80':newVal}) ;
+                });
     });
   } else{
-	queryDevStatusForIcon(d) ;
-	//toast('No function is assigned.') ;
+    queryDevStatusForIcon(d) ;
+    //toast('No function is assigned.') ;
   }
 };
 
-var areYouSure = function(big,small,yestext,notext,callback){
+var areYouSure = function(big,small,yestext,notext,yescallback,nocallback){
   $("#sure .big-message").text(escapeHTML(big));
   $("#sure .small-message").text(escapeHTML(small));
-  $("#sure .no .ui-btn-text").text(escapeHTML(notext));
   $("#sure .sure-do .ui-btn-text").text(escapeHTML(yestext));
-  $("#sure .sure-do").unbind('click') ;
-  $("#sure .sure-do").click(function() {
-    callback();
+  $("#sure .no .ui-btn-text").text(escapeHTML(notext));
+  $("#sure .sure-do").unbind("click");
+  $("#sure .no").unbind("click");
+
+  $("#sure .sure-do").click(function(){
+    if(yescallback !== undefined){
+      yescallback();
+    }
     $(this).off("click.sure");
+  });
+  $("#sure .no").click(function(){
+    if(nocallback !== undefined){
+      nocallback();
+    }
+    $(this).off("click.no");
   });
   $.mobile.changePage("#sure",{transition:"slidedown"});
 };
 
-// TODO do not use Japanese in hash.
-//   ID and NAME tokens must begin with a letter ([A-Za-z])
+//ID and NAME tokens must begin with a letter ([A-Za-z])
 //     and may be followed by any number of letters,
 // digits ([0-9]), hyphens ("-"), underscores ("_"), colons (":"), and periods (".").
 // http://www.w3.org/TR/REC-html40/types.html#type-name
@@ -888,11 +913,13 @@ var escapeHTML = function(string){
     "'": '&#x27;',
     '/': '&#x2F;'
   };
-
+  
   // Regex containing the keys listed immediately above.
   var htmlEscaper = /[&<>"'\/]/g;
 
-  return ('' + string).replace(htmlEscaper, function(match) {
-    return htmlEscapes[match];
-  });
+  return ('' + string)
+	.split('<br>').join('%%_BR_%%')
+	.replace(htmlEscaper, function(match) { return htmlEscapes[match]; })
+	.split('%%_BR_%%').join('<br>')
+	;
 };

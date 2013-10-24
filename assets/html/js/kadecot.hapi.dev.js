@@ -124,7 +124,7 @@ kHAPI.dev = {
 		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true,"isRemote":false,"deviceName":"ECHOTemperatureSensor","isLoggable":false,"nickname":"TemperatureSensor_Emu","deviceType":"0x0011"
 		   ,"access":{
 			 "0x80":[0x30] // 0x30:On , 0x31:Off
-			 ,"0xe0":[0,180] //18 degree
+			 ,"0xe0":[0,160] //16 degree
 		    }
 		}
 	]

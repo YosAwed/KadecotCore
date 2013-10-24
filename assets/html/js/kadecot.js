@@ -234,7 +234,6 @@ var kadecot = {
     init : function( manif ,init_callback ){
       if( this.isInited !== undefined ){ console.log('Cannot initialize twice.') ; return false; }
       var wa = kadecot._wa ; // === this
-
       wa.isOnAndroid = ( 'MyPageCall' in window ) ;
 
       wa.manif = manif ;
@@ -291,9 +290,9 @@ var kadecot = {
     }
     , postMsgToMyPage : function( methodName,argsarray,key ){
 	var msgToPost = JSON.stringify( {'method':methodName , 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } );
-        if( kadecot._wa.isOnAndroid )
+        if( kadecot._wa.isOnAndroid ){
 		MyPageCall.postMessage(msgToPost) ;
-	else {
+	} else {
 		//console.log('postMsgToMyPage : '+JSON.stringify( {'method':methodName , 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } )) ;
 		this.myPageWnd.postMessage( msgToPost
 		,kadecot.myPageURL.substring(0 , kadecot.myPageURL.lastIndexOf('/')+1)) ;

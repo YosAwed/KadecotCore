@@ -273,6 +273,7 @@ kHAPI.app = {
 							getcalls.push( function(){
 								kHAPI.get( [rd.nickname,_prop] , function(result,success){
 									if(!success){
+										ao[d.name][d_access_prop.name] = null ;
 										if( --get_total==0 )
 											kHAPI.app.postMsgToApp( 'onMyPageConnected',[ao] ) ;
 										return ;
@@ -290,7 +291,7 @@ kHAPI.app = {
 											result = echoByteArrayToInt(result) ;
 									}
 
-									ao[d.name][varname] = result ;
+									ao[d.name][varname] = (result===undefined?null:result) ;
 
 									if( --get_total == 0 ){
 										kHAPI.app.postMsgToApp( 'onMyPageConnected',[ao] ) ;
