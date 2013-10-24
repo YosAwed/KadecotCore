@@ -281,10 +281,6 @@ public class DeviceManager {
 	}
 	
 	public synchronized Response deleteDeviceData(JSONArray params) {
-		final Thread current = Thread.currentThread();
-		if(current.isInterrupted()) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "timeout");
-		}
 		if(params == null || params.length() < 1) {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
 		}
