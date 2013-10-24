@@ -78,11 +78,11 @@ public class DeviceManager {
 		return mStarted;
 	}
 	
-	public void refreshList() {
+	public void refreshList(int permissionLevel) {
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.refreshDeviceList();
 		}
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		Notification.informAllOnUpdateList(mContext);
 	}
 
 	public void deleteAllDeviceData() {
@@ -94,11 +94,22 @@ public class DeviceManager {
 		if(started) {
 			start();
 		}
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		Notification.informAllOnUpdateList(mContext);
 
 	}
 	
-	public boolean isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
+	/**
+	 * clientPermission が 0 なら 全ての操作を許可
+	 *                    1 なら 一部の操作の許可
+	 * protocolPermission が 0 なら 一部のClientのみ許可
+	 *                       1 なら 全部のClientを許可
+	 * clientPermission : {0,1}
+	 * protocolPermission : {0,1}
+	 * @param clientPermissionLevel
+	 * @param protocolPermissionLevel
+	 * @return
+	 */
+	public static boolean isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
 		return (clientPermissionLevel <= protocolPermissionLevel);
 	}
 	
@@ -270,10 +281,6 @@ public class DeviceManager {
 	}
 	
 	public synchronized Response deleteDeviceData(JSONArray params) {
-		final Thread current = Thread.currentThread();
-		if(current.isInterrupted()) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "timeout");
-		}
 		if(params == null || params.length() < 1) {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
 		}
@@ -293,9 +300,10 @@ public class DeviceManager {
 		
 		JSONObject result = protocol.deleteDeviceData(data.deviceId);
 
-		mDeviceDatabase.deleteDeviceData(data.deviceId);
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
-		
+		boolean b = mDeviceDatabase.deleteDeviceData(data.deviceId);
+		if(b) {
+			Notification.informAllOnDeviceDeleted(nickname, protocol.getAllowedPermissionLevel());
+		}
 		if(result != null && !result.isNull("code")) {
 			// error
 			return new ErrorResponse(result);
@@ -304,7 +312,7 @@ public class DeviceManager {
 		}
 	}
 	
-	public synchronized Response deleteInactiveDevices() {
+	public synchronized Response deleteInactiveDevices(int permissionLevel) {
 
 		List<DeviceData> dataList = mDeviceDatabase.getDeviceDataList();
 		for(DeviceData data : dataList) {
@@ -318,7 +326,7 @@ public class DeviceManager {
 				}
 			}
 		}
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		Notification.informAllOnUpdateList(mContext);
 		return new Response(null);
 	}
 	
@@ -345,7 +353,8 @@ public class DeviceManager {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
 		}
 		boolean result = mDeviceDatabase.update(oldNickname, newNickname);
-		KadecotCall.informAll(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
+		Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol.getAllowedPermissionLevel());
 		if(result) {
 			return new Response(null);
 		} else {
@@ -372,7 +381,7 @@ public class DeviceManager {
 				array.put(prop);
 			}
 			obj.put("property", array);
-			KadecotCall.informAll(Notification.ON_PROPERTY_CHANGED, Notification.onPropertyChanged(obj));
+			Notification.informAllOnPropertyChanged(obj, 1);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

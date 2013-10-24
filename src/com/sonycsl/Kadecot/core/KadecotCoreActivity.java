@@ -82,7 +82,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		startService(intent);
 		//bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
 		
-		mKadecotCall = new KadecotCall(this, new RequestProcessor(this, 0), new NotificationProcessor(this, 0)) {
+		mKadecotCall = new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(this, 0)) {
 			@Override
 			public void send(JSONObject obj) {
 

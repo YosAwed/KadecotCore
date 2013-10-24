@@ -10,6 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sonycsl.Kadecot.device.DeviceManager;
+
 import android.content.Context;
 
 public abstract class KadecotCall {
@@ -27,10 +29,13 @@ public abstract class KadecotCall {
 	
 	private final static long REQUEST_TIMEOUT = 1000*60*5;
 	
-	public KadecotCall(Context context, RequestProcessor request, NotificationProcessor notification) {
+	private final int mPermissionLevel;
+	
+	public KadecotCall(Context context, int permissionLevel, RequestProcessor request, NotificationProcessor notification) {
 		mContext = context.getApplicationContext();
 		mRequestProcessor = request;
 		mNotificationProcessor = notification;
+		mPermissionLevel = permissionLevel;
 		
 	}
 	public abstract void send(JSONObject obj);
@@ -211,8 +216,8 @@ public abstract class KadecotCall {
 		// onNotifyServerSettings
 		// onDeviceFound
 		mKadecotCalls.add(this);
-		this.sendNotification(Notification.ON_NOTIFY_SERVER_SETTINGS, Notification.onNotifyServerSettings(mContext));
-		this.sendNotification(Notification.ON_DEVICE_FOUND, Notification.onDeviceFound());
+		this.sendNotification(Notification.ON_NOTIFY_SERVER_SETTINGS, Notification.getParamsOnNotifyServerSettings(mContext));
+		this.sendNotification(Notification.ON_UPDATE_LIST, Notification.getParamsOnUpdateList(mContext, mPermissionLevel));
 
 	}
 	
@@ -220,10 +225,26 @@ public abstract class KadecotCall {
 		mKadecotCalls.remove(this);
 	}
 	
-	public static void informAll(final String method, final JSONArray params) {
+	protected static void informAll(final String method, final JSONArray params) {
 		for(KadecotCall kc : mKadecotCalls) {
 			kc.sendNotification(method, params);
 		}
+	}
+	
+	public int getPermissionLevel() {
+		return mPermissionLevel;
+	}
+	
+	protected static void informAll(final String method, final JSONArray params, int protocolPermissionLevel) {
+		for(KadecotCall kc : mKadecotCalls) {
+			if(DeviceManager.isAllowedPermission(kc.getPermissionLevel(), protocolPermissionLevel)) {
+				kc.sendNotification(method, params);
+			}
+		}
+	}
+	
+	protected static HashSet<KadecotCall> getKadecotCalls() {
+		return mKadecotCalls;
 	}
 	
 
