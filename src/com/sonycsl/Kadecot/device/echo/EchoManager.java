@@ -278,8 +278,8 @@ public class EchoManager implements DeviceProtocol {
 		if(data == null) {
 			return new JSONObject();
 		}
-		mEchoDeviceDatabase.deleteDeviceData(deviceId);
 		mEchoDiscovery.removeActiveDevices(deviceId);
+		mEchoDeviceDatabase.deleteDeviceData(deviceId);
 		
 		if(data.parentId == null) {
 			return new JSONObject();
