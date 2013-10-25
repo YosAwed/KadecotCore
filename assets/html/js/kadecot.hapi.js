@@ -43,15 +43,11 @@ var kHAPI = {
 				,'queryLog'
 			] ;
 
-			// kHAPI.onDevListUpdated() is called
-			//	when updated with new devices as the argument
-			kHAPI.updateDevList = function(args){
-				this.net.callServerFunc( 'list',undefined,function(re){
-					kHAPI.onDevListUpdated(
-						kHAPI.dev.setUpdatedDevices( re,true )
-					) ;
-				} ) ;
+
+			kHAPI.reqDevListHandlers_onUpdateList = function(){
+				kHAPI.devListHandlers.onUpdateList( kHAPI.dev.devices ) ;
 			} ;
+
 			kHAPI.findDeviceByNickname = function(nickname){
 				return kHAPI.dev.findDeviceByNickname(nickname) ;
 			} ;
@@ -151,6 +147,9 @@ var kHAPI = {
 			}
 		} ;
 
+		init_real.call(kHAPI);
+
+		/*
 		// Pre-include js required files.
 		var incfiles = [ 'net','dev','app','local'] ;
 		var incfilenum = incfiles.length ;
@@ -160,8 +159,30 @@ var kHAPI = {
 			,function(){ if(--incfilenum === 0 ){init_real.call(kHAPI); }} );
 		}
 		$.ajaxSetup({async: true});
+		*/
+	},
+	// http://www.echonet.gr.jp/spec/pdf_spec_app_c/SpecAppendixC.pdf
+	//	tested with example.Return value is sorted.
+	//	 remember,0x9E is getgetPropertyMap,0x9F is getsetPropertyMap
+	propertyMapToProperties : function(map){
+		if(map === null || map.length == 0) return [];
+		var len = map[0];
+		var ret = [];
+		if(len < 16){
+			for(var i=1;i<map.length;i++){
+				ret.push(map[i]);
+			}
+		}else{
+			for(var high=8;high<16;high++){
+				for(var low=0;low<16;low++){
+					if((map[low+1] >> (high-8)) & 1){
+						ret.push((high << 4) + low);
+					}
+				}
+			}
+		}
+		return ret;
 	}
-
 	, isConnected : function(){
 		return this.isOnAndroid || (kHAPI.net.WS.serverConnection !== undefined);
 	}
@@ -179,10 +200,6 @@ var kHAPI = {
 	, onServerDisconnected : function(){
 		console.log('Server disconnected') ;
 	}
-	// devices === false if none updated.
-	, onDevListUpdated : function(devices){
-		// var devs = kHAPI.dev.devices ;
-	}
 	, onPropertyChanged : function( arg ){
 		// Propertyの変更通知
 	}
@@ -194,5 +211,26 @@ var kHAPI = {
 		//	 jsonp : true
 		//	 websocket: true
 		//	 persistence: true // persistence
+	}
+
+	// Devices list modifications
+	// devices === false if none updated.
+	// Called whenever device list is changed.
+	/*, onDevListUpdated : function(devices){
+		// var devs = kHAPI.dev.devices ;
+	}*/
+
+	, devListHandlers : {
+		onUpdateList : function(newlist){
+		}
+		,onDeviceFound : function( newdevice , newlist ){
+			kHAPI.devListHandlers.onUpdateList(newlist) ;
+		}
+		,onDeviceDeleted : function( delNickname , newlist ){
+			kHAPI.devListHandlers.onUpdateList(newlist) ;
+		}
+		,onNicknameChanged : function( oldnickname , newnickname , newlist ){
+			kHAPI.devListHandlers.onUpdateList(newlist) ;
+		}
 	}
 } ;

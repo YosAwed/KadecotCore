@@ -5,7 +5,7 @@
 
 kHAPI.dev = {
 	init : function(){
-		this.setUpdatedDevices([]) ;
+		this.setDevicesList() ;
 	}
 	,devices:[]
 
@@ -29,25 +29,51 @@ kHAPI.dev = {
 		return ret ;
 	}
 
-	// returns false if no device is actually changed.
-	// Otherwise, new devices list is returned.
-	,setUpdatedDevices : function( newdev , bForceObtain){
+	,setDevicesList : function( newdev ){
 		if( newdev === undefined ) newdev = [];
-
-		// compare with cache
-		var newdev_str = JSON.stringify(newdev) ;
-		if( bForceObtain !== true && newdev_str === this.prevDeviceListStr ) return false ;
-		this.prevDeviceListStr = newdev_str ;
-
-		this.devices = (function(devarray){
+		this.devices = newdev.concat(this.emulation_devices) ;
+		this.sortDevices() ;
+		return this.devices ;
+	}
+	, addDevice : function( newdev ){
+		// check nickname duplication
+		for( var di=0 ; di<this.devices.length ; ++di ){
+			if( this.devices[di].nickname === newdev.nickname ){
+				this.devices[di] = newdev ;
+				return this.devices ;
+			}
+		}
+		this.devices.unshift(newdev) ;
+		this.sortDevices() ;
+		return this.devices ;
+	}
+	, removeDevice : function( nickname ){
+		for( var di=0 ; di<this.devices.length ; ++di ){
+			if( this.devices[di].nickname === nickname ){
+				this.devices = this.devices.slice(0,di).concat(this.devices.slice(di+1)) ;
+				return this.devices ;
+			}
+		}
+		return false ;
+	}
+	, changeNickname : function( oldnickname , newnickname ){
+		for( var di=0 ; di<this.devices.length ; ++di ){
+			if( this.devices[di].nickname === oldnickname ){
+				this.devices[di].nickname = newnickname ;
+				return this.devices ;
+			}
+		}
+		return false ;
+	}
+	, sortDevices : function(){
 			// Sorter function.
 			// Device list order :
 			// 1. ECHONET Lite devices
 			// 2. ECHONTE Lite sensors
 			// 3. Emulation devices
 			var r1=[],r2=[],r3=[];
-			for( var di=0;di<devarray.length;++di ){
-				var d = devarray[di] ;
+			for( var di=0;di<this.devices.length;++di ){
+				var d = this.devices[di] ;
 				var t = null ;
 				if(d.isEmulation === true)
 					t = r3 ;
@@ -63,9 +89,7 @@ kHAPI.dev = {
 				if( t === null ) continue ;
 				t.push(d) ;
 			}
-			return r1.concat(r2).concat(r3) ;
-		})(newdev.concat(this.emulation_devices)) ;
-		return this.devices ;
+			this.devices = r1.concat(r2).concat(r3) ;
 	}
 
 	,'emulation_devices':[

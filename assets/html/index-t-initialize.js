@@ -63,7 +63,7 @@ $(document).on("pagecreate",function(){
     kHAPI.onServerConnectionFailed= function(){
       toast("Failed to connect");
     };
-    kHAPI.onDevListUpdated = function(devs){
+    kHAPI.devListHandlers.onUpdateList = function(devs){
       if(!devlist_page_has_created || devs === false) return false;
       var device_list_view = $("#device_list_view");
       device_list_view.empty();
@@ -78,6 +78,20 @@ $(document).on("pagecreate",function(){
       device_list_view.listview().listview("refresh");
       return true;
     };
+
+
+    /*  // ToDo : update only necessary icons
+	kHAPI.devListHandlers.onNicknameChanged = function(oldnickname , newnickname , newlist){
+		//var id = getNicknameHash(oldnickname) ;
+		//queryDevStatusForIcon(oldnickname) ;
+	} ;
+	kHAPI.devListHandlers.onDeviceFound = function(newdevice , newlist){
+	} ;
+	kHAPI.devListHandlers.onDeviceDeleted = function(delNickname , newlist){
+	} ;
+    */
+
+
     kHAPI.onPropertyChanged = function(prop_change){
       if(isDeviceOnDetail(prop_change.nickname)){
         onPropertyChangedOnDetail(prop_change);
@@ -100,15 +114,14 @@ $(document).on("pagecreate",function(){
     } ;
 
 
-    kHAPI.updateDevList();
+    kHAPI.reqDevListHandlers_onUpdateList() ;
     kHAPI.readManifests(refreshManifests);
   });
 });
 
 $("#devlist_page").on("pageinit",function(){
   devlist_page_has_created = true;
-  if( typeof kHAPI.updateDevList === 'function' )
-	kHAPI.updateDevList();
+  kHAPI.reqDevListHandlers_onUpdateList() ;
 });
 $("#app_page").on("pageinit",function(){
   app_page_has_created = true;
@@ -340,9 +353,7 @@ var onDeviceDetailPageOpen = function(nickname,device){
   $("#device_description").html(description);
   $("#device_remocon").html(makeDeviceRemocon(nickname));
   $("#device_remocon").trigger("create");
-
   $("#nickname_input").val(escapeHTML(nickname));
-
   $("#nickname_button").unbind("click");
   $("#nickname_button").click(function() {
     var new_nickname = $("#nickname_input").val();
@@ -397,11 +408,6 @@ var onDeviceDetailPageOpen = function(nickname,device){
   $("#remove_device").click(function() {
     onClickRemoveDevice(nickname);
   });
-  $("#get_property_button").unbind("click");
-  $("#get_property_button").click(function(){
-    kHAPI.get([nickname,"0x9f"],undefined,function(data){
-    });
-  });
   $("#property_table_body").html("");
   if(device.protocol === 'ECHONET Lite'){
     var jsfnam = parseInt(device.deviceType).toString(16).toUpperCase() ;
@@ -419,19 +425,55 @@ var onDeviceDetailPageOpen = function(nickname,device){
             "</tr>");
       }
       onPropertyChangedOnDetail = function(prop_change){
-        var tr = $("#property_table tbody tr");
-        for(var i=0;i<tr.length;i++){
-          var cells = tr.eq(i).children();
-          var epc = cells.eq(0).text();
-          if(epc === prop_change.property){
-            cells.eq(3).text(prop_change.data);
-          }
-        }
+
       };
     }});
+    $("#get_property_button").unbind("click");
+    $("#get_property_button").click(function(){
+      // get get property.
+      kHAPI.get([nickname,"0x9f"],function(data){
+        var table = kHAPI.propertyMapToProperties(data.property[0].value);
+        var send = table.slice(0);
+        send.unshift(nickname);
+        kHAPI.get(send,function(data){
+          for(var j=0;j<data.property.length;j++){
+            var tr = $("#property_table tbody tr");
+            for(var i=0;i<tr.length;i++){
+              var cells = tr.eq(i).children();
+              var epc = cells.eq(0).text();
+              if(epc === data.property[j].name && data.property[j].value !== undefined){
+                cells.eq(3).text(data.property[j].value.map(
+                  function(x){
+                    var s = x.toString(16);
+                    while(s.length < 2) s = "0" + s;
+                    return "0x" + s;
+                  }));
+              }
+            }
+          }
+        });
+      });
+    });
   }
 };
 
+var deviceRemocons = {
+  // Aircon http://www.survivingnjapan.com/2012/07/use-air-conditioner-japan.html
+  "0x0130":[{epc:"0x80",edt:[0x30],text:"PowerOn"},
+            {epc:"0x80",edt:[0x31],text:"PowerOff"},
+            {epc:"0xB0",edt:[0x41],text:"Auto mode"},
+            {epc:"0xB0",edt:[0x42],text:"Cool mode"},
+            {epc:"0xB0",edt:[0x43],text:"Heat mode"},
+            {epc:"0xB0",edt:[0x44],text:"Dehumidify mode"}
+            ],
+
+  // GeneralLighting
+  "0x0290":[{epc:"0x80",edt:[0x30],text:"PowerOn"},
+            {epc:"0x80",edt:[0x31],text:"PowerOff"}],
+  // curtain
+  "0x0262":[{epc:"0xe0",edt:[0x41],text:"Open"},
+            {epc:"0xe0",edt:[0x42],text:"Close"}]
+};
 var makeDeviceRemocon = function(nickname){
   // helper function. prop is string,val is list.
 
@@ -439,11 +481,6 @@ var makeDeviceRemocon = function(nickname){
     return "<input type='button' onclick='{func}' value='{text}' />"
       .format({func:func,text:text});
   };
-  //var makeButton = function(nickname,prop,val,text){
-  //  return "<input type='button' onclick='{func}' value='{text}' />"
-  //    .format({func:makeSetFunction(nickname,prop,val),text:text});
-  //
-  //};
 
   var makeECHONETLiteDeviceRemocon = function(device){
     var makeSetFunction = function(nickname,prop,val){
@@ -454,19 +491,11 @@ var makeDeviceRemocon = function(nickname){
       return makeButton(text,makeSetFunction(nickname,prop,val));
     };
     var ret = "";
-    if(device.deviceType === "0x0290"){
-      // console.log("generallighting");
-      ret += makeSetButton(device.nickname,"0x80",[0x30],"PowerON");
-      ret += makeSetButton(device.nickname,"0x80",[0x31],"PowerOFF");
-    }else if(device.deviceType === "0x0130"){
-      // console.log("aircon");
-      ret += makeSetButton(device.nickname,"0x80",[0x30],"PowerON");
-      ret += makeSetButton(device.nickname,"0x80",[0x31],"PowerOFF");
-    }else if(device.deviceType === "0x0262"){
-      // console.log("curtain");
-      ret += makeSetButton(device.nickname,"0xe0",[0x41],"Open");
-      ret += makeSetButton(device.nickname,"0xe0",[0x42],"Close");
-    }else{
+    if(device.deviceType in deviceRemocons){
+      var re = deviceRemocons[device.deviceType];
+      for(var i=0;i<re.length;i++){
+        ret += makeSetButton(device.nickname,re[i].epc,re[i].edt,re[i].text);
+      }
     }
     return ret;
   };

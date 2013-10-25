@@ -40,9 +40,9 @@ myPageURL = myPageURL.substring(0,myPageURL.lastIndexOf('/')+1) ;
 
 // (unsigned) byte array to int
 function echoByteArrayToInt(b){
-  var ret = 0 ;
-  for( var bi=0;bi<b.length;++bi ) ret = (ret<<8)|(b[bi]&0xff) ;
-  return ret ;
+	var ret = 0 ;
+	for( var bi=0;bi<b.length;++bi ) ret = (ret<<8)|(b[bi]&0xff) ;
+	return ret ;
 }
 
 function intToEchoByteArray(bint,siz){
@@ -65,6 +65,16 @@ function TwoByteArrayFromECHONETLiteTemp(ti){
 	return intToEchoByteArray(ti,2) ;
 }
 
+var manifest_tag = "local_storage_manifest";
+function getSavedManifest(){
+	var ret = window.localStorage.getItem(manifest_tag);
+	if(ret == null) return [];
+	return JSON.parse(ret);
+};
+function setSavedManifest(lis){
+	window.localStorage.setItem(manifest_tag,JSON.stringify(lis));
+};
+
 kHAPI.app = {
 	'init' : function(){
 		//var bnum = 0 ;
@@ -75,8 +85,7 @@ kHAPI.app = {
 				kHAPI.app.onMsgFromApp = function(origin , json_rpc){
 					//console.log( 'message by addEventListener_message : ' + JSON.stringify(arguments) ) ;
 					//console.log( 'json_rpc : ' + JSON.stringify(json_rpc) ) ;
-
-				        // クライアントアプリからの全てのメソッド呼び出しのルート
+					// クライアントアプリからの全てのメソッド呼び出しのルート
 					if( json_rpc.method === 'getsetValue' ){
 						var vnm = kHAPI.app.running.manifest.varNameMap[json_rpc.params[0]][json_rpc.params[1]] ;
 						var option = vnm[2] ;
@@ -143,7 +152,7 @@ kHAPI.app = {
 						JSON.stringify( {'method':'onMyPageReady','params':null,'id':-1 } ) ,'*') ;
 				}
 			}
-		) ;
+		);
 	}
 	// if src is with :// , it is absolute, refPath is not used.
 	// otherwise, src is relative. add newPath's path as the prefix.
@@ -151,7 +160,6 @@ kHAPI.app = {
 		if( src.indexOf('://')!==-1 )	return src ;
 		return refPath.substring( 0,refPath.lastIndexOf('/')+1 ) + src ;
 	}
-
 	, postMsgToApp : function( methodName,args,key ){
 		var msgToPost = JSON.stringify( {'method':methodName , 'params':(args instanceof Array ? args : null),'id':key } ) ;
 		if( kHAPI.isOnAndroid ){
@@ -161,8 +169,6 @@ kHAPI.app = {
 			this.running.win.postMessage(msgToPost	, this.running.origin) ;
 		}
 	}
-
-
 	, readManifests : function( callback ){
 		function onReadManifs(manifs_dat){
 			var mfs = manifs_dat ;
@@ -205,7 +211,10 @@ kHAPI.app = {
 					}
 				}
 				kHAPI.app._manifests.push(mfs);
-			} ;
+				var s = getSavedManifest();
+				s.push(manifs_dat);
+				setSavedManifest(s);
+			};
 		}
 		// if( emulation )
 		onReadManifs(kHAPI.app._manifests) ;
@@ -271,6 +280,8 @@ kHAPI.app = {
 								(option === undefined
 								? [rd.nickname,_prop] : [rd.nickname,_prop,option] ) ;
 							getcalls.push( function(){
+
+
 								kHAPI.get( [rd.nickname,_prop] , function(result,success){
 									if(!success){
 										ao[d.name][d_access_prop.name] = null ;
@@ -361,7 +372,7 @@ kHAPI.app = {
 						return ;	// No need to tell.
 					for( var pi=0;pi<info.property.length;++pi ){
 						var prop = info.property[pi] ;
-						var propname = prop.name
+						var propname = prop.name ;
 						var newval = prop.value ;
 
 						kHAPI.app.postMsgToApp(
@@ -382,7 +393,7 @@ kHAPI.app = {
 	}
 
 
-	, appAPI : {	// this = kHAPI.app
+	, appAPI : { // this = kHAPI.app
 		'reqMyPageConnected' : function(origin,manif){	// appがinitを呼んだら呼び出される。
 			this.postOnMyPageConnected(
 				JSON.parse(manif),undefined, origin ) ;
@@ -392,4 +403,4 @@ kHAPI.app = {
 				this.running.cleanup(winclose) ;
 		}
 	}
-} ;
+};

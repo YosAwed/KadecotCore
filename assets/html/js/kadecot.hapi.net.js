@@ -103,9 +103,8 @@ kHAPI.net = {
 					this.serverConnection.close() ;
 					this.serverConnection = undefined ;
 				}
-				if( kHAPI.dev.setUpdatedDevices() ) {
-					kHAPI.onDevListUpdated([]) ;
-				}
+				kHAPI.net.ServerPredefinedReplies.onUpdateList([]) ;
+
 				function setupws(ws){
 					ws.onopen = function(){
 						_WS.serverConnection = ws ;
@@ -187,29 +186,21 @@ kHAPI.net.ServerPredefinedReplies = {
       kHAPI.net.info = settings;
 		kHAPI.onNotifyServerSettings(settings);
 	}
-	, onDeviceFound : function(d){
-		var spr = this.ServerPredefinedReplies ;
-		if( spr.prevOnDeviceFoundTime === undefined ){
-			spr.prevOnDeviceFoundTime = 0 ;
-			spr.onDeviceFoundListAccessTimerID = null ;
-		}
-
-		var INTERVAL = 2000 ;
-		var curTime = (new Date()).getTime() ;
-
-		if( curTime - spr.prevOnDeviceFoundTime > INTERVAL ){
-			spr.prevOnDeviceFoundTime = curTime ;
-			kHAPI.updateDevList() ;
-			return ;
-		}
-
-		if( spr.onDeviceFoundListAccessTimerID === null ){
-			spr.onDeviceFoundListAccessTimerID = setTimeout(function(){
-				spr.onDeviceFoundListAccessTimerID = null ;
-				spr.prevOnDeviceFoundTime = (new Date()).getTime() ;
-				kHAPI.updateDevList() ;
-			},INTERVAL - (curTime - spr.prevOnDeviceFoundTime)) ;
-		}
+	, onDeviceFound : function(args){
+		kHAPI.devListHandlers.onDeviceFound( args.params[0] , kHAPI.dev.addDevice(args.params[0]) ) ;
+	}
+	, onUpdateList : function(args){
+		kHAPI.devListHandlers.onUpdateList(
+			kHAPI.dev.setDevicesList( args.params ) ) ;
+	}
+	, onDeviceDeleted : function(args){
+console.log('onDevicedeleted : '+JSON.stringify(arguments)) ;
+		kHAPI.devListHandlers.onDeviceDeleted( args.params[0] , kHAPI.dev.removeDevice( args.params[0] ) ) ;
+	}
+	, onNicknameChanged : function( args ){
+		var oldnickname = args.params[0] , newnickname = args.params[1] ;
+		kHAPI.devListHandlers.onNicknameChanged(
+			oldnickname , newnickname , kHAPI.dev.changeNickname( oldnickname , newnickname ) ) ;
 	}
 	, onPropertyChanged : function(d) {
 		for(var i=0;i<d.params.length;i++){
@@ -222,9 +213,7 @@ kHAPI.net.ServerPredefinedReplies = {
 	// this is call by WS.close, or server wifi disconnection(WebView).
 	, onSystemPaused : function(){
 		this.info.isConnected = false ;
-		if( kHAPI.dev.setUpdatedDevices()) {// emulated devices only
-			kHAPI.onDevListUpdated([]) ;
-        }
+		kHAPI.net.ServerPredefinedReplies.onUpdateList([]) ;
 		kHAPI.onServerDisconnected() ;
 	}
 } ;

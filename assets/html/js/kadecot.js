@@ -262,7 +262,9 @@ var kadecot = {
 	}
       }
 
-      if( !wa.isOnAndroid )
+      if( wa.isOnAndroid ){
+		wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
+      } else {
 	window.addEventListener(
 		"message",function(e){ kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data)); }, false);
 

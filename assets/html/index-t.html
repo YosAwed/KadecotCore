@@ -35,7 +35,7 @@
         </ul>
       </div> <!-- content end -->
       <input type="button" value="updatedevice"
-             onclick="kHAPI.updateDevList();"></input>
+             onclick="kHAPI.refreshList();"></input>
     </div> <!-- device page end -->
 
     <!-- app page -->
@@ -194,7 +194,7 @@
     <!-- device detail page -->
     <div data-role="page" id="device_detail_page">
       <div data-role="header">
-        <a data-icon="back" class="ui-btn-left" data-rel="back" onclick="kHAPI.updateDevList();">Back</a>
+        <a data-icon="back" class="ui-btn-left" data-rel="back" onclick="kHAPI.reqDevListHandlers_onUpdateList();">Back</a>
         <h3>Detail</h3>
       </div>
       <!-- device detail content -->
@@ -269,6 +269,10 @@
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/jquery-mobile.js"></script>
     <script type="text/javascript" src="js/kadecot.hapi.js"></script>
+    <script type="text/javascript" src="js/kadecot.hapi.net.js"></script>
+    <script type="text/javascript" src="js/kadecot.hapi.dev.js"></script>
+    <script type="text/javascript" src="js/kadecot.hapi.app.js"></script>
+    <script type="text/javascript" src="js/kadecot.hapi.local.js"></script>
     <script type="text/javascript" src="index-t-initialize.js"></script>
   </body>
 </html>
