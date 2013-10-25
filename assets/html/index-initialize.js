@@ -64,7 +64,7 @@ $(document).on("pagecreate",function(){
       toast("Failed to connect");
     };
     kHAPI.devListHandlers.onUpdateList = function(devs){
-      if(!devlist_page_has_created || devs === false) return false;
+      if(!devlist_page_has_created || !(devs instanceof Array)) return false;
       var device_list_view = $("#device_list_view");
       device_list_view.empty();
 
@@ -563,7 +563,7 @@ var onAppPageOpen = function(index){
 var onAppSettingPageOpen = function(index){
   var manifest = manifests[index];
   var description = ("<img src='{image}'/>" +
-                     "<big>{appname}</big><br>" +
+                     "<font size=+4>{appname}</font><br>" +
                      "{subtitle} <br><hr>" +
                       "{descript}").format({
                        appname:escapeHTML(manifest.title),

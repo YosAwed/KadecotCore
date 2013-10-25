@@ -197,9 +197,8 @@ kHAPI.net.ServerPredefinedReplies = {
 		kHAPI.devListHandlers.onUpdateList( kHAPI.dev.devices ) ;
 	}
 	, onDeviceDeleted : function(args){
-console.log('onDevicedeleted : '+JSON.stringify(arguments)) ;
 		kHAPI.dev.removeDevice( args.params[0] ) ;
-		kHAPI.devListHandlers.onDeviceDeleted( kHAPI.dev.devices ) ;
+		kHAPI.devListHandlers.onDeviceDeleted( args.params[0] , kHAPI.dev.devices ) ;
 	}
 	, onNicknameChanged : function( args ){
 		var oldnickname = args.params[0] , newnickname = args.params[1] ;
