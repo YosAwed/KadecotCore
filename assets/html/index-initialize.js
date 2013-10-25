@@ -80,12 +80,38 @@ $(document).on("pagecreate",function(){
     };
 
 
+	kHAPI.devListHandlers.onDeviceFound = function(newdevice , newlist){
+		if(!devlist_page_has_created || typeof newdevice !== 'object')
+			return kHAPI.devListHandlers.onUpdateList(newlist) ;
+
+		if(isControler(newdevice)) return false ;
+
+		var device_list_view = $("#device_list_view");
+
+		device_list_view.prepend(makeDeviceLi(newdevice));
+
+		device_list_view.listview().trigger("create");
+		device_list_view.listview().listview("refresh");
+
+		queryDevStatusForIcon( newdevice.nickname ) ;
+
+		return true;
+	} ;
+
+	kHAPI.devListHandlers.onDeviceActivated = function(newdevice , newlist){
+		if(!devlist_page_has_created || typeof newdevice !== 'object')
+			return kHAPI.devListHandlers.onUpdateList(newlist) ;
+
+		if(isControler(newdevice)) return false ;
+		queryDevStatusForIcon( newdevice.nickname ) ;
+		return true ;
+	} ;
+
+
     /*  // ToDo : update only necessary icons
 	kHAPI.devListHandlers.onNicknameChanged = function(oldnickname , newnickname , newlist){
 		//var id = getNicknameHash(oldnickname) ;
 		//queryDevStatusForIcon(oldnickname) ;
-	} ;
-	kHAPI.devListHandlers.onDeviceFound = function(newdevice , newlist){
 	} ;
 	kHAPI.devListHandlers.onDeviceDeleted = function(delNickname , newlist){
 	} ;
@@ -95,6 +121,8 @@ $(document).on("pagecreate",function(){
     kHAPI.onPropertyChanged = function(prop_change){
       if(isDeviceOnDetail(prop_change.nickname)){
         onPropertyChangedOnDetail(prop_change);
+      } else {
+		queryDevStatusForIcon( prop_change.nickname ) ;
       }
     };
 
@@ -208,7 +236,7 @@ var onClickRegisterButton = function(isFirstConfirm){
   if(isFirstConfirm === undefined) isFirstConfirm = false;
   var netInfo = kHAPI.getNetInfo();
   var isRegistered = netInfo.network.isDeviceAccessible;
-  var SSID = netInfo.network.SSID;
+  var SSID = netInfo.network.SSID.split('"').join('');
 
   if(!isRegistered){
     areYouSure("Register " + SSID + " as homenetwork?",
@@ -358,7 +386,6 @@ var onDeviceDetailPageOpen = function(nickname,device){
   $("#nickname_button").click(function() {
     var new_nickname = $("#nickname_input").val();
     onClickChangeNickname(nickname,new_nickname);
-    onDeviceDetailPageOpen(new_nickname);
   });
 
   // Power logger
@@ -398,7 +425,7 @@ var onDeviceDetailPageOpen = function(nickname,device){
       $("#device_power_logger").val(device.powersensor) ;
     }
     $("#device_power_logger").selectmenu('refresh',true) ;
-    $("#device_power_logger").bind('change',function(e,u){
+    $("#device_power_logger").unbind('change').bind('change',function(e,u){
       device.powersensor = (this.value === 'none' ? undefined : this.value) ;
     }) ;
   }
@@ -497,6 +524,27 @@ var makeDeviceRemocon = function(nickname){
         ret += makeSetButton(device.nickname,re[i].epc,re[i].edt,re[i].text);
       }
     }
+
+    var makeSetButtonIN = function(nickname,prop,val,text){
+      return makeButtonIN(text,makeSetFunction(nickname,prop,val));
+    };
+    if( device.deviceType === '0x0130' ){
+	ret += 'Temperature<br>' ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[18],'18C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[19],'19C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[20],'20C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[21],'21C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[22],'22C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[23],'23C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[24],'24C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[25],'25C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[26],'26C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[27],'27C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[28],'28C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[29],'29C') ;
+	ret += makeSetButtonIN(device.nickname,'0xb3',[30],'30C') ;
+    }
+
     return ret;
   };
 
@@ -590,6 +638,7 @@ var onClickChangeNickname = function(from,to){
 
 var onClickRemoveDevice = function(nickname){
   kHAPI.deleteDevice(nickname);
+  kHAPI.reqDevListHandlers_onUpdateList() ;
 };
 
 var onClickFullInitializeButton = function(){
@@ -942,7 +991,7 @@ var escapeHTML = function(string){
     "'": '&#x27;',
     '/': '&#x2F;'
   };
-  
+
   // Regex containing the keys listed immediately above.
   var htmlEscaper = /[&<>"'\/]/g;
 

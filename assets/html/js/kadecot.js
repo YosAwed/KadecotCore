@@ -392,6 +392,27 @@ var kadecot = {
 	, onMyPageReady : function(){
 		this.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(this.manif)] );
 	}
+	, showMessage : function( origin,msgStr ){
+		if( typeof msgStr !== 'string' || msgStr.length <= 0 ){
+			if( this.showMessageDiv !== undefined ){
+				this.showMessageDiv.parentNode.removeChild(this.showMessageDiv) ;
+				this.showMessageDiv = undefined ;
+			}
+			//console.log('Msg ed.') ;
+		} else {
+			var div = this.showMessageDiv ;
+			if( div == undefined ){
+				div = this.showMessageDiv = document.createElement('div');
+				div.style.position = 'absolute' ;
+				div.style.top = '0px' ;
+				div.style.left = '0px' ;
+				document.body.appendChild(div) ;
+				div.innerHTML = '' ;
+			}
+			div.innerHTML += msgStr+'<br>' ;
+			console.log(msgStr) ;
+		}
+	}
 
 	// Dummy function. overwritten in onMyPageConnected
 	, onPropertyChanged : function(){}

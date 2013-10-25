@@ -6,7 +6,7 @@
           content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Kadecot Home</title>
     <link rel="stylesheet" href="css/jquery-mobile.css" />
-    <link rel="stylesheet" href="css/index-t.css" />
+    <link rel="stylesheet" href="css/index.css" />
   </head>
 
   <body>
@@ -34,8 +34,10 @@
             class="gridify" data-inset="true">
         </ul>
       </div> <!-- content end -->
-      <input type="button" value="updatedevice"
+      <input type="button" value="Update"
              onclick="kHAPI.refreshList();"></input>
+      <input type="button" value="Delete all inactive devices"
+             onclick="kHAPI.deleteInactiveDevices();"></input>
     </div> <!-- device page end -->
 
     <!-- app page -->
@@ -273,6 +275,6 @@
     <script type="text/javascript" src="js/kadecot.hapi.dev.js"></script>
     <script type="text/javascript" src="js/kadecot.hapi.app.js"></script>
     <script type="text/javascript" src="js/kadecot.hapi.local.js"></script>
-    <script type="text/javascript" src="index-t-initialize.js"></script>
+    <script type="text/javascript" src="index-initialize.js"></script>
   </body>
 </html>

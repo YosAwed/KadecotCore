@@ -213,17 +213,13 @@ var kHAPI = {
 		//	 persistence: true // persistence
 	}
 
-	// Devices list modifications
-	// devices === false if none updated.
-	// Called whenever device list is changed.
-	/*, onDevListUpdated : function(devices){
-		// var devs = kHAPI.dev.devices ;
-	}*/
-
 	, devListHandlers : {
 		onUpdateList : function(newlist){
 		}
 		,onDeviceFound : function( newdevice , newlist ){
+			kHAPI.devListHandlers.onUpdateList(newlist) ;
+		}
+		,onDeviceActivated : function( newdevice , newlist ){
 			kHAPI.devListHandlers.onUpdateList(newlist) ;
 		}
 		,onDeviceDeleted : function( delNickname , newlist ){

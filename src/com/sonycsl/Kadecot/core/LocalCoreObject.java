@@ -28,6 +28,9 @@ public class LocalCoreObject {
 	public LocalCoreObject(KadecotCoreActivity kadecot) {
 		mKadecot = kadecot;
 	}
+	public void startKadecot(){
+		mKadecot.startKadecot() ;
+	}
 	public void openWebBrowser(final String url) {
 		mKadecot.runOnUiThread(new Runnable() {
 			@Override

@@ -174,10 +174,9 @@ kHAPI.app = {
 			var mfs = manifs_dat ;
 			kHAPI.app._manifests = mfs ;
 			callback(mfs) ;
-		}
+		};
 		if( kHAPI.app._manifests === undefined ){
 			kHAPI.app._manifests = {data:[
-
 				{
 					"url":"file:///android_asset/html/Apps/Test/index.html"
 					,"title":"テストアプリ"
@@ -239,7 +238,6 @@ kHAPI.app = {
 	, postOnMyPageConnected : function(manif,win,origin){
 		// manifest認証後に実際に開く。(ここでしか使わない)
 		function postMain(){
-
 			this.running.manifest = manif ;
 			if( win !== undefined )		this.running.win = win ;
 			if( origin !== undefined )	this.running.origin = origin ;
@@ -281,14 +279,19 @@ kHAPI.app = {
 								? [rd.nickname,_prop] : [rd.nickname,_prop,option] ) ;
 							getcalls.push( function(){
 
+								kHAPI.app.postMsgToApp( 'showMessage',['Accessing '+rd.nickname+' for '+_prop] ) ;
 
 								kHAPI.get( [rd.nickname,_prop] , function(result,success){
 									if(!success){
+										kHAPI.app.postMsgToApp( 'showMessage',['Failed : '+rd.nickname+'.'+_prop] ) ;
 										ao[d.name][d_access_prop.name] = null ;
-										if( --get_total==0 )
+										if( --get_total==0 ){
+											kHAPI.app.postMsgToApp( 'showMessage',[] ) ;
 											kHAPI.app.postMsgToApp( 'onMyPageConnected',[ao] ) ;
+										}
 										return ;
 									}
+									kHAPI.app.postMsgToApp( 'showMessage',[rd.nickname+'.'+_prop+' successfully obtained'] ) ;
 
 									result = result.property[0].value ;
 
@@ -305,6 +308,7 @@ kHAPI.app = {
 									ao[d.name][varname] = (result===undefined?null:result) ;
 
 									if( --get_total == 0 ){
+										kHAPI.app.postMsgToApp( 'showMessage',[] ) ;
 										kHAPI.app.postMsgToApp( 'onMyPageConnected',[ao] ) ;
 									}
 								}) ;

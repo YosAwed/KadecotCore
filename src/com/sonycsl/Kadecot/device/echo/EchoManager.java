@@ -337,6 +337,11 @@ public class EchoManager implements DeviceProtocol {
 		try {
 			for(DeviceProperty p : propertyList) {
 				byte epc = Integer.decode(p.name).byteValue();
+				if( p.value instanceof Integer ){
+					JSONArray ja = new JSONArray() ;
+					ja.put( ((Integer)p.value).intValue() ) ;
+					p.value = ja ;
+				}
 				if(!(p.value instanceof JSONArray)) {
 					throw new AccessException(new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE));
 				}

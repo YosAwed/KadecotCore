@@ -187,20 +187,25 @@ kHAPI.net.ServerPredefinedReplies = {
 		kHAPI.onNotifyServerSettings(settings);
 	}
 	, onDeviceFound : function(args){
-		kHAPI.devListHandlers.onDeviceFound( args.params[0] , kHAPI.dev.addDevice(args.params[0]) ) ;
+		if( kHAPI.dev.addDevice(args.params[0]) )	// Truly new device
+			kHAPI.devListHandlers.onDeviceFound( args.params[0] , kHAPI.dev.devices ) ;
+		else
+			kHAPI.devListHandlers.onDeviceActivated( args.params[0] , kHAPI.dev.devices ) ;
 	}
 	, onUpdateList : function(args){
-		kHAPI.devListHandlers.onUpdateList(
-			kHAPI.dev.setDevicesList( args.params ) ) ;
+		kHAPI.dev.setDevicesList( args.params ) ;
+		kHAPI.devListHandlers.onUpdateList( kHAPI.dev.devices ) ;
 	}
 	, onDeviceDeleted : function(args){
 console.log('onDevicedeleted : '+JSON.stringify(arguments)) ;
-		kHAPI.devListHandlers.onDeviceDeleted( args.params[0] , kHAPI.dev.removeDevice( args.params[0] ) ) ;
+		kHAPI.dev.removeDevice( args.params[0] ) ;
+		kHAPI.devListHandlers.onDeviceDeleted( kHAPI.dev.devices ) ;
 	}
 	, onNicknameChanged : function( args ){
 		var oldnickname = args.params[0] , newnickname = args.params[1] ;
+		kHAPI.dev.changeNickname( oldnickname , newnickname ) ;
 		kHAPI.devListHandlers.onNicknameChanged(
-			oldnickname , newnickname , kHAPI.dev.changeNickname( oldnickname , newnickname ) ) ;
+			oldnickname , newnickname , kHAPI.dev.devices ) ;
 	}
 	, onPropertyChanged : function(d) {
 		for(var i=0;i<d.params.length;i++){

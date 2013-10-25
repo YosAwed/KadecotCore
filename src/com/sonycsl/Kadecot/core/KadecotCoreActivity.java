@@ -106,7 +106,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		
 		setupLayout();
 		
-		startKadecot();
+		//startKadecot();
 	}
 	
 	@Override
@@ -252,7 +252,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 	}
 	
 	protected void startKadecot() {
-		loadUrlOnKadecotMyPage("file:///android_asset/html/index-t.html");
+		loadUrlOnKadecotMyPage("file:///android_asset/html/index.html");
 	}
 	
 	public WebView getKadecotMyPage() {

@@ -33,34 +33,35 @@ kHAPI.dev = {
 		if( newdev === undefined ) newdev = [];
 		this.devices = newdev.concat(this.emulation_devices) ;
 		this.sortDevices() ;
-		return this.devices ;
 	}
+	// returns true if new device is added.
+	//         false if the adding device already exists
 	, addDevice : function( newdev ){
 		// check nickname duplication
 		for( var di=0 ; di<this.devices.length ; ++di ){
 			if( this.devices[di].nickname === newdev.nickname ){
 				this.devices[di] = newdev ;
-				return this.devices ;
+				return false ;
 			}
 		}
 		this.devices.unshift(newdev) ;
 		this.sortDevices() ;
-		return this.devices ;
+		return true ;
 	}
 	, removeDevice : function( nickname ){
 		for( var di=0 ; di<this.devices.length ; ++di ){
 			if( this.devices[di].nickname === nickname ){
 				this.devices = this.devices.slice(0,di).concat(this.devices.slice(di+1)) ;
-				return this.devices ;
+				return ;
 			}
 		}
-		return false ;
+		return ;
 	}
 	, changeNickname : function( oldnickname , newnickname ){
 		for( var di=0 ; di<this.devices.length ; ++di ){
 			if( this.devices[di].nickname === oldnickname ){
 				this.devices[di].nickname = newnickname ;
-				return this.devices ;
+				return true ;
 			}
 		}
 		return false ;
