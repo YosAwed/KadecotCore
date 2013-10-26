@@ -80,7 +80,9 @@ public class EchoDiscovery {
 		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(deviceId);
 		EchoObject eoj = getEchoObject(data.address, data.echoClassCode, data.instanceCode);
 		if(eoj == null) {return;}
-		
+		if(!eoj.isProxy()) {
+			Echo.getNode().removeDevice((DeviceObject)eoj);
+		}
 		mActiveDevices.remove(eoj);
 	}
 	
