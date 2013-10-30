@@ -179,7 +179,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		mMyPageCall = new MyPageCall(this);
 		mAppView.addJavascriptInterface(mMyPageCall, "MyPageCall");
 
-		mKadecotMyPage.loadUrl("file:///android_asset/booting_page.html");
+		mKadecotMyPage.loadUrl("file:///android_asset/boot.html");
 
 	}
 
