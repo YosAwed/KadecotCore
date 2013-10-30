@@ -71,6 +71,7 @@ public class DeviceManager {
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.stop();
 		}
+		Logger.getInstance(mContext).unwatchAll();
 		mStarted = false;
 	}
 	
@@ -200,7 +201,7 @@ public class DeviceManager {
 				// log
 				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 				for(DeviceProperty p : list) {
-					mLogger.log(data, info, Logger.ACCESS_TYPE_SET, p);
+					mLogger.insertLog(data, info, Logger.ACCESS_TYPE_SET, p);
 
 				}
 				
@@ -240,7 +241,7 @@ public class DeviceManager {
 				// log
 				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 				for(DeviceProperty p : list) {
-					mLogger.log(data, info, Logger.ACCESS_TYPE_GET, p);
+					mLogger.insertLog(data, info, Logger.ACCESS_TYPE_GET, p);
 
 				}
 
@@ -391,7 +392,7 @@ public class DeviceManager {
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
 		DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 		for(DeviceProperty p : list) {
-			mLogger.log(data, info, Logger.ACCESS_TYPE_GET, p);
+			mLogger.insertLog(data, info, Logger.ACCESS_TYPE_GET, p);
 
 		}
 

@@ -28,6 +28,7 @@ import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.device.DeviceProtocol;
 import com.sonycsl.Kadecot.device.echo.generator.EchoDeviceAgent;
 import com.sonycsl.Kadecot.device.echo.generator.EchoDeviceGenerator;
+import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.EchoFrame;
 import com.sonycsl.echo.EchoProperty;
@@ -35,7 +36,10 @@ import com.sonycsl.echo.EchoSocket;
 import com.sonycsl.echo.EchoUtils;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.eoj.device.DeviceObject;
+import com.sonycsl.echo.eoj.device.housingfacilities.PowerDistributionBoardMetering;
 import com.sonycsl.echo.eoj.device.managementoperation.Controller;
+import com.sonycsl.echo.eoj.device.sensor.HumiditySensor;
+import com.sonycsl.echo.eoj.device.sensor.TemperatureSensor;
 import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
 
@@ -147,6 +151,36 @@ public class EchoManager implements DeviceProtocol {
 				}
 				mDeviceManager.onPropertyChanged(data, list);
 			}
+
+			@Override
+			public void onGetProperty(EchoObject eoj, short tid, byte esv,
+					EchoProperty property, boolean success) {
+				super.onGetProperty(eoj, tid, esv, property, success);
+				
+				if(success && (property.epc == DeviceObject.EPC_GET_PROPERTY_MAP)) {
+					byte[] properties = EchoUtils.propertyMapToProperties(property.edt);
+					HashSet<String> watchingPropertySet = new HashSet<String>();
+					switch(eoj.getEchoClassCode()) {
+					case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
+						watchingPropertySet.add(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_NORMAL_DIRECTION));
+						watchingPropertySet.add(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_REVERSE_DIRECTION));
+						watchingPropertySet.add(toPropertyName(PowerDistributionBoardMetering.EPC_UNIT_FOR_CUMULATIVE_AMOUNTS_OF_ELECTRIC_ENERGY));
+						for(byte p : properties) {
+							int i = p & 0xFF;
+							if(i >= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL1 & 0xFF)
+									&& i <= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL32 & 0xFF)) {
+								watchingPropertySet.add(toPropertyName(p));
+							}
+						}
+						EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(eoj);
+						if(data != null) {
+							long delay = (1000*60*5) - (System.currentTimeMillis() % (1000*60*30));
+							Logger.getInstance(mContext).watch(data.nickname, watchingPropertySet,60*1000*30, delay);
+						}
+						break;
+					}
+				}
+			}
 			
 			
 		});
@@ -240,7 +274,7 @@ public class EchoManager implements DeviceProtocol {
 		}
 	}
 
-	private static String toPropertyName(byte epc) {
+	public static String toPropertyName(byte epc) {
 		return "0x"+EchoUtils.toHexString(epc);
 	}
 	private static JSONArray toPropertyValue(byte[] edt) {

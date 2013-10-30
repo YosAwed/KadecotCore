@@ -12,10 +12,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +29,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.sonycsl.Kadecot.device.DeviceData;
+import com.sonycsl.Kadecot.device.DeviceDatabase;
 import com.sonycsl.Kadecot.device.DeviceInfo;
+import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.DeviceProperty;
 
 
@@ -75,9 +81,11 @@ public class Logger {
 	
 	//public static final String LABEL_USER = "user";
 	
+	protected final HashMap<Long, Watching> mWatchedDevices;
 	
 	private Logger(Context context) {
 		mContext = context.getApplicationContext();
+		mWatchedDevices = new HashMap<Long, Watching>();
 	}
 	
 	public static synchronized Logger getInstance(Context context) {
@@ -89,10 +97,155 @@ public class Logger {
 	}
 
 
-	public void watch(String nickname, String propertyName, long intervalMills, long delayMills) {
+	public void watch(String nickname, HashSet<String> propertyNameSet) {
+		watch(nickname, propertyNameSet, 60*1000*30);
+	}
+
+
+	public void watch(String nickname, HashSet<String> propertyNameSet, long intervalMills) {
+		watch(nickname, propertyNameSet, intervalMills, 0);
+	}
+	
+	public void watch(String nickname, HashSet<String> propertyNameSet, long intervalMills, long delayMills) {
 		// 定期的にgetする
+		DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(nickname);
+		if(data == null){
+			return;
+		}
+		watch(data.deviceId, propertyNameSet, intervalMills, delayMills);
+	}
+	
+	public void watch(long deviceId, HashSet<String> propertyNameSet, long intervalMills, final long delayMills) {
+		Watching watching;
+		if(mWatchedDevices.containsKey(deviceId)) {
+			watching = mWatchedDevices.get(deviceId);
+			for(String p : propertyNameSet) {
+				watching.propertyNameSet.add(p);
+			}
+		} else {
+			watching = new Watching(deviceId, propertyNameSet);
+			mWatchedDevices.put(deviceId, watching);
+		}
+		watching.intervalMills = intervalMills;
+		final Watching  w = watching;
+		Executors.newSingleThreadExecutor().execute(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(delayMills);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				w.start();
+			}
+		
+		});
+	}
+	
+	public void unwatch(String nickname, HashSet<String> propertyNameSet) {
+
+		DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(nickname);
+		if(data == null){
+			return;
+		}
+		unwatch(data.deviceId, propertyNameSet);
+	}
+	
+	public void unwatch(long deviceId, HashSet<String> propertyNameSet) {
+		if(mWatchedDevices.containsKey(deviceId)) {
+			Watching watching = mWatchedDevices.get(deviceId);
+			for(String p : propertyNameSet) {
+				watching.propertyNameSet.remove(p);
+			}
+		}
+	}
+	
+	public void unwatchAll() {
+		Log.v(TAG, "unwatchAll");
+		for(Watching w : mWatchedDevices.values()) {
+			w.stop();
+		}
+		mWatchedDevices.clear();
+	}
+	
+	public void unwatch(String nickname) {
+
+		DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(nickname);
+		if(data == null){
+			return;
+		}
+		unwatch(data.deviceId);
+	}
+	
+	public void unwatch(long deviceId) {
+		if(mWatchedDevices.containsKey(deviceId)) {
+			Watching watching = mWatchedDevices.get(deviceId);
+			mWatchedDevices.remove(deviceId);
+			watching.stop();
+		}
+	}
+	
+	
+	class Watching implements Runnable {
+		final long deviceId;
+		final HashSet<String> propertyNameSet;
+		long intervalMills = 60*1000*30;
+		
+		ExecutorService mExecutor = null;
+
+		public Watching(long deviceId, HashSet<String> propertyNameSet) {
+			this.deviceId = deviceId;
+			this.propertyNameSet = propertyNameSet;
+		}
+		@Override
+		public void run() {
+			while(!Thread.currentThread().isInterrupted()) {
+
+				ArrayList<String> list = new ArrayList<String>();
+				for(String p : propertyNameSet) {
+					list.add(p);
+				}
+				if(list.isEmpty()) {
+					mWatchedDevices.remove(deviceId);
+					return;
+				}
+				DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(deviceId);
+				if(data == null) {
+					mWatchedDevices.remove(deviceId);
+					return;
+				}
+				DeviceManager.getInstance(mContext).get(data.nickname, list, 0);
+				
+				try {
+					Log.v(TAG, data.nickname+","+intervalMills);
+					Thread.sleep(intervalMills);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					mWatchedDevices.remove(deviceId);
+					return;
+				}
+			}
+		}
+		
+		public void start() {
+			stop();
+			mExecutor = Executors.newSingleThreadExecutor();
+			mExecutor.execute(this);
+		}
+		
+		public void stop() {
+			if(mExecutor != null) {
+				mExecutor.shutdown();
+				mExecutor.shutdownNow();
+			}
+			mExecutor = null;
+		}
 		
 	}
+	
 	public void watchEveryday(String nickname, String propertyName, long intervalMills, long delayMills) {
 		// 定期的にgetする
 		
@@ -102,7 +255,7 @@ public class Logger {
 		
 	}
 	
-	public synchronized void log(DeviceData data, DeviceInfo info, String accessType, DeviceProperty property) {
+	public synchronized void insertLog(DeviceData data, DeviceInfo info, String accessType, DeviceProperty property) {
 		LinkedHashMap<String, String> record = new LinkedHashMap<String, String>();
 		Date date = new Date();
 		record.put(LABEL_VERSION, VERSION);

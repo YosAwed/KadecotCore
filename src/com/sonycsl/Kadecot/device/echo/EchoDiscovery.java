@@ -9,9 +9,13 @@ import java.util.Set;
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.device.DeviceManager;
+import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.eoj.device.DeviceObject;
+import com.sonycsl.echo.eoj.device.housingfacilities.PowerDistributionBoardMetering;
+import com.sonycsl.echo.eoj.device.sensor.HumiditySensor;
+import com.sonycsl.echo.eoj.device.sensor.TemperatureSensor;
 import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
 
@@ -39,6 +43,30 @@ public class EchoDiscovery {
 
 		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
+
+		HashSet<String> propertyNameSet = new HashSet<String>();
+		long delay = (1000*60*30) - (System.currentTimeMillis() % (1000*60*5));
+
+		switch(device.getEchoClassCode()) {
+		case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
+			try {
+				device.get().reqGetGetPropertyMap().send();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case TemperatureSensor.ECHO_CLASS_CODE:
+			propertyNameSet.add(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE));
+
+			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,60*1000*30, delay);
+			break;
+		case HumiditySensor.ECHO_CLASS_CODE:
+			propertyNameSet.add(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY));
+			
+			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,60*1000*30, delay);
+			break;
+		}
 	}
 	
 	

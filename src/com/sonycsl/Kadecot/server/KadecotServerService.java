@@ -39,7 +39,7 @@ public class KadecotServerService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		ServerManager.getInstance(self).stopServer(this);
+		stopServer();
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class KadecotServerService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		
-		ServerManager.getInstance(self).startServer(this);
+		startServer();
 		
 		return START_STICKY;
 	}
@@ -89,6 +89,14 @@ public class KadecotServerService extends Service {
 
 		self.stopForeground(true);
 		mForeground = false;
+	}
+	
+	public void startServer() {
+		ServerManager.getInstance(self).startServer(this);
+	}
+	
+	public void stopServer() {
+		ServerManager.getInstance(self).stopServer(this);
 	}
 	
 }

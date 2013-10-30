@@ -63,9 +63,10 @@ public class ServerNetwork {
 		
 		mContext.registerReceiver(mConnectionReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 	}
-	
+	//TODO
 	public void stopConnectionReceiver() {
 		mContext.unregisterReceiver(mConnectionReceiver);
+		//mServerManager.stopHomeNetwork();
 	}
 	
 	public void checkConnection() {

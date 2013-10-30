@@ -60,7 +60,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 	private UserApp mUserApp;
 	// javascript interface(mAppView)
 	private MyPageCall mMyPageCall;
-	/*
+	
 	private ServerBinder mServerBinder;
 	private ServiceConnection mServerConn = new ServiceConnection() {
 		@Override
@@ -71,7 +71,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		public void onServiceDisconnected(ComponentName name) {
 		}
 	};
-	*/
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,7 +80,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		// KadecotServerServiceにbind
 		Intent intent = new Intent(this, KadecotServerService.class);
 		startService(intent);
-		//bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
+		bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
 		
 		mKadecotCall = new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(this, 0)) {
 			@Override
@@ -114,12 +114,16 @@ public class KadecotCoreActivity extends FragmentActivity {
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		
-		//unbindService(mServerConn);
+		unbindService(mServerConn);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		if(mServerBinder != null) {
+			mServerBinder.reqStartServer();
+		}
 		mKadecotMyPage.resumeTimers();
 		Executors.newSingleThreadExecutor().execute(new Runnable() {
 			@Override
@@ -140,6 +144,9 @@ public class KadecotCoreActivity extends FragmentActivity {
 			}
 		});
 		mKadecotMyPage.pauseTimers();
+		if(mServerBinder != null) {
+			mServerBinder.reqStopServer();
+		}
 	}
 	
 	private void setupLayout() {

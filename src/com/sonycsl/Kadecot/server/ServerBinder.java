@@ -12,4 +12,15 @@ public class ServerBinder extends Binder {
 	public ServerBinder(KadecotServerService kadecotServer) {
 		mKadecotServer = kadecotServer;
 	}
+	
+	public void reqStartServer() {
+		mKadecotServer.startServer();
+	}
+	
+	public void reqStopServer() {
+		if(!mKadecotServer.mForeground) {
+			mKadecotServer.stopServer();
+		}
+	}
+	
 }
