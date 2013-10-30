@@ -158,7 +158,6 @@ public class KadecotCoreActivity extends FragmentActivity {
 		mKadecotMyPage = new WebView(this);
 		setupWebView(mKadecotMyPage);
 				
-		mKadecotMyPage.loadUrl("file:///android_asset/booting_page.html");
 		
 		mMainLayout.addView(mKadecotMyPage, new FrameLayout.LayoutParams(
 				FrameLayout.LayoutParams.FILL_PARENT,
@@ -186,6 +185,8 @@ public class KadecotCoreActivity extends FragmentActivity {
 		
 		mMyPageCall = new MyPageCall(this);
 		mAppView.addJavascriptInterface(mMyPageCall, "MyPageCall");
+
+		mKadecotMyPage.loadUrl("file:///android_asset/boot.html");
 
 	}
 
