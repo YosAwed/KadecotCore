@@ -45,7 +45,7 @@ public class EchoDiscovery {
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
 		HashSet<String> propertyNameSet = new HashSet<String>();
-		long delay = (1000*60*30) - (System.currentTimeMillis() % (1000*60*5));
+		long delay = (1000*60*30) - (System.currentTimeMillis() % (1000*60*30));
 
 		switch(device.getEchoClassCode()) {
 		case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
