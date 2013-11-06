@@ -174,8 +174,8 @@ public class EchoManager implements DeviceProtocol {
 						}
 						EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(eoj);
 						if(data != null) {
-							long delay = (1000*60*30) - (System.currentTimeMillis() % (1000*60*30));
-							Logger.getInstance(mContext).watch(data.nickname, watchingPropertySet,60*1000*30, delay);
+							long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
+							Logger.getInstance(mContext).watch(data.nickname, watchingPropertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 						}
 						break;
 					}

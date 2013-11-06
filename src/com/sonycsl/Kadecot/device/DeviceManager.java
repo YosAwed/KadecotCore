@@ -65,6 +65,7 @@ public class DeviceManager {
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.start();
 		}
+		refreshList(0);
 	}
 	
 	public synchronized void stop() {

@@ -45,7 +45,7 @@ public class EchoDiscovery {
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
 		HashSet<String> propertyNameSet = new HashSet<String>();
-		long delay = (1000*60*30) - (System.currentTimeMillis() % (1000*60*30));
+		long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
 		switch(device.getEchoClassCode()) {
 		case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
@@ -59,12 +59,12 @@ public class EchoDiscovery {
 		case TemperatureSensor.ECHO_CLASS_CODE:
 			propertyNameSet.add(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE));
 
-			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,60*1000*30, delay);
+			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		case HumiditySensor.ECHO_CLASS_CODE:
 			propertyNameSet.add(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY));
 			
-			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,60*1000*30, delay);
+			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		}
 	}

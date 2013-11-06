@@ -15,6 +15,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 public class ServerNetwork {
 	@SuppressWarnings("unused")
@@ -63,15 +64,14 @@ public class ServerNetwork {
 		
 		mContext.registerReceiver(mConnectionReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 	}
-	//TODO
+
 	public void stopConnectionReceiver() {
 		mContext.unregisterReceiver(mConnectionReceiver);
-		//mServerManager.stopHomeNetwork();
+		mConnectedHomeNetwork = false;
 	}
 	
 	public void checkConnection() {
 		boolean connected = isConnectedHomeNetwork();
-		
 		if(mConnectedHomeNetwork != connected) {
 			mConnectedHomeNetwork = isConnectedHomeNetwork();
 			onNetworkChanged();

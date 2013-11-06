@@ -11,12 +11,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,6 +81,8 @@ public class Logger {
 	public static final String ACCESS_TYPE_GET = "get";
 	
 	
+	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*30;
+	
 	//public static final String LABEL_USER = "user";
 	
 	protected final HashMap<Long, Watching> mWatchedDevices;
@@ -98,7 +102,7 @@ public class Logger {
 
 
 	public void watch(String nickname, HashSet<String> propertyNameSet) {
-		watch(nickname, propertyNameSet, 60*1000*30);
+		watch(nickname, propertyNameSet, DEFAULT_INTERVAL_MILLS);
 	}
 
 
@@ -163,8 +167,10 @@ public class Logger {
 	}
 	
 	public void unwatchAll() {
-		Log.v(TAG, "unwatchAll");
-		for(Watching w : mWatchedDevices.values()) {
+		Object[] keys = mWatchedDevices.keySet().toArray();
+		for(Object k : keys) {
+			Watching w = mWatchedDevices.get(k);
+			mWatchedDevices.remove(k);
 			w.stop();
 		}
 		mWatchedDevices.clear();
@@ -191,7 +197,7 @@ public class Logger {
 	class Watching implements Runnable {
 		final long deviceId;
 		final HashSet<String> propertyNameSet;
-		long intervalMills = 60*1000*30;
+		long intervalMills = DEFAULT_INTERVAL_MILLS;
 		
 		ExecutorService mExecutor = null;
 
@@ -219,7 +225,6 @@ public class Logger {
 				DeviceManager.getInstance(mContext).get(data.nickname, list, 0);
 				
 				try {
-					Log.v(TAG, data.nickname+","+intervalMills);
 					Thread.sleep(intervalMills);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -271,7 +276,6 @@ public class Logger {
 	
 		String fileName = getLogFileName(date);
 		
-		Log.v(TAG, "log file name:"+fileName);
 		
 		File file = getLogFile(fileName);
 		try {

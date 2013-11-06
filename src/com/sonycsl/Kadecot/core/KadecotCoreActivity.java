@@ -97,7 +97,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 				builder.append("\"");
 				builder.append(");};");
 				final String script = new String(builder);
-				System.out.println(script);
+				//System.out.println(script);
 				callJsOnKadecotMyPage(script);
 			}
 		};

@@ -59,6 +59,20 @@ public class ServerManager {
 		onChangedServerSettings();
 		
 	}
+
+	
+	public void stopServer(KadecotServerService service) {
+		if(mKadecotService == service) {
+			mKadecotService = null;
+			mServerNetwork.stopConnectionReceiver();
+
+			stopWebSocketServer();
+			stopJSONPServer();
+			stopHomeNetwork();
+		}
+	}
+	
+	
 	
 	public void startHomeNetwork() {
 
@@ -78,19 +92,6 @@ public class ServerManager {
 		changeNotification();
 
 	}
-
-	
-	public void stopServer(KadecotServerService service) {
-		if(mKadecotService == service) {
-			mKadecotService = null;
-			mServerNetwork.stopConnectionReceiver();
-
-			stopWebSocketServer();
-			stopJSONPServer();
-		}
-	}
-	
-	
 	public void onChangedServerSettings() {
 
 		if(mServerSettings.isEnabledPersistentMode()) {
