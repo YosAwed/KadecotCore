@@ -81,7 +81,7 @@ public class Logger {
 	public static final String ACCESS_TYPE_GET = "get";
 	
 	
-	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*30;
+	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*1;
 	
 	//public static final String LABEL_USER = "user";
 	
@@ -119,7 +119,7 @@ public class Logger {
 		watch(data.deviceId, propertyNameSet, intervalMills, delayMills);
 	}
 	
-	public void watch(long deviceId, HashSet<String> propertyNameSet, long intervalMills, final long delayMills) {
+	public synchronized void watch(long deviceId, HashSet<String> propertyNameSet, long intervalMills, final long delayMills) {
 		Watching watching;
 		if(mWatchedDevices.containsKey(deviceId)) {
 			watching = mWatchedDevices.get(deviceId);
@@ -225,6 +225,7 @@ public class Logger {
 				DeviceManager.getInstance(mContext).get(data.nickname, list, 0);
 				
 				try {
+					printDebugLog(data.nickname+","+intervalMills);
 					Thread.sleep(intervalMills);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -276,6 +277,7 @@ public class Logger {
 	
 		String fileName = getLogFileName(date);
 		
+		printDebugLog("log file name:"+fileName);
 		
 		File file = getLogFile(fileName);
 		try {
@@ -436,4 +438,9 @@ public class Logger {
 		return ret;
 		
 	}
+	
+	public void printDebugLog(Object s) {
+		//Log.v(TAG, "["+TAG+"]"+ (s != null?s.toString():"null"));
+	}
+
 }
