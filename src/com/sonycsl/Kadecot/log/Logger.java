@@ -81,7 +81,7 @@ public class Logger {
 	public static final String ACCESS_TYPE_GET = "get";
 	
 	
-	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*1;
+	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*30;
 	
 	//public static final String LABEL_USER = "user";
 	
