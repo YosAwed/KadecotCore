@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -66,12 +67,13 @@ public class KadecotJSONPServer {
 			@Override
 			public void run(Request req, Response res) throws IOException {
 				String callback = null;
-				String method = req.query.get("method");
+
+				String method = urldecode(req.query.get("method"));
 
 				JSONArray params = null;
 				try {
 					if(req.query.containsKey("params")) {
-						params = new JSONArray(req.query.get("params"));
+						params = new JSONArray(urldecode(req.query.get("params")));
 					} else {
 						params = new JSONArray();
 					}
@@ -79,9 +81,9 @@ public class KadecotJSONPServer {
 					e.printStackTrace();
 				}
 				if(req.query.containsKey("callback")) {
-					callback = req.query.get("callback");
+					callback = urldecode(req.query.get("callback"));
 				} else if(req.query.containsKey("jsoncallback")) {
-					callback = req.query.get("jsoncallback");
+					callback = urldecode(req.query.get("jsoncallback"));
 				}
 				//String id = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -210,7 +212,15 @@ public class KadecotJSONPServer {
 		}
 		return null;
 	}
-	
+	// assumute encoding is utf-8
+	private String urldecode(String s){
+        try {
+            return URLDecoder.decode(s,"utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return s;
+        }
+	}
 	
 	///////////////////////////////////
 	
