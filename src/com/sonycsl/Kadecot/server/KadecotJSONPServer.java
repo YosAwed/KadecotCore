@@ -214,6 +214,7 @@ public class KadecotJSONPServer {
 	}
 	// assumute encoding is utf-8
 	private String urldecode(String s){
+	    if(s == null) return null;
         try {
             return URLDecoder.decode(s,"utf-8");
         } catch (UnsupportedEncodingException e) {
