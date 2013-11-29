@@ -2,6 +2,7 @@ package com.sonycsl.Kadecot.device.echo.generator;
 
 import android.util.Log;
 
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.EchoProperty;
@@ -46,14 +47,15 @@ public class EchoDeviceAgent extends DeviceObject {
 	}
 
 	@Override
-	protected synchronized byte[] getProperty(byte epc) {
+	protected byte[] getProperty(byte epc) {
 		//return super.getProperty(epc);
+		Dbg.print(epc);
 
 		return mGenerator.getProperty(mData, epc);
 	}
 
 	@Override
-	protected synchronized boolean isValidProperty(EchoProperty property) {
+	protected boolean isValidProperty(EchoProperty property) {
 		//return super.isValidProperty(property);
 
 		boolean b =  mGenerator.isValidProperty(mData, property.epc, property.edt);
@@ -62,7 +64,7 @@ public class EchoDeviceAgent extends DeviceObject {
 	}
 
 	@Override
-	protected synchronized boolean setProperty(EchoProperty property) {
+	protected boolean setProperty(EchoProperty property) {
 		//return super.setProperty(property);
 		return mGenerator.setProperty(mData, property.epc, property.edt);
 	}

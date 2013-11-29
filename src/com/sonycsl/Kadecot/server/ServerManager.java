@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.server.ServerSettings.ExecutionMode;
 
@@ -28,6 +29,13 @@ public class ServerManager {
 	private DeviceManager mDeviceManager;
 	private ServerSettings mServerSettings;
 	
+	
+	private final int STATUS_ON = 0;
+	private final int STATUS_HOME_NETWORK_ACTIVE = 1;
+	private final int STATUS_OFF = 2;
+	
+	private int mStatus = STATUS_OFF;
+	
 	private ServerManager(Context context) {
 		mContext = context.getApplicationContext();
 	}
@@ -35,85 +43,100 @@ public class ServerManager {
 	public static synchronized ServerManager getInstance(Context context) {
 		if(sInstance == null) {
 			sInstance = new ServerManager(context);
-			sInstance.init();
 		}
 		return sInstance;
 	}
 	
-	protected void init() {
-		mDeviceManager = DeviceManager.getInstance(mContext);
-
-		mJSONPServer = KadecotJSONPServer.getInstance(mContext);
-		mWebSocketServer = KadecotWebSocketServer.getInstance(mContext);
-		mServerSettings = ServerSettings.getInstance(mContext);
-		
-		mServerNetwork = ServerNetwork.getInstance(mContext);
-
-	}
-	
 	public void startServer(KadecotServerService service) {
+		Dbg.print(mStatus);
 		mKadecotService = service;
-
-		mServerNetwork.startConnectionReceiver();
 		
-		onChangedServerSettings();
+		if(mStatus == STATUS_OFF) {
+			mStatus = STATUS_ON;
+			getNetwork().startWatchingConnection();
 		
+			onChangedServerSettings();
+		}
 	}
 
 	
 	public void stopServer(KadecotServerService service) {
+		Dbg.print(mStatus);
+
+		if(mStatus == STATUS_OFF) {
+			return;
+		}
 		if(mKadecotService == service) {
 			mKadecotService = null;
-			mServerNetwork.stopConnectionReceiver();
+			
+			
+			getNetwork().stopWatchingConnection();
 
-			stopWebSocketServer();
-			stopJSONPServer();
-			stopHomeNetwork();
+			//stopWebSocketServer();
+			//stopJSONPServer();
+			//stopForeground();
+			//stopHomeNetwork();
+			
+			mStatus = STATUS_OFF;
 		}
 	}
 	
 	
 	
 	public void startHomeNetwork() {
-
-		Executors.newSingleThreadExecutor().execute(new Runnable() {
+		Dbg.print(mStatus);
+		if(mStatus != STATUS_ON) {
+			return;
+		}
+		mStatus = STATUS_HOME_NETWORK_ACTIVE;
+		Executors.newSingleThreadExecutor().execute(new Runnable(){
 			@Override
 			public void run() {
-				mDeviceManager.start();
+				getDeviceManager().start();
 			}
-		
 		});
+		//changeNotification();
+		onChangedServerSettings();
 	}
 	
 	public void stopHomeNetwork() {
-		mDeviceManager.stop();
-		
-		
-		changeNotification();
+		Dbg.print(mStatus);
+		if(mStatus == STATUS_HOME_NETWORK_ACTIVE) {
+			getDeviceManager().stop();
+			
+			stopWebSocketServer();
+			stopJSONPServer();
+			stopForeground();
+			
+			//changeNotification();
+			mStatus = STATUS_ON;
+			onChangedServerSettings();
+		}
 
 	}
 	public void onChangedServerSettings() {
+		Dbg.print(mStatus);
 
-		if(mServerSettings.isEnabledPersistentMode()) {
-			if( mKadecotService != null ) {
-				mKadecotService.startForeground() ;	// persistent
-			}
+
+		getNetwork().watchConnection();
+		
+		
+		if(getSettings().isEnabledPersistentMode()) {
+			startForeground();
 		} else {
-			if( mKadecotService != null ) {
-				mKadecotService.stopForeground() ;	// no persistent
-			}
+			stopForeground();
 		}
 		
 
-		if(mServerSettings.isEnabledJSONPServer() && !isStartedJSONPServer() ) {
+		if(getSettings().isEnabledJSONPServer() && !isStartedJSONPServer() ) {
 			startJSONPServer();
-		} else if(!mServerSettings.isEnabledJSONPServer()){
+		} else if(!getSettings().isEnabledJSONPServer()){
 			stopJSONPServer();
 		}
 
-		if(mServerSettings.isEnabledWebSocketServer() && !isStartedWebSocketServer() ) {
+		if(getSettings().isEnabledWebSocketServer() && !isStartedWebSocketServer() ) {
 			startWebSocketServer();
-		} else if(!mServerSettings.isEnabledWebSocketServer()){
+		} else if(!getSettings().isEnabledWebSocketServer()){
 			stopWebSocketServer();
 		}
 		
@@ -122,25 +145,50 @@ public class ServerManager {
 		Notification.informAllOnNotifyServerSettings(mContext);
 	}
 	
-	public void startWebSocketServer() {
-		mWebSocketServer.start();
-		changeNotification();
+	private void startForeground() {
+		Dbg.print(mStatus);
+		if(mStatus != STATUS_HOME_NETWORK_ACTIVE) {
+			return;
+		}
+
+		if( mKadecotService != null ) {
+			mKadecotService.startForeground() ;	// persistent
+		}
+	}
+	
+	private void stopForeground() {
+		Dbg.print(mStatus);
+
+		if( mKadecotService != null ) {
+			mKadecotService.stopForeground() ;	// no persistent
+		}
+	}
+	
+	private void startWebSocketServer() {
+		Dbg.print(mStatus);
+		if(mStatus != STATUS_HOME_NETWORK_ACTIVE) {
+			return;
+		}
+		getWebSocketServer().start();
 
 	}
 	
-	public void stopWebSocketServer() {
-		mWebSocketServer.stop();
-		changeNotification();
-
+	private void stopWebSocketServer() {
+		Dbg.print(mStatus);
+		getWebSocketServer().stop();
 	}
 	
 	public boolean isStartedWebSocketServer() {
-		return mWebSocketServer.isStarted();
+		return getWebSocketServer().isStarted();
 	}
 	
-	public void startJSONPServer() {
+	private void startJSONPServer() {
+		Dbg.print(mStatus);
+		if(mStatus != STATUS_HOME_NETWORK_ACTIVE) {
+			return;
+		}
 		try {
-			mJSONPServer.start(31413);
+			getJSONPServer().start(31413);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -149,19 +197,55 @@ public class ServerManager {
 
 	}
 	
-	public void stopJSONPServer() {
-		mJSONPServer.stop();
+	private void stopJSONPServer() {
+		Dbg.print(mStatus);
+		getJSONPServer().stop();
 		changeNotification();
 
 	}
 	
 	public boolean isStartedJSONPServer() {
-		return mJSONPServer.isRunning();
+		return getJSONPServer().isRunning();
 	}
 	
 	private void changeNotification() {
 		if( mKadecotService != null ) {
 			mKadecotService.changeNotification();
 		}
+	}
+	
+	private DeviceManager getDeviceManager() {
+		if(mDeviceManager == null) {
+			mDeviceManager = DeviceManager.getInstance(mContext);
+		}
+		return mDeviceManager;
+	}
+	
+	private KadecotJSONPServer getJSONPServer() {
+		if(mJSONPServer == null) {
+			mJSONPServer = KadecotJSONPServer.getInstance(mContext);
+		}
+		return mJSONPServer;
+	}
+	
+	private KadecotWebSocketServer getWebSocketServer() {
+		if(mWebSocketServer == null) {
+			mWebSocketServer = KadecotWebSocketServer.getInstance(mContext);
+		}
+		return mWebSocketServer;
+	}
+	
+	private ServerSettings getSettings() {
+		if(mServerSettings == null) {
+			mServerSettings = ServerSettings.getInstance(mContext);
+		}
+		return mServerSettings;
+	}
+	
+	private ServerNetwork getNetwork() {
+		if(mServerNetwork == null) {
+			mServerNetwork = ServerNetwork.getInstance(mContext);
+		}
+		return mServerNetwork;
 	}
 }

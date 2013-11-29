@@ -1,6 +1,7 @@
 package com.sonycsl.Kadecot.server;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,24 +56,17 @@ public class ServerSettings {
 	public static synchronized ServerSettings getInstance(Context context) {
 		if(sInstance == null) {
 			sInstance = new ServerSettings(context);
-			sInstance.init();
 		}
 		return sInstance;
 	}
 	
-	protected void init() {
-		mServerManager = ServerManager.getInstance(mContext);
-		mDeviceManager = DeviceManager.getInstance(mContext);
-		mServerNetwork = ServerNetwork.getInstance(mContext);
-
-	}
 	
 	public void fullInitialize() {
-		removeWifiBSSID();
+		mPreferences.edit().clear().commit();
 		
-		mDeviceManager.deleteAllDeviceData();
+		getDeviceManager().deleteAllDeviceData();
 		
-		mServerManager.onChangedServerSettings();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	public String[] getLocation() {
@@ -85,7 +79,7 @@ public class ServerSettings {
 	public void setLocation(String lat, String lng) {
 		mPreferences.edit().putString(KEY_LOCATION_LAT, lat).putString(KEY_LOCATION_LNG, lng).commit();
 		
-		mServerManager.onChangedServerSettings();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	
@@ -116,21 +110,21 @@ public class ServerSettings {
 	private void setWifiBSSID(String bssid) {
 		mPreferences.edit().putString(KEY_WIFI_BSSID, bssid).commit();
 
-		mServerNetwork.checkConnection();
-		
-		mServerManager.onChangedServerSettings();
+		//getNetwork().checkConnection();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	public void removeWifiBSSID() {
 		mPreferences.edit().remove(KEY_WIFI_BSSID).commit();
 
-		mServerNetwork.checkConnection();
 		
-		mServerManager.onChangedServerSettings();
+		//getNetwork().checkConnection();
+		
+		getServerManager().onChangedServerSettings();
 	}
 
 	public Response registerNetwork() {
-		String bssid = mServerNetwork.getCurrentConnectionBSSID();
+		String bssid = getNetwork().getCurrentConnectionBSSID();
 		if(bssid != null) {
 			setWifiBSSID(bssid);
 			return new Response(null);
@@ -149,7 +143,7 @@ public class ServerSettings {
 	public void enableWebSocketServer(boolean enabled) {
 		mPreferences.edit().putBoolean(KEY_WEBSOCKET_SERVER, enabled).commit();
 		
-		mServerManager.onChangedServerSettings();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	public boolean isEnabledWebSocketServer() {
@@ -159,7 +153,7 @@ public class ServerSettings {
 	public void enableJSONPServer(boolean enabled) {
 		mPreferences.edit().putBoolean(KEY_JSONP_SERVER, enabled).commit();
 		
-		mServerManager.onChangedServerSettings();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	public boolean isEnabledJSONPServer() {
@@ -169,10 +163,31 @@ public class ServerSettings {
 	public void enablePersistentMode(boolean enabled) {
 		mPreferences.edit().putBoolean(KEY_PERSISTENT_MODE, enabled).commit();
 		
-		mServerManager.onChangedServerSettings();
+		getServerManager().onChangedServerSettings();
 	}
 	
 	public boolean isEnabledPersistentMode() {
 		return mPreferences.getBoolean(KEY_PERSISTENT_MODE, false);
+	}
+	
+	private ServerManager getServerManager() {
+		if(mServerManager == null) {
+			mServerManager = ServerManager.getInstance(mContext);
+		}
+		return mServerManager;
+	}
+	
+	private DeviceManager getDeviceManager() {
+		if(mDeviceManager == null) {
+			mDeviceManager = DeviceManager.getInstance(mContext);
+		}
+		return mDeviceManager;
+	}
+	
+	private ServerNetwork getNetwork() {
+		if(mServerNetwork == null) {
+			mServerNetwork = ServerNetwork.getInstance(mContext);
+		}
+		return mServerNetwork;
 	}
 }

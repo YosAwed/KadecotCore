@@ -56,7 +56,9 @@ public class KadecotServerService extends Service {
 	}
 	
 	public void changeNotification() {
-		if(!mForeground) return;
+		if(mForeground == false) {
+			return;
+		}
 		Notification notice = new Notification(R.drawable.icon, "Kadecot Server", System.currentTimeMillis());
 		notice.flags |= Notification.FLAG_NO_CLEAR;
 
@@ -66,12 +68,12 @@ public class KadecotServerService extends Service {
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendIntent = PendingIntent.getActivity(self, 0, intent, 0);
 		String contentText;
-		if(ServerNetwork.getInstance(self).isConnectedHomeNetwork()) {
+		if(ServerNetwork.getInstance(self).isConnectedHomeNetwork() == ServerNetwork.CONNECTED) {
 			contentText = ServerNetwork.getInstance(self).getIPAddress() + "\n";
 		} else {
 			contentText = "Network Error\n";
 		}
-		contentText+="HomeNet:"+(ServerNetwork.getInstance(self).isConnectedHomeNetwork()?"ON\n":"OFF\n");
+		contentText+="HomeNet:"+(ServerNetwork.getInstance(self).isConnectedHomeNetwork() == ServerNetwork.CONNECTED?"ON\n":"OFF\n");
 		contentText+="WebSocket:"+(ServerManager.getInstance(self).isStartedWebSocketServer()?"ON\n":"OFF\n");
 		contentText+="Http:"+(ServerManager.getInstance(self).isStartedJSONPServer()?"ON\n":"OFF\n");			
 		notice.setLatestEventInfo(self, "Kadecot Server", contentText, pendIntent);

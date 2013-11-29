@@ -5,6 +5,7 @@ import org.json.JSONObject;
 /**
  * 
  * Deviceの情報・状態
+ * 主にDatabaseに登録されていない情報
  *
  */
 public class DeviceInfo {

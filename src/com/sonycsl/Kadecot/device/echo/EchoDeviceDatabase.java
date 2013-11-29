@@ -76,18 +76,13 @@ public class EchoDeviceDatabase {
 	public synchronized static EchoDeviceDatabase getInstance(Context context) {
 		if(sInstance == null) {
 			sInstance = new EchoDeviceDatabase(context);
-			sInstance.init();
 		}
 		return sInstance;
 	}
 	
-	protected void init() {
-		mDeviceDatabase = DeviceDatabase.getInstance(mContext);
-	}
-	
-	public synchronized void addDeviceData(DeviceObject device) {
+	public synchronized EchoDeviceData addDeviceData(DeviceObject device) {
 		if(containsDeviceData(device)) {
-			return;
+			return null;
 		}
 		
 		String name = EchoDeviceUtils.getClassName(device.getEchoClassCode());
@@ -102,18 +97,18 @@ public class EchoDeviceDatabase {
 			if(i!=0) {
 				nickname += i;
 			}
-			if (!mDeviceDatabase.containsNickname(nickname)) {
-				addDeviceData(nickname, device);
-				break;
+			if (!getDeviceDatabase().containsNickname(nickname)) {
+				return addDeviceData(nickname, device);
 			}
 		}
+		return null;
 	}
 
 	public synchronized EchoDeviceData addLocalDeviceData(short echoClassCode, byte instanceCode, long generatorId) {
 		
 		String name = EchoDeviceUtils.getClassName(echoClassCode);
 		
-		DeviceData generator = mDeviceDatabase.getDeviceData(generatorId);
+		DeviceData generator = getDeviceDatabase().getDeviceData(generatorId);
 		if(generator == null) {
 			return null;
 		}
@@ -125,10 +120,10 @@ public class EchoDeviceDatabase {
 			if(i!=0) {
 				nickname += i;
 			}
-			if (!mDeviceDatabase.containsNickname(nickname)) {
-				boolean b = mDeviceDatabase.addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
+			if (!getDeviceDatabase().containsNickname(nickname)) {
+				boolean b = getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
 				if(!b) {return null;}
-				DeviceData data = mDeviceDatabase.getDeviceData(nickname);
+				DeviceData data = getDeviceDatabase().getDeviceData(nickname);
 
 				if(containsDeviceId(data.deviceId)) { return null; }
 				
@@ -146,9 +141,9 @@ public class EchoDeviceDatabase {
 		return null;
 	}
 	
-	private synchronized void addDeviceData(String nickname, DeviceObject device) {
-		boolean result = mDeviceDatabase.addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
-		if(!result) { return; }
+	private synchronized EchoDeviceData addDeviceData(String nickname, DeviceObject device) {
+		boolean result = getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
+		if(!result) { return null; }
 
 		
 		String address;
@@ -158,9 +153,9 @@ public class EchoDeviceDatabase {
 			// local
 			address = LOCAL_ADDRESS;
 		}
-		DeviceData d = mDeviceDatabase.getDeviceData(nickname);
+		DeviceData d = getDeviceDatabase().getDeviceData(nickname);
 
-		if(containsDeviceId(d.deviceId)) { return; }
+		if(containsDeviceId(d.deviceId)) { return null; }
 		
 		ContentValues  values = new ContentValues();
 		values.put(KEY_ADDRESS, address);
@@ -169,7 +164,9 @@ public class EchoDeviceDatabase {
 		values.put(KEY_DEVICE_ID, d.deviceId);
 		
 		
-		mHelper.insert(values);
+		Long rowid = mHelper.insert(values);
+		if(rowid == null || rowid < 0) return null;
+		return getDeviceData(mHelper.getCursorByRowId(rowid));
 		
 		
 	}
@@ -185,12 +182,12 @@ public class EchoDeviceDatabase {
 		mHelper.deleteAll();
 	}
 	
-	protected synchronized boolean containsDeviceId(long deviceId) {
+	protected boolean containsDeviceId(long deviceId) {
 		return mHelper.contains(KEY_DEVICE_ID, Long.toString(deviceId));
 	}
 
 	
-	public synchronized boolean containsDeviceData(DeviceObject device) {
+	public boolean containsDeviceData(DeviceObject device) {
 
 		String address;
 		if(device.isProxy()) {
@@ -201,7 +198,7 @@ public class EchoDeviceDatabase {
 		return containsDeviceData(address, device.getEchoClassCode() & 0xFFFF, device.getInstanceCode() & 0xFF);
 	}
 
-	private synchronized boolean containsDeviceData(String address, int echoClassCode, int instanceCode) {
+	private boolean containsDeviceData(String address, int echoClassCode, int instanceCode) {
 		return mHelper.contains(new DatabaseOpenHelper.Where(
 				new String[]{KEY_ADDRESS, KEY_ECHO_CLASS_CODE, KEY_INSTANCE_CODE}
 				, new String[]{address, Integer.toString(echoClassCode), Integer.toString(instanceCode)}));
@@ -230,7 +227,7 @@ public class EchoDeviceDatabase {
 	
 	
 	public EchoDeviceData getDeviceData(long deviceId) {
-		DeviceData device = mDeviceDatabase.getDeviceData(deviceId);
+		DeviceData device = getDeviceDatabase().getDeviceData(deviceId);
 		if(device == null) return null;
 		return getDeviceData(device);
 	}
@@ -241,7 +238,7 @@ public class EchoDeviceDatabase {
 		}
 		long deviceId = mHelper.getLong(cursor, KEY_DEVICE_ID);
 
-		DeviceData data = mDeviceDatabase.getDeviceData(deviceId);
+		DeviceData data = getDeviceDatabase().getDeviceData(deviceId);
 		if(data == null) return null;
 		return getDeviceData(data, cursor);
 	}
@@ -299,7 +296,7 @@ public class EchoDeviceDatabase {
 		for(int i = 0; i < size; i++) {
 			EchoDeviceData data = getDeviceData(cursor);
 			if(data != null && data.parentId != null) {
-				DeviceData d = mDeviceDatabase.getDeviceData(data.parentId);
+				DeviceData d = getDeviceDatabase().getDeviceData(data.parentId);
 				if(d != null && d.protocolName.equals(protocolName)) {
 					ret.add(data);
 				}
@@ -345,5 +342,12 @@ public class EchoDeviceDatabase {
 				this.onCreate(db);
 			}
 		}
+	}
+	
+	private DeviceDatabase getDeviceDatabase() {
+		if(mDeviceDatabase == null) {
+			mDeviceDatabase = DeviceDatabase.getInstance(mContext);
+		}
+		return mDeviceDatabase;
 	}
 }

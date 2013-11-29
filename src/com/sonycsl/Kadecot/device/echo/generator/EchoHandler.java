@@ -2,6 +2,7 @@ package com.sonycsl.Kadecot.device.echo.generator;
 
 import org.json.JSONObject;
 
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceDatabase;
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
@@ -43,6 +44,7 @@ public class EchoHandler {
 	// 返り値はinstanceCode．0はfault
 	// EchoDeviceAgentを作ってDatabaseに加える
 	public byte generateDevice(short echoClassCode, long generatorId) {
+		Dbg.print(generatorId);
 		return mEchoManager.generateDevice(echoClassCode, generatorId);
 	}
 	

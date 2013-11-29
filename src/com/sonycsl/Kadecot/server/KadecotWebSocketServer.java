@@ -39,6 +39,7 @@ import android.util.Log;
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
+import com.sonycsl.Kadecot.core.Dbg;
 
 public class KadecotWebSocketServer {
 	@SuppressWarnings("unused")
@@ -116,10 +117,10 @@ public class KadecotWebSocketServer {
 
 			// origin
 			String origin = handshake.getFieldValue("origin");
-			WebSocketCall wc = new WebSocketCall(mContext, conn);
+			KadecotCall kc = new WebSocketCall(mContext, conn);
 				
-			mKadecotCalls.put(conn, wc);
-			wc.start();
+			mKadecotCalls.put(conn, kc);
+			kc.start();
 			
 		}
 
@@ -128,8 +129,8 @@ public class KadecotWebSocketServer {
 				boolean remote) {
 			if (mKadecotCalls.containsKey(conn)) {
 				KadecotCall kc = mKadecotCalls.get(conn);
-				kc.stop();
 				mKadecotCalls.remove(conn);
+				kc.stop();
 			}
 			
 		}
@@ -138,7 +139,7 @@ public class KadecotWebSocketServer {
 		public void onMessage(WebSocket conn, String message) {
 			// TODO Auto-generated method stub
 
-			Log.v(TAG, message);
+			Dbg.print(message);
 			if (mKadecotCalls.containsKey(conn)) {
 				try {
 					mKadecotCalls.get(conn).receive(new JSONObject(message));
@@ -151,11 +152,11 @@ public class KadecotWebSocketServer {
 
 		@Override
 		public void onError(WebSocket conn, Exception ex) {
-			if (mKadecotCalls.containsKey(conn)) {
-				KadecotCall kc = mKadecotCalls.get(conn);
-				kc.stop();
-				mKadecotCalls.remove(conn);
-			}
+			//if (mKadecotCalls.containsKey(conn)) {
+			//	KadecotCall kc = mKadecotCalls.get(conn);
+			//	kc.stop();
+			//	mKadecotCalls.remove(conn);
+			//}
 		}
 
 
@@ -171,7 +172,6 @@ public class KadecotWebSocketServer {
 			self.mWebSocketServer = null;
 			
 			if(self.isStarted()) {
-				self.stop();
 				self.start();
 			}
 			

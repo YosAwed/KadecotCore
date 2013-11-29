@@ -61,7 +61,7 @@ public class DeviceDatabase {
 	}
 
 
-	public synchronized boolean containsNickname(String nickname) {
+	public boolean containsNickname(String nickname) {
 		return mHelper.contains(KEY_NICKNAME, nickname);
 	}
 
@@ -91,9 +91,14 @@ public class DeviceDatabase {
 		if(rowid == null || rowid < 0) return false;
 		return true;
 	}
-	
+
 	public synchronized boolean deleteDeviceData(long deviceId) {
 		mHelper.delete(KEY_DEVICE_ID, Long.toString(deviceId));
+		return true;
+	}
+	
+	public synchronized boolean deleteAllDeviceData() {
+		mHelper.deleteAll();
 		return true;
 	}
 

@@ -29,21 +29,34 @@ public class EchoDiscovery {
 	private final Context mContext;
 	private final Set<DeviceObject> mActiveDevices;
 	private final EchoDeviceDatabase mEchoDeviceDatabase;
+	private final Logger mLogger;
 	
 	public EchoDiscovery(Context context) {
 		mContext = context.getApplicationContext();
 		mActiveDevices = new HashSet<DeviceObject>();
 		mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
+		mLogger = Logger.getInstance(mContext);
 	}
 	
-	protected synchronized void onDiscoverNewDevice(DeviceObject device) {
-		mEchoDeviceDatabase.addDeviceData(device);
+	protected synchronized void onDiscoverNewActiveDevice(DeviceObject device) {
+		EchoDeviceData data;
 		
-		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(device);
+		if(mEchoDeviceDatabase.containsDeviceData(device)) {
+			data =  mEchoDeviceDatabase.getDeviceData(device);
+		} else {
+			data = mEchoDeviceDatabase.addDeviceData(device);
+		}
+		
+		if(data == null) {
+			return;
+		}
 
 		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
+		
+		
+		// logger
 		HashSet<String> propertyNameSet = new HashSet<String>();
 		long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
@@ -59,18 +72,18 @@ public class EchoDiscovery {
 		case TemperatureSensor.ECHO_CLASS_CODE:
 			propertyNameSet.add(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE));
 
-			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		case HumiditySensor.ECHO_CLASS_CODE:
 			propertyNameSet.add(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY));
 			
-			Logger.getInstance(mContext).watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		}
 	}
 	
 	
-	protected synchronized void startDiscovering() {
+	protected void startDiscovering() {
 		if(Echo.isStarted()) {
 			EchoNode[] nodes = Echo.getNodes();
 			for(EchoNode n : nodes) {
@@ -89,10 +102,10 @@ public class EchoDiscovery {
 	}
 	
 	
-	public synchronized void onDiscover(DeviceObject device) {
+	public void onDiscover(DeviceObject device) {
 		if(!mActiveDevices.contains(device)) {
 			mActiveDevices.add(device);
-			onDiscoverNewDevice(device);
+			onDiscoverNewActiveDevice(device);
 		}
 	}
 	

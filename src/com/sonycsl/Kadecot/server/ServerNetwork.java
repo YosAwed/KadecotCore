@@ -5,6 +5,7 @@ import java.net.SocketException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.echo.EchoUtils;
 
 import android.content.BroadcastReceiver;
@@ -26,92 +27,100 @@ public class ServerNetwork {
 	
 	private final Context mContext;
 	private final BroadcastReceiver mConnectionReceiver;
-	private boolean mConnectedHomeNetwork;
+	private int mConnectedHomeNetwork = UNDEFINED;
+	
+	public static final int CONNECTED = 0;
+	public static final int UNCONNECTED = 1;
+	public static final int UNDEFINED = 2;
 	
 	private ServerManager mServerManager;
 	private ServerSettings mServerSettings;
+	private final ConnectivityManager mConnectivityManager;
+	private final WifiManager mWifiManager;
+	
+	private boolean mWatchingConnection = false;
 	
 	private ServerNetwork(Context context) {
 		mContext = context.getApplicationContext();
 		
+		mConnectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		mWifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+		
 		mConnectionReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				checkConnection();
+				watchConnection();
 			}
 		};
+		
 	}
 	
 	public static synchronized ServerNetwork getInstance(Context context) {
 		if(sInstance == null) {
 			sInstance = new ServerNetwork(context);
-			sInstance.init();
 		}
 		
 		return sInstance;
 	}
 	
-	protected void init() {
-		mServerManager = ServerManager.getInstance(mContext);
-		mServerSettings = ServerSettings.getInstance(mContext);
+	public void startWatchingConnection() {
+		mWatchingConnection = true;
+		mConnectedHomeNetwork = UNDEFINED;
 		
-		mConnectedHomeNetwork = isConnectedHomeNetwork();
-
-		onNetworkChanged();
-	}
-	public void startConnectionReceiver() {
-		checkConnection();
+		watchConnection();
 		
 		mContext.registerReceiver(mConnectionReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 	}
 
-	public void stopConnectionReceiver() {
+	public void stopWatchingConnection() {
+		mWatchingConnection = false;
 		mContext.unregisterReceiver(mConnectionReceiver);
-		mConnectedHomeNetwork = false;
+		mConnectedHomeNetwork = UNDEFINED;
+		onNetworkChanged();
 	}
 	
-	public void checkConnection() {
-		boolean connected = isConnectedHomeNetwork();
+	public void watchConnection() {
+		if(mWatchingConnection == false) {
+			return;
+		}
+		int connected = isConnectedHomeNetwork();
+		//Dbg.print("checkConnection:"+connected);
 		if(mConnectedHomeNetwork != connected) {
-			mConnectedHomeNetwork = isConnectedHomeNetwork();
+			mConnectedHomeNetwork = connected;
 			onNetworkChanged();
 		}
 	}
 	
 
-	protected void onNetworkChanged() {
-		if(mConnectedHomeNetwork) {
-			mServerManager.startHomeNetwork();
+	private void onNetworkChanged() {
+		if(mConnectedHomeNetwork == CONNECTED) {
+			getServerManager().startHomeNetwork();
 		} else {
-			mServerManager.stopHomeNetwork();
+			getServerManager().stopHomeNetwork();
 		}
 	}
 	
 
-	public boolean isConnectedHomeNetwork() {
+	public int isConnectedHomeNetwork() {
 
-		ConnectivityManager manager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
+		NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
 		
 		if(info != null && info.getType() == ConnectivityManager.TYPE_WIFI && info.isConnected()) {
-			WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-			WifiInfo wInfo = wifiManager.getConnectionInfo();
-			if(wInfo != null && mServerSettings.getWifiBSSID().equalsIgnoreCase(wInfo.getBSSID())) {
-				return true;
+			WifiInfo wInfo = mWifiManager.getConnectionInfo();
+			if(wInfo != null && getSettings().getWifiBSSID().equalsIgnoreCase(wInfo.getBSSID())) {
+				return CONNECTED;
 			}
 		}
-		return false;
+		return UNCONNECTED;
 	}
 	
 	public String getCurrentConnectionBSSID() {
 
-		ConnectivityManager manager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
+		NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
 
 		if(info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
 
-			WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-			WifiInfo wInfo = wifiManager.getConnectionInfo();
+			WifiInfo wInfo = mWifiManager.getConnectionInfo();
 			return wInfo.getBSSID();
 		} else {
 			return null;
@@ -119,8 +128,8 @@ public class ServerNetwork {
 	}
 	
 	public JSONObject getNetworkInfoAsJSON() {
-		ConnectivityManager manager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
+		
+		NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
 		JSONObject value = new JSONObject();
 		try {
 			if(info == null) {
@@ -129,8 +138,7 @@ public class ServerNetwork {
 				value.put("isConnected", info.isConnected());
 				value.put("type", info.getTypeName());
 				if(info.getType() == ConnectivityManager.TYPE_WIFI) {
-					WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-					WifiInfo wInfo = wifiManager.getConnectionInfo();
+					WifiInfo wInfo = mWifiManager.getConnectionInfo();
 					if(wInfo != null) {
 						// from android 4.2,there is extra quotation.
 						String ssid = wInfo.getSSID();
@@ -142,7 +150,7 @@ public class ServerNetwork {
 				}
 				value.put("ip",getIPAddress());
 
-				value.put("isDeviceAccessible", isConnectedHomeNetwork());
+				value.put("isDeviceAccessible", (isConnectedHomeNetwork()==CONNECTED));
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -152,10 +160,24 @@ public class ServerNetwork {
 	}
 	
 	public String getIPAddress(){
-		WifiManager wManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wInfo = wManager.getConnectionInfo();
+		WifiInfo wInfo = mWifiManager.getConnectionInfo();
 		int ipAddress = wInfo.getIpAddress();
 		return String.format("%01d.%01d.%01d.%01d",(ipAddress>>0)&0xff, (ipAddress>>8)&0xff,
 												(ipAddress>>16)&0xff, (ipAddress>>24)&0xff);
+	}
+	
+	
+	private ServerManager getServerManager() {
+		if(mServerManager == null) {
+			mServerManager = ServerManager.getInstance(mContext);
+		}
+		return mServerManager;
+	}
+	
+	private ServerSettings getSettings() {
+		if(mServerSettings == null) {
+			mServerSettings = ServerSettings.getInstance(mContext);
+		}
+		return mServerSettings;
 	}
 }
