@@ -224,6 +224,12 @@ public class EchoDeviceDatabase {
 		c.close();
 		return data;
 	}
+
+	public EchoDeviceData getDeviceData(String nickname) {
+		DeviceData device = getDeviceDatabase().getDeviceData(nickname);
+		if(device == null) return null;
+		return getDeviceData(device);
+	}
 	
 	
 	public EchoDeviceData getDeviceData(long deviceId) {

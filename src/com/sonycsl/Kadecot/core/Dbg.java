@@ -26,7 +26,7 @@ public class Dbg {
 		if(o == null) {
 			Log.e("Kadecot", "[Debug]null(class:"+className+",method:"+methodName+",line:"+lineNumber+")");
 		} else {
-			Log.d("Kadecot", "[Debug]"+o.toString()+"(class:"+className+",method:"+methodName+",line:"+lineNumber+")");
+			Log.v("Kadecot", "[Debug]"+o.toString()+"(class:"+className+",method:"+methodName+",line:"+lineNumber+")");
 		}
 	}
 
