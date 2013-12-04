@@ -738,28 +738,30 @@ public class EchoManager implements DeviceProtocol {
 		// / instance codeを決める
 		List<Integer> instanceCodeList = getEchoDeviceDatabase()
 				.getLocalDeviceInstanceCodeList(echoClassCode);
+		
 		if (instanceCodeList.size() == 0) {
 			instanceCode = EchoDeviceDatabase.MIN_INSTANCE_CODE;
 		} else {
-			instanceCode = instanceCodeList.get(instanceCodeList.size() - 1);
+			instanceCode = instanceCodeList.get(instanceCodeList.size() - 1) + 1;
 			if (instanceCode >= EchoDeviceDatabase.MAX_INSTANCE_CODE) {
 				instanceCode = EchoDeviceDatabase.MIN_INSTANCE_CODE;
+			}
 
-				if (instanceCodeList.contains(instanceCode)) {
+			if (instanceCodeList.contains(instanceCode)) {
 
-					for (int code : instanceCodeList) {
-						instanceCode = code + 1;
-						if (!instanceCodeList.contains(instanceCode)) {
-							break;
-						}
+				for (int code : instanceCodeList) {
+					instanceCode = code + 1;
+					if (!instanceCodeList.contains(instanceCode)) {
+						break;
 					}
 				}
+			}
 
-				if (instanceCode >= EchoDeviceDatabase.MAX_INSTANCE_CODE) {
-					return 0;
-				}
+			if (instanceCode >= EchoDeviceDatabase.MAX_INSTANCE_CODE) {
+				return 0;
 			}
 		}
+		Dbg.print("new device instance code:"+instanceCode);
 		// /
 		data = getEchoDeviceDatabase().addLocalDeviceData(echoClassCode,
 				(byte) instanceCode, parentId);

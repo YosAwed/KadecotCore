@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.Echo;
@@ -131,7 +132,10 @@ public class EchoDiscovery {
 
 		InetAddress inetAddress = null;
 		if(address.equals(EchoDeviceDatabase.LOCAL_ADDRESS)) {
-			if(Echo.getNode() == null) return null;
+			if(Echo.getNode() == null) {
+				Dbg.print("Echo.getNode() == null");
+				return null;
+			}
 			inetAddress = Echo.getNode().getAddress();
 		} else {
 			try {
