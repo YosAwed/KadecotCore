@@ -19,8 +19,7 @@
         <!-- tab for app and log. -->
         <div data-role="navbar">
           <ul>
-            <li><a href="#log_page"
-                   data-transition="none">Log</a></li>
+            <li><a href="#log_page" data-transition="none">Log</a></li>
             <li><a href="#devlist_page" data-transition="none"
                    class="ui-btn-active ui-state-persist">Devices</a></li>
             <li><a href="#app_page" data-transition="none" >Apps</a></li>
@@ -35,9 +34,9 @@
         </ul>
       </div> <!-- content end -->
       <input type="button" value="Update"
-             onclick="kHAPI.refreshList();"></input>
+             onclick="kHAPI.refreshList();kHAPI.reqDevListHandlers_onUpdateList();"></input>
       <input type="button" value="Delete all inactive devices"
-             onclick="kHAPI.deleteInactiveDevices();"></input>
+             onclick="kHAPI.deleteInactiveDevices();kHAPI.reqDevListHandlers_onUpdateList();"></input>
     </div> <!-- device page end -->
 
     <!-- app page -->
@@ -105,30 +104,27 @@
       <h3>Settings</h3>
       </div>
 
-      Server IP<br>
+      Server IP address<br>
       <font size=-1>
-        You can connect this server using browser.
+        You can connect your web app to this server using this address. Please <a onclick="Local.openWebBrowser('http://kadecot.net/webapi/');return true;">visit our website</a> for more information.
       </font>
       <input id="server_android_ip" type="text"
              readonly="readonly" placeholder="localhost" />
       <input id="register_android_button" type="button"
-             value="Register this network as homenetwork"
+             value="Join current network"
              onclick="onClickRegisterButton();"/>
       <hr>
-
-      Server Location
-      <input type="button" onclick="onClickGetGeoLocation();"
-             value="Allow using GPS location">
+      <input id="get_geolocation_button_android"
+             type="button" onclick="onClickGetGeoLocation();"
+             value="Get geolocation from GPS">
 
       <hr>
-      Enable Persistent Mode
       <label for="enable_persistent_android_checkbox">
-                Allow running kadecot in background.</label>
+      Persistent mode</label>
       <input type="checkbox" id="enable_persistent_android_checkbox"/>
 
       <hr>
-      Enable JSONP Server.
-      <label for="enable_jsonp_android_checkbox">Allow running JSONP Server.</label>
+      <label for="enable_jsonp_android_checkbox">Run JSONP Server (causes security hazard!)</label>
       <input type="checkbox" id="enable_jsonp_android_checkbox"/>
 
       <hr>
@@ -137,8 +133,7 @@
       <input type="checkbox" id="enable_websocket_checkbox"/>
 
       <hr>
-      Initialize Server Setting.
-      <input type="button" value="Initialize"
+      <input type="button" value="Initialize Server Settings"
              onclick="onClickFullInitializeButton();">
 
     </div> <!-- settings page for android end -->
@@ -158,7 +153,8 @@
         <hr>
 
         Server Location
-        <input type="button" onclick="onClickGetGeoLocation();"
+        <input id="get_geolocation_button_browser"
+               type="button" onclick="onClickGetGeoLocation();"
                value="Allow using GPS location">
 
         <hr>
@@ -196,7 +192,7 @@
     <!-- device detail page -->
     <div data-role="page" id="device_detail_page">
       <div data-role="header">
-        <a data-icon="back" class="ui-btn-left" data-rel="back" onclick="kHAPI.reqDevListHandlers_onUpdateList();">Back</a>
+        <a data-icon="back" class="ui-btn-left" data-rel="back" href="#devlist_page">Back</a>
         <h3>Detail</h3>
       </div>
       <!-- device detail content -->
@@ -215,14 +211,10 @@
         Power consumption sensor:<br>
         <select id="device_power_logger"><option value="None">None</option></select>
         <hr>
-        Remove Device<br>
-        <font size=-1>
-          Remove device from database.
-        </font>
         <a id="remove_device" data-rel="back" data-role="button"
-            onclick="onClickRemoveDevice();">Remove Device</a>
+            onclick="onClickRemoveDevice();">Remove this device</a>
 
-        <input id="get_property_button" type="button" value="Get all properties.">
+        <input id="get_property_button" type="button" value="Get all available properties">
 
         <table id="property_table" data-role="table"
                 class="ui-responsive table-stroke" data-mode="reflow">

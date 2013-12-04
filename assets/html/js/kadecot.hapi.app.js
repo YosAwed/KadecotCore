@@ -122,7 +122,10 @@ kHAPI.app = {
 									kHAPI.app.postMsgToApp( 'onGetSetValue',[result],json_rpc.id ) ;
 								} ) ;
 						}
-
+					} else if( json_rpc.method === 'queryLog' ){
+						kHAPI.queryLog(json_rpc.params , function(dat){
+							kHAPI.app.postMsgToApp( 'onQueryLog',[dat],json_rpc.id ) ;
+						}) ;
 					} else {
 						var method = kHAPI.app.appAPI[json_rpc.method] ;
 
@@ -200,6 +203,10 @@ kHAPI.app = {
 					]
 				}
 			]}.data;
+			var saved_manifest = getSavedManifest();
+			for( var si=0;si<saved_manifest.length;++si ){
+				kHAPI.app._manifests.push(saved_manifest[si]) ;
+			}
 			kHAPI.app.addManifest = function(manifs_dat){
 				// Update manifest!!
 				var mfs = manifs_dat ;

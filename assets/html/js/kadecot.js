@@ -248,9 +248,9 @@ var kadecot = {
       wa.onMsgFromServer = function(origin,json_rpc){
 	//console.log( 'message by addEventListener_message : ' + JSON.stringify(arguments) ) ;
         // 全てのサーバーからのメソッド呼び出しのルート
-	if( json_rpc.method === 'onGetSetValue' ){
+	if( json_rpc.method === 'onGetSetValue' || json_rpc.method === 'onQueryLog' ){
 	  if( wa.invokeWaitList[ json_rpc.id ] === undefined ){
-	    console.log('No matching getsetValue call found for onGetSetValue') ;
+	    console.log('No matching getsetValue call found for onGetSetValue/onQueryLog') ;
 	  } else {
 	    wa.invokeWaitList[ json_rpc.id ].call( wa , json_rpc.params[0] ) ;
 	  }
@@ -289,6 +289,12 @@ var kadecot = {
 	this.postMsgToMyPage( 'getsetValue'
 		,(args_for_set===undefined ? [devname,propname] : [devname,propname,args_for_set])
 		,key ) ;
+    }
+    , invokeQueryLog : function( starttime , endtime , cbfunc ){
+	var key = this.genRandStr() ;
+	this.invokeWaitList[key] = cbfunc ;
+	this.postMsgToMyPage( 'queryLog'
+		,[starttime , endtime] ,key ) ;
     }
     , postMsgToMyPage : function( methodName,argsarray,key ){
 	var msgToPost = JSON.stringify( {'method':methodName , 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } );
@@ -386,6 +392,10 @@ var kadecot = {
 			kadecot._wa.postMsgToMyPage('cleanup',[bWinClose] );
 		} ;
 
+		ao.queryLog = function(){ kadecot._wa.invokeQueryLog.apply(kadecot._wa,arguments) ; } ;
+
+
+
 		this.initcb( ao );
 	}
 
@@ -416,6 +426,7 @@ var kadecot = {
 
 	// Dummy function. overwritten in onMyPageConnected
 	, onPropertyChanged : function(){}
+
     } // myPageAPI end.
 
   } // kadecot._wa end.

@@ -74,7 +74,6 @@ $(document).on("pagecreate",function(){
         if(isControler(dev)) continue;
         device_list_view.append(makeDeviceLi(dev));
       }
-      device_list_view.listview().trigger("create");
       device_list_view.listview().listview("refresh");
       return true;
     };
@@ -90,10 +89,7 @@ $(document).on("pagecreate",function(){
 
 		device_list_view.prepend(makeDeviceLi(newdevice));
 
-		device_list_view.listview().trigger("create");
 		device_list_view.listview().listview("refresh");
-
-		queryDevStatusForIcon( newdevice.nickname ) ;
 
 		return true;
 	} ;
@@ -121,12 +117,12 @@ $(document).on("pagecreate",function(){
     kHAPI.onPropertyChanged = function(prop_change){
       if(isDeviceOnDetail(prop_change.nickname)){
         onPropertyChangedOnDetail(prop_change);
-      } else {
-		queryDevStatusForIcon( prop_change.nickname ) ;
       }
+      queryDevStatusForIcon(prop_change.nickname);
     };
 
     kHAPI.onNotifyServerSettings = function(network_info){
+      //toast("Network settings was changed.");
       if(kHAPI.isOnAndroid){
         onNotifyServerSettingsOnAndroid(network_info);
       }else{
@@ -136,9 +132,9 @@ $(document).on("pagecreate",function(){
 
     var oldOnBackBtn = kHAPI.onBackBtn ;
     kHAPI.onBackBtn = function(){
-		if( typeof oldOnBackBtn === 'function' )
-			oldOnBackBtn() ;
-		$.mobile.changePage("#devlist_page");
+      if( typeof oldOnBackBtn === 'function' )
+        oldOnBackBtn() ;
+      $.mobile.changePage("#devlist_page");
     } ;
 
 
@@ -180,21 +176,22 @@ var onClickRefreshLogButton = function(){
 var getSimpleLog = function(){
   // 9/26 21:15:14
   var one_hours_ago = getUNIXTime(getHour(new Date(),-1));
-    if(kHAPI.queryLog !== undefined){
-      kHAPI.queryLog([one_hours_ago,-1],function(raw_data){
-        var str = "";
-        for(var i=raw_data.length-1;i>=0;i--){
-          var message = "{date} {nickname} {type} {epc} {edt} ({success} : {message})".format(
-            {date:new Date(parseInt(raw_data[i].unixtime)).myLocaleString(),
-             nickname:raw_data[i].nickname,
-             type:raw_data[i].access_type,
-             epc:raw_data[i].property_name,
-             edt:raw_data[i].property_value,
-             success:raw_data[i].success==="true"?"success":"fail",
-             message:(typeof raw_data[i].message==='string'?raw_data[i].message:'null')});
-            str += message + "\n";
-        }
-        $("#log_area").val(str);
+  if(kHAPI.queryLog !== undefined){
+    kHAPI.queryLog([one_hours_ago,-1],function(raw_data){
+      var str = "";
+      for(var i=raw_data.length-1;i>=0;i--){
+        var message = "{date} {nickname} {type} {epc} {edt} ({success}{message})".format(
+          {date:new Date(parseInt(raw_data[i].unixtime)).myLocaleString(),
+           nickname:raw_data[i].nickname,
+           type:raw_data[i].access_type,
+           epc:raw_data[i].property_name,
+           edt:raw_data[i].property_value,
+           success:raw_data[i].success==="true"?"success":"fail",
+           message:(raw_data[i].message!=='null'?(': '+raw_data[i].message):'')}
+        );
+        str += message + "\n";
+      }
+      $("#log_area").val(str);
     });
   }
 };
@@ -207,9 +204,9 @@ var onClickGetGeoLocation = function(){
              "OK",
              "Cancel",function(){
                navigator.geolocation.getCurrentPosition(
-                 function(pos,t){
-                   kHAPI.setLocation([pos.coords.latitude,pos.coords.longitude]);
-                   toast('Refreshed location('
+                 function(pos){
+                   kHAPI.setServerLocation([pos.coords.latitude,pos.coords.longitude]);
+                   toast('Success current location('
                          +pos.coords.latitude+' , '
                          +pos.coords.longitude+' )') ;
                  }
@@ -231,31 +228,32 @@ var onClickConnectButton = function(button){
   }
 };
 
-// used by first confirm.
+// also used by first confirm.
 var onClickRegisterButton = function(isFirstConfirm){
   if(isFirstConfirm === undefined) isFirstConfirm = false;
   var netInfo = kHAPI.getNetInfo();
   var isRegistered = netInfo.network.isDeviceAccessible;
-  var SSID = netInfo.network.SSID.split('"').join('');
+  var SSID = netInfo.network.SSID ;
+  SSID = (SSID==undefined || SSID==null ||SSID.length==0?'network':SSID.split('"').join(''));
 
   if(!isRegistered){
-    areYouSure("Register " + SSID + " as homenetwork?",
-               "Registering network will enable access to devices.",
+    areYouSure("Join " + SSID + "?",
+               "This allows access to home appliances and sensors on "+SSID+".",
                "OK",
                "Cancel",function(){
                  kHAPI.enableServerNetwork(true);
                  if(!isFirstConfirm){
-                   $("#register_android_button").val("Unregister network").button("refresh");
+                   $("#register_android_button").val("Withdraw from "+SSID).button("refresh");
                  }
-                 toast("registered");
+                 toast("Joined the network");
                });
 
   }else{
     kHAPI.enableServerNetwork(false);
     if(!isFirstConfirm){
-      $("#register_android_button").val("Register this network as homenetwork").button("refresh");
+      $("#register_android_button").val("Join current network").button("refresh");
     }
-    toast("unregistered");
+    toast("withdrew from the network");
   }
 };
 
@@ -286,10 +284,10 @@ var onSettingsPageAndroidOpen = function(){
 
   $("#server_android_ip").val(netInfo.network.ip).textinput();
   if(netInfo.network.isDeviceAccessible){
-    $("#register_android_button").val("Unregister this network")
+    $("#register_android_button").val("Withdrow from current network")
                                  .button("refresh");
   }else{
-    $("#register_android_button").val("Register this network as homenetwork")
+    $("#register_android_button").val("Join current network")
                                  .button("refresh");
   }
   initializeCheckBox($("#enable_websocket_checkbox"),netInfo.websocket,
@@ -465,10 +463,13 @@ var onDeviceDetailPageOpen = function(nickname,device){
         kHAPI.get(send,function(data){
           for(var j=0;j<data.property.length;j++){
             var tr = $("#property_table tbody tr");
+
             for(var i=0;i<tr.length;i++){
               var cells = tr.eq(i).children();
               var epc = cells.eq(0).text();
-              if(epc === data.property[j].name && data.property[j].value !== undefined){
+
+              if(epc.toUpperCase() === data.property[j].name.toUpperCase()
+                 && data.property[j].value !== undefined){
                 cells.eq(3).text(data.property[j].value.map(
                   function(x){
                     var s = x.toString(16);
@@ -529,20 +530,20 @@ var makeDeviceRemocon = function(nickname){
       return makeButtonIN(text,makeSetFunction(nickname,prop,val));
     };
     if( device.deviceType === '0x0130' ){
-	ret += 'Temperature<br>' ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[18],'18C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[19],'19C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[20],'20C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[21],'21C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[22],'22C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[23],'23C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[24],'24C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[25],'25C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[26],'26C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[27],'27C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[28],'28C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[29],'29C') ;
-	ret += makeSetButtonIN(device.nickname,'0xb3',[30],'30C') ;
+      ret += 'Temperature<br>' ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[18],'18C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[19],'19C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[20],'20C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[21],'21C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[22],'22C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[23],'23C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[24],'24C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[25],'25C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[26],'26C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[27],'27C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[28],'28C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[29],'29C') ;
+      ret += makeSetButtonIN(device.nickname,'0xb3',[30],'30C') ;
     }
 
     return ret;
@@ -634,6 +635,7 @@ var onPropertyChangedOnDetail = function(prop_change){
 
 var onClickChangeNickname = function(from,to){
   kHAPI.changeNickname([from,to]);
+  $.mobile.changePage("#devlist_page");
 };
 
 var onClickRemoveDevice = function(nickname){
@@ -722,6 +724,7 @@ function refreshManifests(manifs){
   }catch(e){ /* alert(e) ; */ }
 }
 
+
 // utility
 var isECHONETLite = function(device){
   return device.protocol === "ECHONET Lite";
@@ -753,7 +756,9 @@ function queryDevStatusForIcon( nickname , varHash){
     d = nickname ;
     nickname = d.nickname ;
   }
+
   var id = getNicknameHash(nickname);
+
   if(d.isEmulation===true) {
     $('#devIconBottomTxt'+id).html('Emulation') ;
   }
@@ -829,6 +834,11 @@ function queryDevStatusForIcon( nickname , varHash){
              ){
                setIcon('0xb1',function(newval){
                  $('#statusDivTxtArea'+id).html('  '+(newval[0]==0x41?'<font color="#c00">ON<font>':'OFF')) ;
+               }) ;
+             } else if( dtNum == 0x000d ){   // Illuminance sensor
+               // Power
+               setIcon('0xe0',function(newval){
+                 $('#statusDivTxtArea'+id).html('  '+echoByteArrayToInt(newval)+'lx' ) ;
                }) ;
              } else if( dtNum == 0x0262 ){   // Curtain
                // Curtain open/close
@@ -920,8 +930,10 @@ var onDeviceIconClick = function(nickname){
 var areYouSure = function(big,small,yestext,notext,yescallback,nocallback){
   $("#sure .big-message").text(escapeHTML(big));
   $("#sure .small-message").text(escapeHTML(small));
-  $("#sure .sure-do .ui-btn-text").text(escapeHTML(yestext));
-  $("#sure .no .ui-btn-text").text(escapeHTML(notext));
+
+  $("#sure .sure-do .ui-btn-inner .ui-btn-text").text(yestext);
+  $("#sure .no .ui-btn-inner .ui-btn-text").text(notext);
+
   $("#sure .sure-do").unbind("click");
   $("#sure .no").unbind("click");
 

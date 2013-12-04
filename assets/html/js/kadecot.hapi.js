@@ -54,24 +54,69 @@ var kHAPI = {
 			// Get device status
 			// args = [nickname,prop1,prop2]
 			// Success result example: callback(
-			//		  { "nickname" :  "hoge"
-			//			 , "property" : [
-			//			 {"name" : "0x80", "value" : [0x41, 0x31],
-			//				  "success" : true}
-			//			,{...} , {...}
-			//			  ]
-			//			} , true ) ;
+			//  { "nickname" :  "hoge",
+			//    "property" : [{"name" : "0x80", "value" : [0x41, 0x31],
+			//    "success" : true},{...},{...}]
+			//} , true ) ;
 			// Fail result example: callback(
-			//		{ "data" :	"nickname not found"
-			//		  ,"message" : "Invalid code""
-			//		  ,"code" : -32602 } , false ) ;
-			kHAPI.get = function( args , callback ){
-				this.net.callServerFunc('get' ,args ,callback);
-			} ;
-
+			// { "data" : "nickname not found"
+			//  ,"message" : "Invalid code""
+			//  ,"code" : -32602 } , false ) ;
+          // this function will wait for 100 msec for new get.
+          // deviceAccessQueue["nickname"] = undefined (if there is not previous gets)
+          // deviceAccessQueue["nickname"] = [{props:[prop1_1,prop1_2,,,],callback:function(){}},
+          //                                  {props:[prop2_1,prop2_2,,,],callback:function(){}},]
+          var deviceAccessQueue = Object.create(null);
+          var waitingTimeForQueue = 100; // ms
+          // kHAPI.get_with_queue = function( args, callback ){
+          kHAPI.get = function( args, callback, with_out_queue){
+            if(with_out_queue === undefined) with_out_queue = false;
+            if(with_out_queue){
+              this.net.callServerFunc('get' ,args ,callback);
+              return;
+            }
+            var nickname = args[0];
+            var props = args.slice(1);
+            if(deviceAccessQueue[nickname] === undefined){
+              deviceAccessQueue[nickname] = [{props:props,callback:callback}];
+              setTimeout(function(){
+                var props_and_callbacks = deviceAccessQueue[nickname];
+                deviceAccessQueue[nickname] = undefined;
+                var send_args = [nickname];
+                // like {{f:1,t:2},{f:2,t:4}}.this is for slice.
+                //  {f:1,t:3} means [1,3)
+                var start_and_end_index = [];
+                var callbacks = [];
+                for(var i=0;i<props_and_callbacks.length;i++){
+                  // equal to send_args = send_args.concat(props_and_callbacks[i].props);
+                  //  but this is bang method.
+                  send_args.push.apply(send_args,props_and_callbacks[i].props);
+                  callbacks.push(props_and_callbacks[i].callback);
+                  start_and_end_index.push({f:send_args.length-1-props_and_callbacks[i].props.length,
+                                            t:send_args.length-1});
+                }
+                kHAPI.net.callServerFunc("get",send_args,function(recv_args,success){
+                // kHAPI.get(send_args,function(recv_args,success){
+                  for(var i=0;i<callbacks.length;i++){
+                    if(!success){
+                      callbacks[i](recv_args,false);
+                    }else{
+                      callbacks[i]({nickname:nickname,
+                                    property:recv_args.property.slice(start_and_end_index[i].f,
+                                                                      start_and_end_index[i].t)
+                                   },true);
+                    }
+                  }
+                });
+              },waitingTimeForQueue);
+            }else{
+              // console.log("cached " + nickname + " " + props);
+              deviceAccessQueue[nickname].push({props:props,callback:callback});
+            }
+          };
 			// set : Change device states. Can modify multiple properties at once.
 			// args = [nickname,[prop1,newval1],[prop2,newval2] ..],
-		        // result is the same as get.
+			// result is the same as get.
 			kHAPI.set = function( args , callback ){
 				this.net.callServerFunc('set' , args , callback ) ;
 			} ;
@@ -132,6 +177,9 @@ var kHAPI = {
 			}
 
 			kHAPI.local.init() ;
+			if( !kHAPI.isOnAndroid )
+				Local = kHAPI.local ;
+
 			kHAPI.net.init() ;
 			kHAPI.dev.init() ;
 			kHAPI.app.init() ;
