@@ -307,13 +307,18 @@ public class DeviceManager {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
 		}
 		
+		return deleteDeviceData(data);
+	}
+	
+	public synchronized Response deleteDeviceData(DeviceData data) {
+
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
 		
 		JSONObject result = protocol.deleteDeviceData(data.deviceId);
 
 		boolean b = getDeviceDatabase().deleteDeviceData(data.deviceId);
 		if(b) {
-			Notification.informAllOnDeviceDeleted(nickname, protocol.getAllowedPermissionLevel());
+			Notification.informAllOnDeviceDeleted(data.nickname, protocol.getAllowedPermissionLevel());
 		}
 		if(result != null && !result.isNull("code")) {
 			// error

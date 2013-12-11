@@ -313,6 +313,21 @@ public class EchoDeviceDatabase {
 		cursor.close();
 		return ret;
 	}
+	
+	public List<EchoDeviceData> getDeviceDataListByParentId(long parentId) {
+
+		List<EchoDeviceData> ret = new ArrayList<EchoDeviceData>();
+		Cursor cursor = mHelper.getCursor(KEY_PARENT_ID, Long.toString(parentId));
+		int size = cursor.getCount();
+		for(int i = 0; i < size; i++) {
+			EchoDeviceData data = getDeviceData(cursor);
+			ret.add(data);
+			cursor.moveToNext();
+		}
+		
+		cursor.close();
+		return ret;
+	}
 
 	public List<Integer> getLocalDeviceInstanceCodeList(short echoClassCode) {
 
