@@ -347,23 +347,23 @@ public class EchoManager implements DeviceProtocol {
 	}
 
 	@Override
-	public JSONObject deleteDeviceData(long deviceId) {
+	public void deleteDeviceData(long deviceId) {
 		Dbg.print("deleteDeviceData:" + deviceId);
 		EchoDeviceData data = getEchoDeviceDatabase().getDeviceData(deviceId);
 		if (data == null) {
-			return new JSONObject();
+			return;
 		}
 		mEchoDiscovery.removeActiveDevices(deviceId);
 		getEchoDeviceDatabase().deleteDeviceData(deviceId);
 
 		if (data.parentId == null) {
-			return new JSONObject();
+			return;
 		}
 
 		DeviceData parentData = getDeviceDatabase()
 				.getDeviceData(data.parentId);
 		if (parentData == null) {
-			return new JSONObject();
+			return;
 		}
 		for (String protocolName : mGenerators.keySet()) {
 			if (protocolName.equals(parentData.protocolName)) {
@@ -371,7 +371,7 @@ public class EchoManager implements DeviceProtocol {
 				break;
 			}
 		}
-		return new JSONObject();
+		return;
 	}
 
 	public EchoObject getEchoObject(long deviceId) throws UnknownHostException {

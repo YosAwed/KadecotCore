@@ -33,6 +33,10 @@ public class ErrorResponse extends Response {
 		this(code, getErrorMessage(code), data);
 	}
 
+	public ErrorResponse(int code,String message) {
+		this(code, message, null);
+	}
+
 	public ErrorResponse(int code) {
 		this(code, getErrorMessage(code), null);
 	}

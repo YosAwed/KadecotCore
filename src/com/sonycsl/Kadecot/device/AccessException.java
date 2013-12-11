@@ -11,14 +11,22 @@ public class AccessException extends Exception {
 	private static final String TAG = AccessException.class.getSimpleName();
 	private final AccessException self = this;
 	
-	protected ErrorResponse mRes;
+	final protected ErrorResponse mErrorResponse;
 	
 	public AccessException(ErrorResponse res) {
-		mRes = res;
+		mErrorResponse = res;
+	}
+
+	public AccessException(int code, String message) {
+		mErrorResponse = new ErrorResponse(code, message);
+	}
+
+	public AccessException(int code, String message, Object data) {
+		mErrorResponse = new ErrorResponse(code, message, data);
 	}
 	
 	public ErrorResponse getErrorResponse() {
-		return mRes;
+		return mErrorResponse;
 	}
 
 }

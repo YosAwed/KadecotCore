@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
@@ -313,18 +314,23 @@ public class DeviceManager {
 	public synchronized Response deleteDeviceData(DeviceData data) {
 
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
+		CannotProcessRequestException cpre = null;
 		
-		JSONObject result = protocol.deleteDeviceData(data.deviceId);
+		try {
+			protocol.deleteDeviceData(data.deviceId);
+		} catch(CannotProcessRequestException e) {
+			cpre = e;
+		}
 
 		boolean b = getDeviceDatabase().deleteDeviceData(data.deviceId);
 		if(b) {
 			Notification.informAllOnDeviceDeleted(data.nickname, protocol.getAllowedPermissionLevel());
 		}
-		if(result != null && !result.isNull("code")) {
+		if(cpre != null) {
 			// error
-			return new ErrorResponse(result);
+			return cpre.getErrorResponse();
 		} else {
-			return new Response(result);
+			return new Response(null);
 		}
 	}
 	

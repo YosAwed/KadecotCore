@@ -85,7 +85,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 		mKadecotCall = new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(this, 0)) {
 			@Override
 			public void send(JSONObject obj) {
-				//Dbg.print(obj);
+				Dbg.print(obj);
 
 				StringBuilder builder = new StringBuilder();
 				//builder.append("if(\"kHAPI\" in window){kHAPI.net.callFromServer(");

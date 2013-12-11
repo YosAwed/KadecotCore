@@ -14,6 +14,11 @@ import com.sonycsl.Kadecot.device.DeviceManager;
 
 import android.content.Context;
 
+
+/**
+ * JSON-RPC 2.0 をベースとしている(paramsは配列のみ)
+ *
+ */
 public abstract class KadecotCall {
 	@SuppressWarnings("unused")
 	private static final String TAG = KadecotCall.class.getSimpleName();

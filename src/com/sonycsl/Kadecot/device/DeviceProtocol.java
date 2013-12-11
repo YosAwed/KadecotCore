@@ -23,7 +23,7 @@ public interface DeviceProtocol {
 	// 全てのデバイスのデータを消去する
 	public void deleteAllDeviceData();
 	// 指定したデバイスのデータを消去する
-	public JSONObject deleteDeviceData(long deviceId);	
+	public void deleteDeviceData(long deviceId);	
 	// デバイスにアクセスする
 	public List<DeviceProperty> set(long deviceId, List<DeviceProperty> propertyList) throws AccessException;
 	public List<DeviceProperty> get(long deviceId, List<String> propertyNameList) throws AccessException;

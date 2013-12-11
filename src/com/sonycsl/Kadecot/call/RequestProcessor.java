@@ -44,7 +44,12 @@ public class RequestProcessor {
 		Log.v(TAG, params.toString());
 		try {
 			Method method = getClass().getMethod(methodName, new Class[]{JSONArray.class});
-			return (Response)method.invoke(this, new Object[]{params});
+			
+			try {
+				return (Response)method.invoke(this, new Object[]{params});
+			} catch(CannotProcessRequestException e){
+				return e.getErrorResponse();
+			}
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 			return new ErrorResponse(ErrorResponse.METHOD_NOT_FOUND_CODE, e);
