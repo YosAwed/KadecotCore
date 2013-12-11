@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.device.echo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class EchoDiscovery {
 	
 	public EchoDiscovery(Context context) {
 		mContext = context.getApplicationContext();
-		mActiveDevices = new HashSet<DeviceObject>();
+		mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
 		mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
 		mLogger = Logger.getInstance(mContext);
 	}
@@ -150,7 +151,7 @@ public class EchoDiscovery {
 		return eoj;
 	}
 
-	public /*synchronized*/ boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
+	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
 		EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
 		if(eoj == null) {return false;}
 
