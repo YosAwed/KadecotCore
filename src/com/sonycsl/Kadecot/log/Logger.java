@@ -294,8 +294,11 @@ public class Logger {
 			e.printStackTrace();
 		}
 	}
-
 	public JSONArray queryLog(long beginning, long end) {
+		return queryLog(beginning, end, null);
+	}
+
+	public JSONArray queryLog(long beginning, long end, LogFilter filter) {
 		
 		JSONArray ret = new JSONArray();
 		List<File> fileList = getLogFileList(beginning, end);
@@ -328,7 +331,11 @@ public class Logger {
 				for(LinkedHashMap<String, String> data : list) {
 					long unixtime = getUnixTime(data);
 					if(unixtime >= beginning && unixtime <= end) {
-						ret.put(convertLog(data));
+						if(filter == null) {
+							ret.put(convertLog(data));
+						} else if(filter.predicate(data)) {
+							ret.put(convertLog(data));
+						}
 					}
 				}
 			}
@@ -370,13 +377,20 @@ public class Logger {
 		File ret = new File(dir, fileName);
 		return ret;
 	}
-	
-	public long getUnixTime(LinkedHashMap<String, String> data) {
+
+	public static long getUnixTime(LinkedHashMap<String, String> data) {
 		String version = data.get(LABEL_VERSION);
 		if(version.equals("0.1")) {
 			return Long.parseLong(data.get("unixtime"));
 		}
 		return -2;
+	}
+	public static String getNickname(LinkedHashMap<String, String> data) {
+		String version = data.get(LABEL_VERSION);
+		if(version.equals("0.1")) {
+			return data.get("nickname");
+		}
+		return null;
 	}
 	
 	public JSONObject convertLog(LinkedHashMap<String, String> data) {
@@ -441,6 +455,10 @@ public class Logger {
 	
 	public void printDebugLog(Object s) {
 		//Log.v(TAG, "["+TAG+"]"+ (s != null?s.toString():"null"));
+	}
+	
+	public interface LogFilter {
+		public boolean predicate(LinkedHashMap<String, String> data);
 	}
 
 }

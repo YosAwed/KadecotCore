@@ -3,9 +3,13 @@ package com.sonycsl.Kadecot.call;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.sonycsl.Kadecot.device.DeviceDatabase;
 import com.sonycsl.Kadecot.device.DeviceManager;
@@ -113,7 +117,7 @@ public class RequestProcessor {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
 		}
 	}
-	
+
 	public Response queryLog(JSONArray params) {
 		long beginning;
 		long end;
@@ -128,8 +132,41 @@ public class RequestProcessor {
 			e.printStackTrace();
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
 		}
-		
-		JSONArray logList = mLogger.queryLog(beginning, end);
+
+		JSONArray logList;
+		if(params.length() >= 3) {
+			try {
+				final JSONObject obj = params.getJSONObject(2);
+
+				logList = mLogger.queryLog(beginning, end, new Logger.LogFilter(){
+					@Override
+					public boolean predicate(LinkedHashMap<String, String> data) {
+						try {
+							if(!obj.isNull("nickname")) {
+								String nicknameReg = obj.getString("nickname");
+								String dataNickname = Logger.getNickname(data);
+								Pattern p = Pattern.compile(nicknameReg);
+								Matcher m = p.matcher(dataNickname);
+								if (m.find()){
+								} else {
+									return false;
+								}
+							}
+						} catch (JSONException e) {
+							e.printStackTrace();
+							return false;
+						}
+						return true;
+					}});
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				logList = mLogger.queryLog(beginning, end);
+
+			}
+		} else {
+			logList = mLogger.queryLog(beginning, end);
+		}
 		
 		return new Response(logList);
 	}
