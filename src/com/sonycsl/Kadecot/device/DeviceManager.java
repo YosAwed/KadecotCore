@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
-import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
@@ -85,11 +84,12 @@ public class DeviceManager {
 			return;
 		}
 		
+		Notification.informAllEmptyOnUpdateList(mContext);
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.refreshDeviceList();
 		}
 		
-		Notification.informAllOnUpdateList(mContext);
+		//Notification.informAllOnUpdateList(mContext);
 	}
 
 	public synchronized void deleteAllDeviceData() {
