@@ -705,6 +705,7 @@ public class EchoManager implements DeviceProtocol {
 		DeviceInfo info = new DeviceInfo(active,
 				EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
 						+ EchoUtils.toHexString(data.echoClassCode), option);
+		Dbg.print("(echo device info)nickname:"+data.nickname+",address:"+data.address+",instanceCode:"+data.instanceCode);
 		return info;
 	}
 
@@ -769,6 +770,7 @@ public class EchoManager implements DeviceProtocol {
 			return 0;
 		}
 		// }
+		Dbg.print("nickname:"+data.nickname+",instanceCode:"+data.instanceCode);
 		node.addDevice(new EchoDeviceAgent(data, gen));
 		try {
 			node.getNodeProfile().inform().reqInformSelfNodeInstanceListS()

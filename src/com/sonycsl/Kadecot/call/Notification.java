@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.call;
 import java.util.HashSet;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -53,13 +54,46 @@ public class Notification {
 
 	// send notification but params is empty.
 	//  when refreshList called,we want 1.onUpdateList([]) 2.onDeviceFound for each device.
-	public static void informAllEmptyOnUpdateList(Context context) {
-		JSONArray emptyArray = new JSONArray();
+	//public static void informAllEmptyOnUpdateList(Context context) {
+	//	JSONArray emptyArray = new JSONArray();
+	//	HashSet<KadecotCall> calls = KadecotCall.getKadecotCalls();
+	//	for(KadecotCall kc : calls) {
+	//		kc.sendNotification(ON_UPDATE_LIST, emptyArray);
+	//	}
+	//}
+
+/*
+	public static void informAllInactiveDeviceList(Context context) {
+		JSONArray params0 = getParamsOnUpdateList(context, 0);
+		JSONArray params1 = getParamsOnUpdateList(context, 1);
 		HashSet<KadecotCall> calls = KadecotCall.getKadecotCalls();
-		for(KadecotCall kc : calls) {
-			kc.sendNotification(ON_UPDATE_LIST, emptyArray);
+		for(int i = 0; i < params0.length(); i++) {
+			try {
+				JSONObject obj = params0.getJSONObject(i);
+				obj.put("active", false);
+				params0.put(i, obj);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
-	}
+
+		for(int i = 0; i < params1.length(); i++) {
+			try {
+				JSONObject obj = params1.getJSONObject(i);
+				obj.put("active", false);
+				params1.put(i, obj);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		for(KadecotCall kc : calls) {
+			if(kc.getPermissionLevel() == 0) {
+				kc.sendNotification(ON_UPDATE_LIST, params0);
+			} else {
+				kc.sendNotification(ON_UPDATE_LIST, params1);
+			}
+		}
+	}*/
 
 	public static void informAllOnPropertyChanged(JSONObject obj, int protocolPermissionLevel) {
 		JSONArray params = new JSONArray();

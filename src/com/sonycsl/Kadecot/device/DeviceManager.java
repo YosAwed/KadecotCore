@@ -83,13 +83,14 @@ public class DeviceManager {
 		if(isStarted() == false) {
 			return;
 		}
-		
-		Notification.informAllEmptyOnUpdateList(mContext);
+
+		//Notification.informAllEmptyOnUpdateList(mContext);
+		//Notification.informAllInactiveDeviceList(mContext);
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.refreshDeviceList();
 		}
 		
-		//Notification.informAllOnUpdateList(mContext);
+		Notification.informAllOnUpdateList(mContext);
 	}
 
 	public synchronized void deleteAllDeviceData() {
