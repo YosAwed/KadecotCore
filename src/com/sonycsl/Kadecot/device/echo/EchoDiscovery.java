@@ -87,13 +87,13 @@ public class EchoDiscovery {
 	
 	protected void startDiscovering() {
 		if(Echo.isStarted()) {
-			EchoNode[] nodes = Echo.getNodes();
-			for(EchoNode n : nodes) {
-				DeviceObject[] devices = n.getDevices();
-				for(DeviceObject d : devices) {
-					onDiscover(d);
-				}
-			}
+			//EchoNode[] nodes = Echo.getNodes();
+			//for(EchoNode n : nodes) {
+			//	DeviceObject[] devices = n.getDevices();
+			//	for(DeviceObject d : devices) {
+			//		onDiscover(d);
+			//	}
+			//}
 
 			try {
 				NodeProfile.getG().reqGetSelfNodeInstanceListS().send();
@@ -154,7 +154,6 @@ public class EchoDiscovery {
 	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
 		EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
 		if(eoj == null) {return false;}
-
 		return mActiveDevices.contains(eoj);
 	}	
 

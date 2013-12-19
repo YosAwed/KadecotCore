@@ -705,7 +705,7 @@ public class EchoManager implements DeviceProtocol {
 		DeviceInfo info = new DeviceInfo(active,
 				EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
 						+ EchoUtils.toHexString(data.echoClassCode), option);
-		Dbg.print("(echo device info)nickname:"+data.nickname+",address:"+data.address+",instanceCode:"+data.instanceCode);
+		Dbg.print("(echo device info)nickname:"+data.nickname+",address:"+data.address+",instanceCode:"+data.instanceCode+",active:"+active);
 		return info;
 	}
 
