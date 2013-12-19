@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.sonycsl.Kadecot.call.KadecotCall;
@@ -87,13 +88,13 @@ public class EchoDiscovery {
 	
 	protected void startDiscovering() {
 		if(Echo.isStarted()) {
-			//EchoNode[] nodes = Echo.getNodes();
-			//for(EchoNode n : nodes) {
-			//	DeviceObject[] devices = n.getDevices();
-			//	for(DeviceObject d : devices) {
-			//		onDiscover(d);
-			//	}
-			//}
+			EchoNode[] nodes = Echo.getNodes();
+			for(EchoNode n : nodes) {
+				DeviceObject[] devices = n.getDevices();
+				for(DeviceObject d : devices) {
+					onDiscover(d);
+				}
+			}
 
 			try {
 				NodeProfile.getG().reqGetSelfNodeInstanceListS().send();
@@ -116,6 +117,14 @@ public class EchoDiscovery {
 	}
 	
 	protected synchronized void clearActiveDevices() {
+		
+		Iterator<DeviceObject> itr = mActiveDevices.iterator();
+		while(itr.hasNext()) {
+			DeviceObject device= itr.next();
+			if(device.isProxy()) {
+				device.getNode().removeDevice(device);
+			}
+		}
 		mActiveDevices.clear();
 	}
 	
@@ -123,9 +132,11 @@ public class EchoDiscovery {
 		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(deviceId);
 		EchoObject eoj = getEchoObject(data.address, data.echoClassCode, data.instanceCode);
 		if(eoj == null) {return;}
-		if(!eoj.isProxy()) {
-			Echo.getNode().removeDevice((DeviceObject)eoj);
-		}
+		//if(!eoj.isProxy()) {
+		//	Echo.getNode().removeDevice((DeviceObject)eoj);
+		eoj.getNode().removeDevice((DeviceObject)eoj);
+
+		//}
 		mActiveDevices.remove(eoj);
 	}
 	
