@@ -89,6 +89,23 @@ public class ServerSettings {
 		return ret;
 	}
 
+	public JSONObject getLocationJSONObject() {
+		JSONObject ret = new JSONObject() ;
+
+		JSONArray location = new JSONArray();
+		double[] dLocation = getLocationDouble();
+
+		try {
+			location.put(dLocation[0]);
+			location.put(dLocation[1]);
+			ret.put("LatLng", location) ;
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ret;
+	}
+	/*
 	public JSONArray getLocationJSONArray() {
 		JSONArray location = new JSONArray();
 		double[] dLocation = getLocationDouble();
@@ -100,8 +117,7 @@ public class ServerSettings {
 			e.printStackTrace();
 		}
 		return location;
-	}
-	
+	}*/
 	// network
 	public String getWifiBSSID() {
 		return mPreferences.getString(KEY_WIFI_BSSID, "");

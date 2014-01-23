@@ -105,7 +105,7 @@ public class Notification {
 		JSONArray ret = new JSONArray();
 		ret.put(ServerNetwork.getInstance(context).getNetworkInfoAsJSON());
 		ServerSettings settings = ServerSettings.getInstance(context);
-		ret.put(settings.getLocationJSONArray());
+		ret.put(settings.getLocationJSONObject());
 		ret.put(settings.isEnabledPersistentMode());
 		ret.put(settings.isEnabledJSONPServer());
 		ret.put(settings.isEnabledWebSocketServer());
