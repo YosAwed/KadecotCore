@@ -14,6 +14,7 @@ import com.sonycsl.Kadecot.call.RequestProcessor;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 
 // See original python code for protocol.
@@ -100,7 +101,6 @@ public class KadecotSnapServer extends HTTPServer{
                         for(int i=0;i<js.length();i++){
                             edt.add(String.valueOf(js.getInt(i)));
                         }
-                        
                         res.success(TYPE_PLAIN,"success;"+string_join(":", edt));
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -134,6 +134,14 @@ public class KadecotSnapServer extends HTTPServer{
                     try {
                         JSONObject response = new RequestProcessor(context, 1)
                                                       .process("set",args).toJSON();
+                        boolean success = response.getJSONObject("result")
+                                       .getJSONArray("property")
+                                       .getJSONObject(0).getBoolean("success");
+                        if(!success){
+                            Log.d("Snap",response.toString());
+                            res.failure(TYPE_PLAIN,"fail;can't operate device?");
+                            return;
+                        }
                         JSONArray js = response.getJSONObject("result")
                                                 .getJSONArray("property")
                                                 .getJSONObject(0)
@@ -142,7 +150,8 @@ public class KadecotSnapServer extends HTTPServer{
                         for(int i=0;i<js.length();i++){
                             ed.add(String.valueOf(js.getInt(i)));
                         }
-                        
+                        Log.d("Snap",response.toString());
+                        Log.d("Snap",js.toString());
                         res.success(TYPE_PLAIN,"success;"+string_join(":", ed));
                     } catch (JSONException e) {
                         e.printStackTrace();
