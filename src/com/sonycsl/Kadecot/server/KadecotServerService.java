@@ -76,6 +76,8 @@ public class KadecotServerService extends Service {
 		contentText+="HomeNet:"+(ServerNetwork.getInstance(self).isConnectedHomeNetwork() == ServerNetwork.CONNECTED?"ON\n":"OFF\n");
 		contentText+="WebSocket:"+(ServerManager.getInstance(self).isStartedWebSocketServer()?"ON\n":"OFF\n");
 		contentText+="Http:"+(ServerManager.getInstance(self).isStartedJSONPServer()?"ON\n":"OFF\n");			
+		contentText+="Snap:"+(ServerManager.getInstance(self).isStartedSnapServer()?"ON\n":"OFF\n");           
+
 		notice.setLatestEventInfo(self, "Kadecot Server", contentText, pendIntent);
 		self.startForeground(FOREGROUND_ID, notice);
 

@@ -25,9 +25,12 @@ public class ServerManager {
 	
 	private KadecotJSONPServer mJSONPServer;
 	private KadecotWebSocketServer mWebSocketServer;
+	private KadecotSnapServer mSnapServer;
 	private ServerNetwork mServerNetwork;
 	private DeviceManager mDeviceManager;
 	private ServerSettings mServerSettings;
+
+	private static final int mSnapPort = 31414; 
 	
 	
 	private final int STATUS_ON = 0;
@@ -35,6 +38,7 @@ public class ServerManager {
 	private final int STATUS_OFF = 2;
 	
 	private int mStatus = STATUS_OFF;
+
 	
 	private ServerManager(Context context) {
 		mContext = context.getApplicationContext();
@@ -106,6 +110,7 @@ public class ServerManager {
 			
 			stopWebSocketServer();
 			stopJSONPServer();
+			stopSnapServer();
 			stopForeground();
 			
 			//changeNotification();
@@ -130,8 +135,11 @@ public class ServerManager {
 
 		if(getSettings().isEnabledJSONPServer() && !isStartedJSONPServer() ) {
 			startJSONPServer();
+			// temporary
+			startSnapServer();
 		} else if(!getSettings().isEnabledJSONPServer()){
 			stopJSONPServer();
+			stopSnapServer();
 		}
 
 		if(getSettings().isEnabledWebSocketServer() && !isStartedWebSocketServer() ) {
@@ -197,15 +205,36 @@ public class ServerManager {
 
 	}
 	
+	private void startSnapServer(){
+        if (mStatus != STATUS_HOME_NETWORK_ACTIVE) {
+            return;
+        }
+        try {
+            getSnapServer().start(mSnapPort);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        changeNotification();
+	}
+	
 	private void stopJSONPServer() {
 		Dbg.print(mStatus);
 		getJSONPServer().stop();
 		changeNotification();
+    }
 
-	}
+    private void stopSnapServer() {
+        Dbg.print(mStatus);
+        getSnapServer().stop();
+        changeNotification();
+    }
 	
 	public boolean isStartedJSONPServer() {
 		return getJSONPServer().isRunning();
+	}
+	public boolean isStartedSnapServer(){
+	    return getSnapServer().isRunning();
 	}
 	
 	private void changeNotification() {
@@ -227,6 +256,13 @@ public class ServerManager {
 		}
 		return mJSONPServer;
 	}
+	private KadecotSnapServer getSnapServer(){
+	    if(mSnapServer == null){
+	        mSnapServer = KadecotSnapServer.getInstance(mContext);
+	    }
+	    return mSnapServer;
+	}
+	
 	
 	private KadecotWebSocketServer getWebSocketServer() {
 		if(mWebSocketServer == null) {

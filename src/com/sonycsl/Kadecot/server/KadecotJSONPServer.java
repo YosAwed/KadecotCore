@@ -195,7 +195,6 @@ public class KadecotJSONPServer {
 	// main
 	private void service() throws IOException {
 		//System.out.println("service");
-
 		for (Socket sock = accept(); sock != null; sock = accept()) {
 			Executor executor = Executors.newSingleThreadExecutor();
 			executor.execute(new HttpServerService(sock));
