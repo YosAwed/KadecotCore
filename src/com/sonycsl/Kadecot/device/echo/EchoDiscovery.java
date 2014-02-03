@@ -8,10 +8,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceManager;
+import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
@@ -57,10 +57,10 @@ public class EchoDiscovery {
 		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
-		
-		
+
+
 		// logger
-		HashSet<String> propertyNameSet = new HashSet<String>();
+		HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
 		long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
 		switch(device.getEchoClassCode()) {
@@ -73,19 +73,19 @@ public class EchoDiscovery {
 			}
 			break;
 		case TemperatureSensor.ECHO_CLASS_CODE:
-			propertyNameSet.add(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE));
+			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
 
-			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		case HumiditySensor.ECHO_CLASS_CODE:
-			propertyNameSet.add(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY));
-			
-			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY), null));
+
+			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		}
 	}
-	
-	
+
+
 	protected void startDiscovering() {
 		if(Echo.isStarted()) {
 			EchoNode[] nodes = Echo.getNodes();

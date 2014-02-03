@@ -56,78 +56,78 @@ public class Logger {
 	@SuppressWarnings("unused")
 	private static final String TAG = Logger.class.getSimpleName();
 	private final Logger self = this;
-	
-	
+
+
 	protected final Context mContext;
-	
+
 	private static Logger sInstance = null;
-	
+
 	private static final String VERSION = "0.1";
-	
+
 	private static final String LABEL_VERSION = "version";
 	private static final String LABEL_UNIXTIME = "unixtime";
-	
+
 	private static final String LABEL_NICKNAME = "nickname";
 	private static final String LABEL_DEVICE_TYPE = "device_type";
 	private static final String LABEL_PROTOCOL = "protocol";
-	
+
 	private static final String LABEL_ACCESS_TYPE = "access_type"; // set or get(& inform)
 	private static final String LABEL_PROPERTY_NAME = "property_name";
-	private static final String LABEL_PROPERTY_VALUE = "property_value";	
+	private static final String LABEL_PROPERTY_VALUE = "property_value";
 	private static final String LABEL_SUCCESS = "success";
 	private static final String LABEL_MESSAGE = "message";
-	
+
 	public static final String ACCESS_TYPE_SET = "set";
 	public static final String ACCESS_TYPE_GET = "get";
-	
-	
+
+
 	public static final long DEFAULT_INTERVAL_MILLS = 60*1000*30;
-	
+
 	//public static final String LABEL_USER = "user";
-	
+
 	protected final HashMap<Long, Watching> mWatchedDevices;
-	
+
 	private Logger(Context context) {
 		mContext = context.getApplicationContext();
 		mWatchedDevices = new HashMap<Long, Watching>();
 	}
-	
+
 	public static synchronized Logger getInstance(Context context) {
 		if(sInstance == null) {
 			sInstance = new Logger(context);
 		}
-		
+
 		return sInstance;
 	}
 
 
-	public void watch(String nickname, HashSet<String> propertyNameSet) {
-		watch(nickname, propertyNameSet, DEFAULT_INTERVAL_MILLS);
+	public void watch(String nickname, HashSet<DeviceProperty> propertySet) {
+		watch(nickname, propertySet, DEFAULT_INTERVAL_MILLS);
 	}
 
 
-	public void watch(String nickname, HashSet<String> propertyNameSet, long intervalMills) {
-		watch(nickname, propertyNameSet, intervalMills, 0);
+	public void watch(String nickname, HashSet<DeviceProperty> propertySet, long intervalMills) {
+		watch(nickname, propertySet, intervalMills, 0);
 	}
-	
-	public void watch(String nickname, HashSet<String> propertyNameSet, long intervalMills, long delayMills) {
+
+	public void watch(String nickname, HashSet<DeviceProperty> propertySet, long intervalMills, long delayMills) {
 		// 定期的にgetする
 		DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(nickname);
 		if(data == null){
 			return;
 		}
-		watch(data.deviceId, propertyNameSet, intervalMills, delayMills);
+		watch(data.deviceId, propertySet, intervalMills, delayMills);
 	}
-	
-	public synchronized void watch(long deviceId, HashSet<String> propertyNameSet, long intervalMills, final long delayMills) {
+
+	public synchronized void watch(long deviceId, HashSet<DeviceProperty> propertySet, long intervalMills, final long delayMills) {
 		Watching watching;
 		if(mWatchedDevices.containsKey(deviceId)) {
 			watching = mWatchedDevices.get(deviceId);
-			for(String p : propertyNameSet) {
-				watching.propertyNameSet.add(p);
+			for(DeviceProperty p : propertySet) {
+				watching.propertySet.add(p);
 			}
 		} else {
-			watching = new Watching(deviceId, propertyNameSet);
+			watching = new Watching(deviceId, propertySet);
 			mWatchedDevices.put(deviceId, watching);
 		}
 		watching.intervalMills = intervalMills;
@@ -156,16 +156,16 @@ public class Logger {
 		}
 		unwatch(data.deviceId, propertyNameSet);
 	}
-	
+
 	public void unwatch(long deviceId, HashSet<String> propertyNameSet) {
 		if(mWatchedDevices.containsKey(deviceId)) {
 			Watching watching = mWatchedDevices.get(deviceId);
 			for(String p : propertyNameSet) {
-				watching.propertyNameSet.remove(p);
+				watching.propertySet.remove(p);
 			}
 		}
 	}
-	
+
 	public void unwatchAll() {
 		Object[] keys = mWatchedDevices.keySet().toArray();
 		for(Object k : keys) {
@@ -192,25 +192,25 @@ public class Logger {
 			watching.stop();
 		}
 	}
-	
-	
+
+
 	class Watching implements Runnable {
 		final long deviceId;
-		final HashSet<String> propertyNameSet;
+		final HashSet<DeviceProperty> propertySet;
 		long intervalMills = DEFAULT_INTERVAL_MILLS;
-		
+
 		ExecutorService mExecutor = null;
 
-		public Watching(long deviceId, HashSet<String> propertyNameSet) {
+		public Watching(long deviceId, HashSet<DeviceProperty> propertyNameSet) {
 			this.deviceId = deviceId;
-			this.propertyNameSet = propertyNameSet;
+			this.propertySet = propertyNameSet;
 		}
 		@Override
 		public void run() {
 			while(!Thread.currentThread().isInterrupted()) {
 
-				ArrayList<String> list = new ArrayList<String>();
-				for(String p : propertyNameSet) {
+				ArrayList<DeviceProperty> list = new ArrayList<DeviceProperty>();
+				for(DeviceProperty p : propertySet) {
 					list.add(p);
 				}
 				if(list.isEmpty()) {

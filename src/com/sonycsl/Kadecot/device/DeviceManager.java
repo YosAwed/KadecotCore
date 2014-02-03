@@ -224,24 +224,24 @@ public class DeviceManager {
 
 	}
 
-	
-	public Response get(String nickname, ArrayList<String> propertyNameList, int permissionLevel) {
+
+	public Response get(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
 
 		if(isStarted() == false) {
 			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
 		}
-		
+
 		DeviceData data = getDeviceDatabase().getDeviceData(nickname);
 		if(data == null) {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
 		}
-		
+
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
-		
+
 		if(isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
 			try {
 
-				List<DeviceProperty> list = protocol.get(data.deviceId, propertyNameList);
+				List<DeviceProperty> list = protocol.get(data.deviceId, propertyList);
 
 				// log
 				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
