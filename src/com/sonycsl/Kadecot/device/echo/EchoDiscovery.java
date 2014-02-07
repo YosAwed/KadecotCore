@@ -141,25 +141,7 @@ public class EchoDiscovery {
 	}
 	
 	private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
-
-		InetAddress inetAddress = null;
-		if(address.equals(EchoDeviceDatabase.LOCAL_ADDRESS)) {
-			if(Echo.getNode() == null) {
-				Dbg.print("Echo.getNode() == null");
-				return null;
-			}
-			inetAddress = Echo.getNode().getAddress();
-		} else {
-			try {
-				inetAddress = InetAddress.getByName(address);
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-		if(inetAddress==null) {return null;}
-		EchoObject eoj = Echo.getInstance(inetAddress, echoClassCode, instanceCode);
-		return eoj;
+		return Echo.getNode(address).getInstance(echoClassCode,instanceCode);
 	}
 
 	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
