@@ -128,7 +128,7 @@ public class EchoManager implements DeviceProtocol {
 
 			@Override
 			public void receiveEvent(EchoFrame frame) {
-			    System.err.println(frame);
+				//System.err.println(frame);
 				EchoObject eoj = Echo.getNode(frame.getSrcEchoAddress()).getInstance(frame.getSrcEchoClassCode(), frame.getSrcEchoInstanceCode());
 				EchoProperty[] properties = frame.getProperties();
 				short tid = frame.getTID();
@@ -392,7 +392,9 @@ public class EchoManager implements DeviceProtocol {
 			address = data.address;
 		}
 
-		EchoObject eoj = Echo.getNode(address).getInstance(data.echoClassCode,data.instanceCode);
+		EchoNode ne = Echo.getNode(address);
+		if(ne == null) return null;
+		EchoObject eoj = ne.getInstance(data.echoClassCode,data.instanceCode);
 		return eoj;
 	}
 
@@ -563,6 +565,7 @@ public class EchoManager implements DeviceProtocol {
 		long interval = currentTime - lastAccessTime;
 		if (interval < ACCESS_INTERVAL_TIME) {
 			Dbg.print("waitForAccess:" + (ACCESS_INTERVAL_TIME - interval));
+
 			try {
 				Thread.sleep(ACCESS_INTERVAL_TIME - interval);
 			} catch (InterruptedException e) {
