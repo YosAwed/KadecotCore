@@ -141,7 +141,9 @@ public class EchoDiscovery {
 	}
 	
 	private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
-		return Echo.getNode(address).getInstance(echoClassCode,instanceCode);
+		EchoNode en = Echo.getNode(address);
+		if(en == null) return null;
+		return en.getInstance(echoClassCode,instanceCode);
 	}
 
 	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
