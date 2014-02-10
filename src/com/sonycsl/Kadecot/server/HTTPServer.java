@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public abstract class HTTPServer{
 
     private void service() throws IOException{
         for(Socket sock = accept();sock != null;sock = accept()){
-            // why single thread?
+			// why single thread?
             Executor executor = Executors.newSingleThreadExecutor();
             executor.execute(new HttpServerService(sock));
         }
