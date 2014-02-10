@@ -114,6 +114,7 @@ public class EchoDeviceUtils {
 	
 	public static String getClassName(short echoClassCode) {
 		String s = sClassNameMap.get(echoClassCode);
+		if(s == null) return "UnknownDevice";
 		return s;
 	}
 	
