@@ -36,7 +36,7 @@ public class KadecotSnapServer extends HTTPServer{
 
     protected void initialize(final Context context){
         this.context = context;
-        addHttpGet(new HttpGet("/block"){
+        addHttpGet(new HttpGet("/block.xml"){
             @Override
             public void run(Request req,Response res) throws IOException{
                 // read block.xml here. should buffer?
