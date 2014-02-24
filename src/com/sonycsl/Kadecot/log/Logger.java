@@ -87,9 +87,12 @@ public class Logger {
 	
 	protected final HashMap<Long, Watching> mWatchedDevices;
 	
+	private HashMap<String, LinkedHashMap<String, String>> mLatestValidAccessDataCache;
+	
 	private Logger(Context context) {
 		mContext = context.getApplicationContext();
 		mWatchedDevices = new HashMap<Long, Watching>();
+		mLatestValidAccessDataCache = new HashMap<String, LinkedHashMap<String, String>>();
 	}
 	
 	public static synchronized Logger getInstance(Context context) {
@@ -274,7 +277,16 @@ public class Logger {
 		record.put(LABEL_PROPERTY_VALUE, (property.value != null) ? property.value.toString() : "null");
 		record.put(LABEL_SUCCESS, Boolean.toString(property.success));
 		record.put(LABEL_MESSAGE, property.message!=null?property.message.toString():null);
-	
+		
+		
+		if(property.success) {
+			String key = getAccessDataCacheKey(data.nickname, accessType, property.name);
+			mLatestValidAccessDataCache.put(key, record);
+		}
+		insertLog(date, record);
+	}
+	public synchronized void insertLog(Date date, LinkedHashMap<String, String> record) {
+
 		String fileName = getLogFileName(date);
 		
 		printDebugLog("log file name:"+fileName);
@@ -459,6 +471,11 @@ public class Logger {
 	
 	public interface LogFilter {
 		public boolean predicate(LinkedHashMap<String, String> data);
+	}
+	
+	public String getAccessDataCacheKey(String nickname, String accessType, String propertyName) {
+		String key = nickname + "\n" + accessType + "\n" + propertyName;
+		return key;
 	}
 
 }
