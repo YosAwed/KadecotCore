@@ -23,6 +23,7 @@ import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
 
 import android.content.Context;
+import android.util.Log;
 
 public class EchoDiscovery {
 	@SuppressWarnings("unused")
@@ -45,18 +46,18 @@ public class EchoDiscovery {
 		EchoDeviceData data;
 		
 		if(mEchoDeviceDatabase.containsDeviceData(device)) {
-			data =  mEchoDeviceDatabase.getDeviceData(device);
+			data = mEchoDeviceDatabase.getDeviceData(device);
+			//Log.d(TAG,"already " + data.nickname);
 		} else {
 			data = mEchoDeviceDatabase.addDeviceData(device);
+			//Log.d(TAG,"new " + data.nickname);
 		}
 		
-		if(data == null) {
-			return;
-		}
 
+		//Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data, 0).toString());
+		//onDiscover(device);
 		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
-
 		
 		
 		// logger
@@ -88,6 +89,7 @@ public class EchoDiscovery {
 	
 	protected void startDiscovering() {
 		if(Echo.isStarted()) {
+			// TODO:Why need this?
 			EchoNode[] nodes = Echo.getNodes();
 			for(EchoNode n : nodes) {
 				DeviceObject[] devices = n.getDevices();
@@ -117,12 +119,9 @@ public class EchoDiscovery {
 	}
 	
 	protected synchronized void clearActiveDevices() {
-		
-		Iterator<DeviceObject> itr = mActiveDevices.iterator();
-		while(itr.hasNext()) {
-			DeviceObject device= itr.next();
-			if(device.isProxy()) {
-				device.getNode().removeDevice(device);
+		for(DeviceObject d : mActiveDevices){
+			if(d.isProxy()){
+				d.getNode().removeDevice(d);
 			}
 		}
 		mActiveDevices.clear();
@@ -141,25 +140,9 @@ public class EchoDiscovery {
 	}
 	
 	private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
-
-		InetAddress inetAddress = null;
-		if(address.equals(EchoDeviceDatabase.LOCAL_ADDRESS)) {
-			if(Echo.getNode() == null) {
-				Dbg.print("Echo.getNode() == null");
-				return null;
-			}
-			inetAddress = Echo.getNode().getAddress();
-		} else {
-			try {
-				inetAddress = InetAddress.getByName(address);
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-		if(inetAddress==null) {return null;}
-		EchoObject eoj = Echo.getInstance(inetAddress, echoClassCode, instanceCode);
-		return eoj;
+		EchoNode en = Echo.getNode(address);
+		if(en == null) return null;
+		return en.getInstance(echoClassCode,instanceCode);
 	}
 
 	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {

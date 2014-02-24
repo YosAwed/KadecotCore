@@ -128,12 +128,13 @@ public class EchoManager implements DeviceProtocol {
 
 			@Override
 			public void receiveEvent(EchoFrame frame) {
-				EchoObject eoj = frame.getSeoj();
+				//System.err.println(frame);
+				EchoObject eoj = Echo.getNode(frame.getSrcEchoAddress()).getInstance(frame.getSrcEchoClassCode(), frame.getSrcEchoInstanceCode());
 				EchoProperty[] properties = frame.getProperties();
-				short tid = frame.getTid();
+				short tid = frame.getTID();
 				final String callbackId = getCallbackId(tid, eoj);
 
-				switch (frame.getEsv()) {
+				switch (frame.getESV()) {
 				case EchoFrame.ESV_SET_RES:
 				case EchoFrame.ESV_SETI_SNA:
 				case EchoFrame.ESV_SETC_SNA:
@@ -225,7 +226,7 @@ public class EchoManager implements DeviceProtocol {
 
 	@Override
 	public synchronized void start() {
-		if (Echo.getNode() != null) {
+		if (Echo.getSelfNode() != null) {
 			try {
 				Echo.restart();
 			} catch (IOException e) {
@@ -381,18 +382,19 @@ public class EchoManager implements DeviceProtocol {
 			return null;
 		}
 
-		InetAddress address = null;
+		String address = null;
 
 		if (data.address.equals(EchoDeviceDatabase.LOCAL_ADDRESS)) {
 			// local
-			address = Echo.getNode().getAddress();
+			address = Echo.getSelfNode().getAddressStr();
 		} else {
 			// remote
-			address = InetAddress.getByName(data.address);
+			address = data.address;
 		}
 
-		EchoObject eoj = Echo.getInstance(address, data.echoClassCode,
-				data.instanceCode);
+		EchoNode ne = Echo.getNode(address);
+		if(ne == null) return null;
+		EchoObject eoj = ne.getInstance(data.echoClassCode,data.instanceCode);
 		return eoj;
 	}
 
@@ -563,6 +565,7 @@ public class EchoManager implements DeviceProtocol {
 		long interval = currentTime - lastAccessTime;
 		if (interval < ACCESS_INTERVAL_TIME) {
 			Dbg.print("waitForAccess:" + (ACCESS_INTERVAL_TIME - interval));
+
 			try {
 				Thread.sleep(ACCESS_INTERVAL_TIME - interval);
 			} catch (InterruptedException e) {
@@ -661,9 +664,9 @@ public class EchoManager implements DeviceProtocol {
 
 		short tid = (short) (nextTid - 1);
 		if(sender instanceof EchoObject.Setter) {
-			tid = ((EchoObject.Setter)sender).send();
+			tid = ((EchoObject.Setter)sender).send().getTID();
 		} else if(sender instanceof EchoObject.Getter) {
-			tid = ((EchoObject.Getter)sender).send();
+			tid = ((EchoObject.Getter)sender).send().getTID();
 		}
 
 		if (nextTid != tid) {
@@ -717,7 +720,7 @@ public class EchoManager implements DeviceProtocol {
 	public synchronized byte generateDevice(short echoClassCode, long parentId) {
 		Dbg.print();
 		int instanceCode;
-		EchoNode node = Echo.getNode();
+		EchoNode node = Echo.getSelfNode();
 
 		EchoDeviceData data;
 

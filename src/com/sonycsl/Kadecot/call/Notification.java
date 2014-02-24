@@ -52,17 +52,8 @@ public class Notification {
 		}
 	}
 
-	// send notification but params is empty.
-	//  when refreshList called,we want 1.onUpdateList([]) 2.onDeviceFound for each device.
-	//public static void informAllEmptyOnUpdateList(Context context) {
-	//	JSONArray emptyArray = new JSONArray();
-	//	HashSet<KadecotCall> calls = KadecotCall.getKadecotCalls();
-	//	for(KadecotCall kc : calls) {
-	//		kc.sendNotification(ON_UPDATE_LIST, emptyArray);
-	//	}
-	//}
 
-/*
+
 	public static void informAllInactiveDeviceList(Context context) {
 		JSONArray params0 = getParamsOnUpdateList(context, 0);
 		JSONArray params1 = getParamsOnUpdateList(context, 1);
@@ -93,7 +84,7 @@ public class Notification {
 				kc.sendNotification(ON_UPDATE_LIST, params1);
 			}
 		}
-	}*/
+	}
 
 	public static void informAllOnPropertyChanged(JSONObject obj, int protocolPermissionLevel) {
 		JSONArray params = new JSONArray();

@@ -85,12 +85,12 @@ public class DeviceManager {
 		}
 
 		//Notification.informAllEmptyOnUpdateList(mContext);
-		//Notification.informAllInactiveDeviceList(mContext);
+		Notification.informAllInactiveDeviceList(mContext);
 		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
 			protocol.refreshDeviceList();
 		}
+		//Notification.informAllOnUpdateList(mContext);
 		
-		Notification.informAllOnUpdateList(mContext);
 	}
 
 	public synchronized void deleteAllDeviceData() {
