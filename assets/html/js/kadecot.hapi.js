@@ -40,6 +40,7 @@ var kHAPI = {
 				,'deleteInactiveDevices'
 				,'enablePersistentMode'
 				,'enableJSONPServer'
+				,'enableSnapServer'
 				,'queryLog'
 			] ;
 
@@ -259,6 +260,7 @@ var kHAPI = {
 		//	 jsonp : true
 		//	 websocket: true
 		//	 persistence: true // persistence
+		//	 snap : true
 	}
 
 	, devListHandlers : {

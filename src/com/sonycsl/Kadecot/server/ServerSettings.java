@@ -31,6 +31,7 @@ public class ServerSettings {
 	private static String KEY_WEBSOCKET_SERVER = "websocket_server";
 	private static String KEY_JSONP_SERVER = "jsonp_server";
 	private static String KEY_PERSISTENT_MODE = "persistent_mode";
+	private static String KEY_SNAP_SERVER = "snap_server";
 
 	public enum ExecutionMode {
 		APPLICATION,
@@ -174,6 +175,16 @@ public class ServerSettings {
 	
 	public boolean isEnabledJSONPServer() {
 		return mPreferences.getBoolean(KEY_JSONP_SERVER, false);
+	}
+	
+	public void enableSnapServer(boolean enabled) {
+		mPreferences.edit().putBoolean(KEY_SNAP_SERVER, enabled).commit();
+		
+		getServerManager().onChangedServerSettings();
+	}
+	
+	public boolean isEnabledSnapServer() {
+		return mPreferences.getBoolean(KEY_SNAP_SERVER, false);
 	}
 	
 	public void enablePersistentMode(boolean enabled) {

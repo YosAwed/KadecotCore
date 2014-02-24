@@ -135,10 +135,12 @@ public class ServerManager {
 
 		if(getSettings().isEnabledJSONPServer() && !isStartedJSONPServer() ) {
 			startJSONPServer();
-			// temporary
-			startSnapServer();
 		} else if(!getSettings().isEnabledJSONPServer()){
 			stopJSONPServer();
+		}
+		if(getSettings().isEnabledSnapServer() && !isStartedSnapServer() ) {
+			startSnapServer();
+		} else if(!getSettings().isEnabledJSONPServer()){
 			stopSnapServer();
 		}
 

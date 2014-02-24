@@ -307,6 +307,10 @@ var onSettingsPageAndroidOpen = function(){
   initializeCheckBox($("#enable_jsonp_android_checkbox"),netInfo.jsonp,
                      function(){kHAPI.enableJSONPServer([true]);},
                      function(){kHAPI.enableJSONPServer([false]);});
+
+  initializeCheckBox($("#enable_snap_android_checkbox"),netInfo.snap,
+                     function(){kHAPI.enableSnapServer([true]);},
+                     function(){kHAPI.enableSnapServer([false]);});
 };
 
 var onSettingsPageBrowserOpen = function(){
@@ -315,6 +319,10 @@ var onSettingsPageBrowserOpen = function(){
   initializeCheckBox($("#enable_persistent_browser_checkbox"),netInfo.persistence,
                     function(){kHAPI.enablePersistentMode([true]);},
                     function(){kHAPI.enablePersistentMode([false]);});
+
+  initializeCheckBox($("#enable_snap_browser_checkbox"),netInfo.snap,
+                    function(){kHAPI.enableSnapServer([true]);},
+                    function(){kHAPI.enableSnapServer([false]);});
 
   initializeCheckBox($("#enable_jsonp_browser_checkbox"),netInfo.jsonp,
                     function(){kHAPI.enableJSONPServer([true]);},
@@ -328,6 +336,7 @@ var onNotifyServerSettingsOnAndroid = function(settings){
   $("#server_android_ip").val(settings.network.ip).textinput();
   checkCheckBox($("#enable_websocket_checkbox"),settings.websocket);
   checkCheckBox($("#enable_persistent_android_checkbox"),settings.persistence);
+  checkCheckBox($("#enable_snap_android_checkbox"),settings.snap);
   checkCheckBox($("#enable_jsonp_android_checkbox"),settings.jsonp);
 
   if(initialNotifyServerSettings &&
@@ -340,6 +349,7 @@ var onNotifyServerSettingsOnAndroid = function(settings){
 
 var onNotifyServerSettingsOnBrowser = function(settings){
   checkCheckBox($("#enable_persistent_browser_checkbox"),settings.persistence);
+  checkCheckBox($("#enable_snap_browser_checkbox"),settings.snap);
   checkCheckBox($("#enable_jsonp_browser_checkbox"),settings.jsonp);
 };
 

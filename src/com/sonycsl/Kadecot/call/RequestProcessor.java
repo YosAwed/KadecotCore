@@ -280,6 +280,22 @@ public class RequestProcessor {
 		}
 	}
 	
+	public Response enableSnapServer(JSONArray params) {
+		if(params == null || params.length() < 1) {
+			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+		}
+		try {
+			boolean enabled = params.getBoolean(0);
+			mServerSettings.enableSnapServer(enabled);
+			return new Response(true);
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
+		}
+	}
+	
 	public Response enablePersistentMode(JSONArray params) {
 		if(params == null || params.length() < 1) {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);

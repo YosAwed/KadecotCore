@@ -243,10 +243,10 @@ kHAPI.app = {
 			this.running.cleanup(true) ;
 		var manifest = clone(this._manifests[index]);
 		this.running.manifest = manifest ;
-		// may depends on JSONP.if JSONP is disabled,alert.
+		// may depends on Snap server.if the server is disabled, alert.
 		if(manifest.url.indexOf("%KADECOT_IP_ADDR%") != -1){
-			if(!kHAPI.app.isJSONPEnabled()){
-				alert("JSONP is disabled and this app may depends on JSONP.");
+			if(!kHAPI.app.isSnapEnabled()){
+				alert("Snap server is disabled! Please turn it on in the settings panel!");
 			}
 			manifest.url = manifest.url.replace("%KADECOT_IP_ADDR%",kHAPI.app.getKadecotIPAddr()) ;
 		}
@@ -438,9 +438,9 @@ kHAPI.app = {
 		if(ip === undefined || ip === null) return "";
 		return ip;
 	}
-	,isJSONPEnabled : function(){
+	,isSnapEnabled : function(){
 		var netinfo = kHAPI.getNetInfo();
-		if(netinfo.jsonp) return true;
+		if(netinfo.snap) return true;
 		return false;
 	}
 };

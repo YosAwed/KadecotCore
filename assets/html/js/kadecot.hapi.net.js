@@ -182,7 +182,8 @@ kHAPI.net.ServerPredefinedReplies = {
 			location: d.params[1],
 			persistence: d.params[2],
 			jsonp : d.params[3],
-			websocket: d.params[4]
+			websocket: d.params[4],
+			snap: d.params[5]
 		};
 		kHAPI.net.info = settings;
 		kHAPI.onNotifyServerSettings(settings);
@@ -263,6 +264,9 @@ kHAPI.net.ServerCall = {
 		return {next:2 , result:null };
 	}
 	, enableJSONPServer : function(args,cbfunc){
+		return {next:1};
+	}
+	, enableSnapServer : function(args,cbfunc){
 		return {next:1};
 	}
 	, fullInitialize : function(){

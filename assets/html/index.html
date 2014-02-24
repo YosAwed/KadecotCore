@@ -124,16 +124,20 @@
       <input type="checkbox" id="enable_persistent_android_checkbox"/>
 
       <hr>
-      <label for="enable_jsonp_android_checkbox">Run JSONP Server (causes security hazard!)</label>
-      <input type="checkbox" id="enable_jsonp_android_checkbox"/>
-
-      <hr>
       <label for="enable_websocket_checkbox">Accept WebSocket connection from http://apps.kadecot.net/</label>
       <input type="checkbox" id="enable_websocket_checkbox"/>
 
       <hr>
+      <label for="enable_snap_android_checkbox">Run Snap! Server</label>
+      <input type="checkbox" id="enable_snap_android_checkbox"/>
+
+      <hr>
+      <label for="enable_jsonp_android_checkbox">Run JSONP Server (causes security hazard!)</label>
+      <input type="checkbox" id="enable_jsonp_android_checkbox"/>
+
+      <hr>
       <input type="button" value="View agreement"
-             onclick="location.href='../agreement.html';">
+             onclick="window.localStorage.setItem('IsAppLicenseAgreed','false');location.href='../agreement.html';">
       <input type="button" value="View tutorial"
              onclick="Local.openWebBrowser('http://kadecot.net/tutorial');return true;">
 
@@ -163,13 +167,17 @@
                value="Allow using GPS location">
 
         <hr>
-        Enable Persistent Mode
         <label for="enable_persistent_browser_checkbox">
-                Allow running kadecot in background.</label>
+                Persistent Mode</label>
         <input type="checkbox" id="enable_persistent_browser_checkbox"/>
 
         <hr>
-        Enable JSONP Server.
+        Run Snap! Server.
+        <label for="enable_snap_browser_checkbox">Allow running JSONP Server.</label>
+        <input type="checkbox" id="enable_snap_browser_checkbox"/>
+
+        <hr>
+        Run JSONP Server.
         <label for="enable_jsonp_browser_checkbox">Allow running JSONP Server.</label>
         <input type="checkbox" id="enable_jsonp_browser_checkbox"/>
 

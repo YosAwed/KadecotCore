@@ -100,6 +100,7 @@ public class Notification {
 		ret.put(settings.isEnabledPersistentMode());
 		ret.put(settings.isEnabledJSONPServer());
 		ret.put(settings.isEnabledWebSocketServer());
+		ret.put(settings.isEnabledSnapServer());
 		return ret;
 	}
 
