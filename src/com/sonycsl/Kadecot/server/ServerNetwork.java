@@ -1,6 +1,10 @@
 package com.sonycsl.Kadecot.server;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Enumeration;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -110,6 +114,8 @@ public class ServerNetwork {
 			if(wInfo != null && getSettings().getWifiBSSID().equalsIgnoreCase(wInfo.getBSSID())) {
 				return CONNECTED;
 			}
+		} else if(info.getType() == ConnectivityManager.TYPE_ETHERNET) {
+			return CONNECTED;
 		}
 		return UNCONNECTED;
 	}
@@ -160,12 +166,42 @@ public class ServerNetwork {
 	}
 	
 	public String getIPAddress(){
-		WifiInfo wInfo = mWifiManager.getConnectionInfo();
-		int ipAddress = wInfo.getIpAddress();
-		return String.format("%01d.%01d.%01d.%01d",(ipAddress>>0)&0xff, (ipAddress>>8)&0xff,
+		NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
+		if(info.getType() == ConnectivityManager.TYPE_WIFI) {
+			WifiInfo wInfo = mWifiManager.getConnectionInfo();
+			int ipAddress = wInfo.getIpAddress();
+			return String.format("%01d.%01d.%01d.%01d",(ipAddress>>0)&0xff, (ipAddress>>8)&0xff,
 												(ipAddress>>16)&0xff, (ipAddress>>24)&0xff);
+		} else {
+			InetAddress address = null;
+			try {
+				address = getLocalIpAddress();
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(address == null) {
+				return "";
+			} else {
+				return address.getHostAddress();
+			}
+		}
 	}
-	
+
+	public static InetAddress getLocalIpAddress() throws SocketException {
+		Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+		while(en.hasMoreElements()) {
+			NetworkInterface intf = en.nextElement();
+			Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
+			while(enumIpAddr.hasMoreElements()) {
+				InetAddress inetAddress = enumIpAddr.nextElement();
+				if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+					return inetAddress;
+				}
+			}
+		}
+		return null;
+	}
 	
 	private ServerManager getServerManager() {
 		if(mServerManager == null) {
