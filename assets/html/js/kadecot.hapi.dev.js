@@ -23,7 +23,7 @@ kHAPI.dev = {
 		var ret=[] ;
 		for( var di=0;di<this.devices.length;++di ){
 			var d = this.devices[di] ;
-			if( d.protocol === protocol && d.deviceType === deviceType )
+			if( d.protocol === protocol && d.deviceType === deviceType && d.active )
 				ret.push(d) ;
 		}
 		return ret ;
@@ -101,6 +101,17 @@ kHAPI.dev = {
 			,"0xb3":[21]   //21 degree
 		    }
 		}
+		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"ECHOWaterHeater","isLoggable":true,"nickname":"WaterHeater_Emu","deviceType":"0x026b"
+		   ,"access":{
+			 "0x80":[0x30]
+			,"0xb0":[0x41]
+			,"0xd1":[40]
+			,"0xd3":[38]
+			,"0xe3":[0x41]
+			,"0xe4":[0x41]
+			,"0xe6":[0x41]
+		    }
+		}
 		// 分電盤
 		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true,"isRemote":true,"deviceName":"PowerDistributionBoardMetering","isLoggable":false,"nickname":"PowerDistributionBoardMetering_Emu","deviceType":"0x0287"
 		  ,"access":{
@@ -118,6 +129,12 @@ kHAPI.dev = {
 		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true,"isRemote":false,"deviceName":"ECHOGeneralILighting","isLoggable":false,"nickname":"GeneralLighting_Emu","deviceType":"0x0290"
 		   ,"access":{
 			 "0x80":[0x30] // 0x30:On , 0x31:Off
+		    }
+		}
+		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true,"isRemote":false,"deviceName":"ECHOBlind","isLoggable":false,"nickname":"Blind_Emu","deviceType":"0x0260"
+		   ,"access":{
+			 "0x80":[0x30] // 0x30:On , 0x31:Off
+			 ,"0xe0":[0x41] // 0x41:Open , 0x42:Close
 		    }
 		}
 		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true,"isRemote":false,"deviceName":"ECHOCurtain","isLoggable":false,"nickname":"Curtain_Emu","deviceType":"0x0262"

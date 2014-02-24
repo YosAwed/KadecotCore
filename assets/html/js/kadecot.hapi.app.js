@@ -228,11 +228,25 @@ kHAPI.app = {
 	, addManifest : function(){}
 
 	, openAppPageByManifestIndex : function(index){
+		var clone = function(obj) {
+			if (null == obj || "object" != typeof obj) return obj;
+			var copy = obj.constructor();
+			for (var attr in obj) {
+				if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+			}
+			return copy;
+		}
 		if( this.running.cleanup !== undefined )
 			this.running.cleanup(true) ;
-		var manifest = this._manifests[index] ;
+		var manifest = clone(this._manifests[index]);
 		this.running.manifest = manifest ;
-
+		// may depends on JSONP.if JSONP is disabled,alert.
+		if(manifest.url.indexOf("%KADECOT_IP_ADDR%") != -1){
+			if(!kHAPI.app.isJSONPEnabled()){
+				alert("JSONP is disabled and this app may depends on JSONP.");
+			}
+			manifest.url = manifest.url.replace("%KADECOT_IP_ADDR%",kHAPI.app.getKadecotIPAddr()) ;
+		}
 		if( kHAPI.isOnAndroid ){
 			UserApp.openAppView(manifest.url) ;
 		}else
@@ -413,5 +427,17 @@ kHAPI.app = {
 			if( typeof this.running.cleanup === 'function' )
 				this.running.cleanup(winclose) ;
 		}
+	}
+	,getKadecotIPAddr : function(){
+		var netinfo = kHAPI.getNetInfo();
+		if(netinfo.network === undefined) return "";
+		var ip = netinfo.network.ip;
+		if(ip === undefined || ip === null) return "";
+		return ip;
+	}
+	,isJSONPEnabled : function(){
+		var netinfo = kHAPI.getNetInfo();
+		if(netinfo.jsonp) return true;
+		return false;
 	}
 };

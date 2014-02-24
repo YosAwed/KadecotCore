@@ -365,6 +365,7 @@ var checkCheckBox = function(checkbox,checked){
 };
 
 // read current device info.
+//  if the device is added by iRemocon,device is not undefined.
 var onDeviceDetailPageOpen = function(nickname,device){
   $.mobile.changePage("#device_detail_page");
   if(device === undefined){
@@ -807,8 +808,13 @@ var refreshDevStatusForIcon = function(nickname){
   }
   for(var epc in epc_map){
     myget( [nickname,epc] , function(ret,success){
+      if(isiRemocon(d) || isOpenWeatherMap(d)){
+        // force refresh.
+        epc_map["0x80"]([0x48]);
+      }else{
         if(!success || ret.property[0].value === undefined) return;
         epc_map[ret.property[0].name](ret.property[0].value);
+      }
     });
   }
 };

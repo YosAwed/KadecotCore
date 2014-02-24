@@ -43,7 +43,7 @@ var kHAPI = {
 				,'queryLog'
 			] ;
 
-
+			// This refreshes everything. the call number should be minimized.
 			kHAPI.reqDevListHandlers_onUpdateList = function(){
 				kHAPI.devListHandlers.onUpdateList( kHAPI.dev.devices ) ;
 			} ;
@@ -51,17 +51,17 @@ var kHAPI = {
 			kHAPI.findDeviceByNickname = function(nickname){
 				return kHAPI.dev.findDeviceByNickname(nickname) ;
 			} ;
-			// Get device status
-			// args = [nickname,prop1,prop2]
-			// Success result example: callback(
-			//  { "nickname" :  "hoge",
-			//    "property" : [{"name" : "0x80", "value" : [0x41, 0x31],
-			//    "success" : true},{...},{...}]
-			//} , true ) ;
-			// Fail result example: callback(
-			// { "data" : "nickname not found"
-			//  ,"message" : "Invalid code""
-			//  ,"code" : -32602 } , false ) ;
+          // Get device status
+          // args = [nickname,prop1,prop2]
+          // Success result example: callback(
+          // { "nickname" :	 "hoge",
+          //   "property" : [{"name" : "0x80", "value" : [0x41, 0x31],
+          //   "success" : true},{...},{...}]
+          // , true ) ;
+          // Fail result example: callback(
+          // { "data" : "nickname not found"
+          // ,"message" : "Invalid code""
+          // ,"code" : -32602 } , false ) ;
           // this function will wait for 100 msec for new get.
           // deviceAccessQueue["nickname"] = undefined (if there is not previous gets)
           // deviceAccessQueue["nickname"] = [{props:[prop1_1,prop1_2,,,],callback:function(){}},
@@ -96,21 +96,21 @@ var kHAPI = {
                                             t:send_args.length-1});
                 }
                 kHAPI.net.callServerFunc("get",send_args,function(recv_args,success){
-                // kHAPI.get(send_args,function(recv_args,success){
                   for(var i=0;i<callbacks.length;i++){
-                    if(!success){
-                      callbacks[i](recv_args,false);
-                    }else{
-                      callbacks[i]({nickname:nickname,
-                                    property:recv_args.property.slice(start_and_end_index[i].f,
-                                                                      start_and_end_index[i].t)
-                                   },true);
+                    if(callbacks[i] !== undefined){
+                      if(!success){
+                        callbacks[i](recv_args,false);
+                      }else{
+                        callbacks[i]({nickname:nickname,
+                                      property:recv_args.property.slice(start_and_end_index[i].f,
+                                                                        start_and_end_index[i].t)
+                                     },true);
+                      }
                     }
                   }
                 });
               },waitingTimeForQueue);
             }else{
-              // console.log("cached " + nickname + " " + props);
               deviceAccessQueue[nickname].push({props:props,callback:callback});
             }
           };
@@ -213,7 +213,7 @@ var kHAPI = {
 	//	tested with example.Return value is sorted.
 	//	 remember,0x9E is getgetPropertyMap,0x9F is getsetPropertyMap
 	propertyMapToProperties : function(map){
-		if(map === null || map.length == 0) return [];
+		if(map === null || map === undefined || map.length == 0) return [];
 		var len = map[0];
 		var ret = [];
 		if(len < 16){

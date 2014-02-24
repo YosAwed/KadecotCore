@@ -116,6 +116,7 @@ kHAPI.net = {
 						this.onclose() ;
 					} ;
 					ws.onclose = function(){
+							kHAPI.net.info = { isConnected : false };
 						if( _WS.serverConnection !== undefined ){// Unintentional close
 							// onSystemPaused
 							kHAPI.net.ServerPredefinedReplies.onSystemPaused.call(
@@ -183,7 +184,7 @@ kHAPI.net.ServerPredefinedReplies = {
 			jsonp : d.params[3],
 			websocket: d.params[4]
 		};
-      kHAPI.net.info = settings;
+		kHAPI.net.info = settings;
 		kHAPI.onNotifyServerSettings(settings);
 	}
 	, onDeviceFound : function(args){
