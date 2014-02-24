@@ -94,14 +94,14 @@ kHAPI.dev = {
 	}
 
 	,'emulation_devices':[
-		{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"HomeAirConditioner","isLoggable":true,"nickname":"ECHOHomeAirConditioner_Emu","deviceType":"0x0130"
+		{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"HomeAirConditioner","isLoggable":true,"nickname":"HomeAirConditioner_Emu","deviceType":"0x0130"
 		   ,"access":{
 			 "0x80":[0x31] //0x30:Power on, 0x31: off
 			,"0xb0":[0x42] //0x41:Auto, 0x42:Cool, 0x43:Heat, 0x44:Dry, 0x45:Wind, 0x46:Others
 			,"0xb3":[21]   //21 degree
 		    }
 		}
-		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"ECHOWaterHeater","isLoggable":true,"nickname":"WaterHeater_Emu","deviceType":"0x026b"
+		,{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"WaterHeater","isLoggable":true,"nickname":"WaterHeater_Emu","deviceType":"0x026b"
 		   ,"access":{
 			 "0x80":[0x30]
 			,"0xb0":[0x41]

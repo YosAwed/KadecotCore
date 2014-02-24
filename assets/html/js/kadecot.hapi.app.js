@@ -225,7 +225,6 @@ kHAPI.app = {
 				setSavedManifest(s);
 			};
 		}
-		// if( emulation )
 		onReadManifs(kHAPI.app._manifests) ;
 	}
 	, addManifest : function(){}

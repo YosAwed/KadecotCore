@@ -140,7 +140,7 @@ public class ServerManager {
 		}
 		if(getSettings().isEnabledSnapServer() && !isStartedSnapServer() ) {
 			startSnapServer();
-		} else if(!getSettings().isEnabledJSONPServer()){
+		} else if(!getSettings().isEnabledSnapServer()){
 			stopSnapServer();
 		}
 
