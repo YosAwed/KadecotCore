@@ -15,8 +15,10 @@ import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.call.Response;
+import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
+import com.sonycsl.echo.eoj.device.DeviceObject;
 
 import android.content.Context;
 import android.util.Log;
@@ -38,6 +40,8 @@ public class DeviceManager {
 	private boolean mStarted = false;
 	private DeviceDatabase mDeviceDatabase;
 	private Logger mLogger;
+	
+	public static final int ALL_ACCESS_CLIENT_PERMISSION_LEVEL = 0;
 	
 	private DeviceManager(Context context) {
 		mContext = context.getApplicationContext();
@@ -205,10 +209,10 @@ public class DeviceManager {
 			try {
 				List<DeviceProperty> list = protocol.set(data.deviceId, propertyList);
 
-				// log
+				
 				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 				for(DeviceProperty p : list) {
-					getLogger().insertLog(data, info, Logger.ACCESS_TYPE_SET, p);
+					completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_SET, p);
 				}
 				
 				return toAccessResponse(nickname, list);
@@ -246,7 +250,7 @@ public class DeviceManager {
 				// log
 				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 				for(DeviceProperty p : list) {
-					getLogger().insertLog(data, info, Logger.ACCESS_TYPE_GET, p);
+					completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
 
 				}
 
@@ -421,7 +425,7 @@ public class DeviceManager {
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
 		DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
 		for(DeviceProperty p : list) {
-			getLogger().insertLog(data, info, Logger.ACCESS_TYPE_GET, p);
+			completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
 		}
 
 		
@@ -439,5 +443,33 @@ public class DeviceManager {
 			mLogger = Logger.getInstance(mContext);
 		}
 		return mLogger;
+	}
+	
+	private void completeAccessDeviceProperty(final DeviceData data, DeviceInfo info, String accessType, DeviceProperty property) {
+		getLogger().insertLog(data, info, accessType, property);
+		if(data.protocolName.equals(EchoManager.PROTOCOL_TYPE_ECHO) && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
+			JSONArray propertyValue = (JSONArray) property.value;
+			try {
+				if(property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
+						&& propertyValue.getInt(0) == 0x41) {
+
+					final ArrayList<String> propertyNameList = new ArrayList<String>();
+					propertyNameList.add(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION));
+					(new Thread(new Runnable(){
+						@Override
+						public void run() {
+							try {
+								get(data.nickname, propertyNameList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
+							} catch(Exception e) {
+							}
+						}
+					})).start();
+				} else if(property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
+					(new DeviceNotification(mContext)).buildEchoErrorNotification(data.nickname, propertyValue).show();
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

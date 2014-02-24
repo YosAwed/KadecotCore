@@ -26,8 +26,11 @@
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.sonycsl.Kadecot.LAUNCH_FROM_DEVICE_ERROR_NOTIFICATION" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <service android:name="com.sonycsl.Kadecot.server.KadecotServerService"></service>
