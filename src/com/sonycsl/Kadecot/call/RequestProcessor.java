@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.call;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -142,21 +143,35 @@ public class RequestProcessor {
 					@Override
 					public boolean predicate(LinkedHashMap<String, String> data) {
 						try {
-							if(!obj.isNull("nickname")) {
-								String nicknameReg = obj.getString("nickname");
-								String dataNickname = Logger.getNickname(data);
-								Pattern p = Pattern.compile(nicknameReg);
-								Matcher m = p.matcher(dataNickname);
-								if (m.find()){
-								} else {
-									return false;
+							Iterator keys = obj.keys();
+							boolean flag = true;
+							while(keys.hasNext()){
+								String key = (String)keys.next();
+								String reg = obj.getString(key);
+								String dataStr = data.get(key);
+								Pattern p = Pattern.compile(reg);
+								Matcher m = p.matcher(dataStr);
+								if(!m.find()) {
+									flag = false;
+									break;
 								}
 							}
+							return flag;
+							//if(!obj.isNull("nickname")) {
+							//	String nicknameReg = obj.getString("nickname");
+							//	String dataNickname = Logger.getNickname(data);
+							//	Pattern p = Pattern.compile(nicknameReg);
+							//	Matcher m = p.matcher(dataNickname);
+							//	if (m.find()){
+							//	} else {
+							//		return false;
+							//	}
+							//}
 						} catch (JSONException e) {
 							e.printStackTrace();
 							return false;
 						}
-						return true;
+						//return true;
 					}});
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
