@@ -181,6 +181,9 @@ kHAPI.app = {
 		if( kHAPI.app._manifests === undefined ){
 			kHAPI.app._manifests = {data:[
 				{
+					"url":"http://snap.berkeley.edu/snapsource/snap.html"+"#open:http://%KADECOT_IP_ADDR%:31414/block.xml","title":"Snap!","subtitle":"Snap! Extension for Kadecot","icon":"","devices":[]
+				}
+				,{
 					"url":"file:///android_asset/html/Apps/Test/index.html"
 					,"title":"テストアプリ"
 					,"subtitle":"テスト用アプリです。"

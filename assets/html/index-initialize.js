@@ -517,12 +517,12 @@ var deviceRemocons = {
   "0x026b":[{epc:"0xb0",edt:[0x41],text:"Auto boil"},
             {epc:"0xb0",edt:[0x42],text:"Manual boil"},
             {epc:"0xb0",edt:[0x43],text:"Manual boil stop"},
-            {epc:"0xd1",edt:[40],text:"Supply 40Åé"},
-            {epc:"0xd1",edt:[42],text:"Supply 42Åé"},
-            {epc:"0xd1",edt:[44],text:"Supply 44Åé"},
-            {epc:"0xd3",edt:[38],text:"Bath 38Åé"},
-            {epc:"0xd3",edt:[40],text:"Bath 40Åé"},
-            {epc:"0xd3",edt:[42],text:"Bath 42Åé"},
+            {epc:"0xd1",edt:[40],text:"Supply 40‚ÑÉ"},
+            {epc:"0xd1",edt:[42],text:"Supply 42‚ÑÉ"},
+            {epc:"0xd1",edt:[44],text:"Supply 44‚ÑÉ"},
+            {epc:"0xd3",edt:[38],text:"Bath 38‚ÑÉ"},
+            {epc:"0xd3",edt:[40],text:"Bath 40‚ÑÉ"},
+            {epc:"0xd3",edt:[42],text:"Bath 42‚ÑÉ"},
             {epc:"0xe3",edt:[0x41],text:"Bath water auto"},
             {epc:"0xe3",edt:[0x42],text:"Bath water manual"},
             {epc:"0xe4",edt:[0x41],text:"Heat refill on"},
@@ -567,7 +567,7 @@ var makeDeviceRemocon = function(nickname){
     if( device.deviceType === '0x0130' ){
       ret += 'Temperature<br>' ;
       for(var t=18;t<=30;t++){
-        ret += makeSetButtonIN(device.nickname,'0xb3',[t],t+'Åé') ;
+        ret += makeSetButtonIN(device.nickname,'0xb3',[t],t+'‚ÑÉ') ;
       }
     }else if( device.deviceType === '0x0260' ){
       ret += "Close Level<br>";
@@ -580,7 +580,7 @@ var makeDeviceRemocon = function(nickname){
 		+'<input type="range" name="slider" id="blindAngleSlider" min="0" max="180" '
 		+'onchange="myset([\'{nickname}\',[\'0xe2\',[this.value]]],function(msg){}); " />'.format({nickname:device.nickname}) ;
 //      for(var l=0;l<=180/20;l++){
-//        ret += makeSetButtonIN(device.nickname,'0xe2',[20*l],20*l+"Åå");
+//        ret += makeSetButtonIN(device.nickname,'0xe2',[20*l],20*l+"‚Ä≤");
 //      }
     }
 

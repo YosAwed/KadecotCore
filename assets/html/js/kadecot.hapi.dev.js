@@ -94,7 +94,7 @@ kHAPI.dev = {
 	}
 
 	,'emulation_devices':[
-		{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"ECHOHomeAirConditioner_Emu","isLoggable":true,"nickname":"HomeAirConditioner","deviceType":"0x0130"
+		{"active":true,"protocol":"ECHONET Lite", isEmulation:true, "isRemote":true,"deviceName":"HomeAirConditioner","isLoggable":true,"nickname":"ECHOHomeAirConditioner_Emu","deviceType":"0x0130"
 		   ,"access":{
 			 "0x80":[0x31] //0x30:Power on, 0x31: off
 			,"0xb0":[0x42] //0x41:Auto, 0x42:Cool, 0x43:Heat, 0x44:Dry, 0x45:Wind, 0x46:Others
