@@ -387,16 +387,15 @@ public class DeviceManager {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
 		}
 		boolean result = getDeviceDatabase().update(oldNickname, newNickname);
+		if(!result) {
+		    return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "New nickname exists.");
+		}
 		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
 		Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol.getAllowedPermissionLevel());
-		if(result) {
-			return new Response(null);
-		} else {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "New nickname exists.");
-		}
+		return new Response(null);
 	}
-	
-	
+
+
 	public void onPropertyChanged(DeviceData data, List<DeviceProperty> list) {
 		JSONObject obj = new JSONObject();
 		if(data == null) {
