@@ -173,10 +173,8 @@ public class EchoManager implements DeviceProtocol {
 				}
 				List<DeviceProperty> list = new ArrayList<DeviceProperty>();
 				for (EchoProperty p : properties) {
-					DeviceProperty prop = new DeviceProperty();
-					prop.name = toPropertyName(p.epc);
-					prop.success = (p.edt != null);
-					prop.value = prop.success ? toPropertyValue(p.edt) : null;
+				    boolean success = p.edt != null;
+					DeviceProperty prop = new DeviceProperty(toPropertyName(p.epc), success ? toPropertyValue(p.edt) : null, success);
 					list.add(prop);
 				}
 				getDeviceManager().onPropertyChanged(data, list);
@@ -191,20 +189,20 @@ public class EchoManager implements DeviceProtocol {
 						&& (property.epc == DeviceObject.EPC_GET_PROPERTY_MAP)) {
 					byte[] properties = EchoUtils
 							.propertyMapToProperties(property.edt);
-					HashSet<String> watchingPropertySet = new HashSet<String>();
+					HashSet<DeviceProperty> watchingPropertySet = new HashSet<DeviceProperty>();
 					switch (eoj.getEchoClassCode()) {
 					case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
 						watchingPropertySet
-								.add(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_NORMAL_DIRECTION));
+								.add(new DeviceProperty(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_NORMAL_DIRECTION)));
 						watchingPropertySet
-								.add(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_REVERSE_DIRECTION));
+								.add(new DeviceProperty(toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_REVERSE_DIRECTION)));
 						watchingPropertySet
-								.add(toPropertyName(PowerDistributionBoardMetering.EPC_UNIT_FOR_CUMULATIVE_AMOUNTS_OF_ELECTRIC_ENERGY));
+								.add(new DeviceProperty(toPropertyName(PowerDistributionBoardMetering.EPC_UNIT_FOR_CUMULATIVE_AMOUNTS_OF_ELECTRIC_ENERGY)));
 						for (byte p : properties) {
 							int i = p & 0xFF;
 							if (i >= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL1 & 0xFF)
 									&& i <= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL32 & 0xFF)) {
-								watchingPropertySet.add(toPropertyName(p));
+								watchingPropertySet.add(new DeviceProperty(toPropertyName(p)));
 							}
 						}
 						EchoDeviceData data = getEchoDeviceDatabase()
@@ -501,10 +499,7 @@ public class EchoManager implements DeviceProtocol {
 					List<DeviceProperty> list = new ArrayList<DeviceProperty>();
 
 					for (EchoProperty p : callback.properties) {
-						DeviceProperty prop = new DeviceProperty();
-						prop.name = toPropertyName(p.epc);
-						prop.value = toPropertyValue(map.get(p.epc));
-						prop.success = (p.edt == null);
+						DeviceProperty prop = new DeviceProperty(toPropertyName(p.epc), toPropertyValue(map.get(p.epc)), p.edt == null);
 						list.add(prop);
 					}
 					return list;
@@ -522,7 +517,7 @@ public class EchoManager implements DeviceProtocol {
 	}
 
 	@Override
-	public List<DeviceProperty> get(long deviceId, List<String> propertyNameList)
+	public List<DeviceProperty> get(long deviceId, List<DeviceProperty> propertyList)
 			throws AccessException {
 		EchoObject eoj = null;
 		try {
@@ -540,8 +535,8 @@ public class EchoManager implements DeviceProtocol {
 
 		ArrayList<Byte> list = new ArrayList<Byte>();
 		try {
-			for (String name : propertyNameList) {
-				byte epc = Integer.decode(name).byteValue();
+			for (DeviceProperty dp : propertyList) {
+				byte epc = Integer.decode(dp.name).byteValue();
 				list.add(epc);
 			}
 		} catch (Exception e) {
@@ -630,8 +625,7 @@ public class EchoManager implements DeviceProtocol {
 					List<DeviceProperty> list = new ArrayList<DeviceProperty>();
 
 					for (EchoProperty p : callback.properties) {
-						DeviceProperty prop = new DeviceProperty();
-						prop.name = toPropertyName(p.epc);
+						DeviceProperty prop = new DeviceProperty(toPropertyName(p.epc));
 
 						if (p.edt != null) {
 							prop.value = toPropertyValue(p.edt);

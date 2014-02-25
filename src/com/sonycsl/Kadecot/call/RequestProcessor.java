@@ -85,9 +85,7 @@ public class RequestProcessor {
 				if(prop == null || prop.length() != 2) {
 					return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
 				}
-				DeviceProperty dp = new DeviceProperty();
-				dp.name = prop.getString(0);
-				dp.value = prop.get(1);
+				DeviceProperty dp = new DeviceProperty(prop.getString(0), prop.get(1));
 				propertyList.add(dp);
 			}
 			return mDeviceManager.set(nickname, propertyList, mPermissionLevel);
@@ -96,23 +94,24 @@ public class RequestProcessor {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
 		}
 	}
-	
+
 	public Response get(JSONArray params) {
 		String nickname;
-		ArrayList<String> propertyNameList = new ArrayList<String>();
+		ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
 		if(params == null || params.length() <= 0) {
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
 		}
 		try {
 			nickname = params.getString(0);
 			for(int i = 1; i < params.length(); i++) {
-				String prop = params.getString(i);
+				JSONArray prop = params.getJSONArray(i);
 				if(prop == null) {
 					return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
 				}
-				propertyNameList.add(prop);
+				DeviceProperty dp = new DeviceProperty(prop.getString(0), prop.get(1));
+				propertyList.add(dp);
 			}
-			return mDeviceManager.get(nickname, propertyNameList, mPermissionLevel);
+			return mDeviceManager.get(nickname, propertyList, mPermissionLevel);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);

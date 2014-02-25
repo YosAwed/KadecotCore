@@ -1,17 +1,10 @@
 package com.sonycsl.Kadecot.device.echo;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import android.content.Context;
 
-import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
-import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceManager;
+import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
@@ -22,29 +15,31 @@ import com.sonycsl.echo.eoj.device.sensor.TemperatureSensor;
 import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
 
-import android.content.Context;
-import android.util.Log;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EchoDiscovery {
 	@SuppressWarnings("unused")
 	private static final String TAG = EchoDiscovery.class.getSimpleName();
 	private final EchoDiscovery self = this;
-	
+
 	private final Context mContext;
 	private final Set<DeviceObject> mActiveDevices;
 	private final EchoDeviceDatabase mEchoDeviceDatabase;
 	private final Logger mLogger;
-	
+
 	public EchoDiscovery(Context context) {
 		mContext = context.getApplicationContext();
 		mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
 		mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
 		mLogger = Logger.getInstance(mContext);
 	}
-	
+
 	protected synchronized void onDiscoverNewActiveDevice(DeviceObject device) {
 		EchoDeviceData data;
-		
+
 		if(mEchoDeviceDatabase.containsDeviceData(device)) {
 			data = mEchoDeviceDatabase.getDeviceData(device);
 			//Log.d(TAG,"already " + data.nickname);
@@ -52,16 +47,15 @@ public class EchoDiscovery {
 			data = mEchoDeviceDatabase.addDeviceData(device);
 			//Log.d(TAG,"new " + data.nickname);
 		}
-		
+
 
 		//Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data, 0).toString());
 		//onDiscover(device);
 		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
 				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
-		
-		
+
 		// logger
-		HashSet<String> propertyNameSet = new HashSet<String>();
+		HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
 		long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
 		switch(device.getEchoClassCode()) {
@@ -74,19 +68,19 @@ public class EchoDiscovery {
 			}
 			break;
 		case TemperatureSensor.ECHO_CLASS_CODE:
-			propertyNameSet.add(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE));
+			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
 
-			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		case HumiditySensor.ECHO_CLASS_CODE:
-			propertyNameSet.add(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY));
-			
-			mLogger.watch(data.nickname, propertyNameSet,Logger.DEFAULT_INTERVAL_MILLS, delay);
+			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY), null));
+
+			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
 			break;
 		}
 	}
-	
-	
+
+
 	protected void startDiscovering() {
 		if(Echo.isStarted()) {
 			// TODO:Why need this?
@@ -103,21 +97,21 @@ public class EchoDiscovery {
 			} catch (IOException e) {
 			}
 		}
-		
+
 	}
-	
-	
+
+
 	public void onDiscover(DeviceObject device) {
 		if(!mActiveDevices.contains(device)) {
 			mActiveDevices.add(device);
 			onDiscoverNewActiveDevice(device);
 		}
 	}
-	
+
 	protected synchronized void stopDiscovering() {
-		
+
 	}
-	
+
 	protected synchronized void clearActiveDevices() {
 		for(DeviceObject d : mActiveDevices){
 			if(d.isProxy()){
@@ -126,7 +120,7 @@ public class EchoDiscovery {
 		}
 		mActiveDevices.clear();
 	}
-	
+
 	protected synchronized void removeActiveDevices(long deviceId) {
 		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(deviceId);
 		EchoObject eoj = getEchoObject(data.address, data.echoClassCode, data.instanceCode);
@@ -138,7 +132,7 @@ public class EchoDiscovery {
 		//}
 		mActiveDevices.remove(eoj);
 	}
-	
+
 	private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
 		EchoNode en = Echo.getNode(address);
 		if(en == null) return null;
@@ -149,6 +143,6 @@ public class EchoDiscovery {
 		EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
 		if(eoj == null) {return false;}
 		return mActiveDevices.contains(eoj);
-	}	
+	}
 
 }

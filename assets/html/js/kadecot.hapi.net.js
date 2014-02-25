@@ -309,6 +309,10 @@ kHAPI.net.ServerCall = {
 		}
 	}
 	, get : function(args,cbfunc){
+		var i;
+		for(i = 1; i < args.length; i++) {
+			args[i] = [args[i], null];
+		}
 		var d = kHAPI.dev.findDeviceByNickname(args[0]);
 		if( d === undefined ) {
 			console.log(d + " not found");
