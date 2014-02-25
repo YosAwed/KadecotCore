@@ -1,30 +1,25 @@
 package com.sonycsl.Kadecot.device;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.content.Context;
 
 import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.call.Response;
-import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.eoj.device.DeviceObject;
 
-import android.content.Context;
-import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
- * 
+ *
  * Deviceを管理するクラス
  *
  */
@@ -452,13 +447,13 @@ public class DeviceManager {
 				if(property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
 						&& propertyValue.getInt(0) == 0x41) {
 
-					final ArrayList<String> propertyNameList = new ArrayList<String>();
-					propertyNameList.add(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION));
+					final ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
+					propertyList.add(new DeviceProperty(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
 					(new Thread(new Runnable(){
 						@Override
 						public void run() {
 							try {
-								get(data.nickname, propertyNameList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
+								get(data.nickname, propertyList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
 							} catch(Exception e) {
 							}
 						}
