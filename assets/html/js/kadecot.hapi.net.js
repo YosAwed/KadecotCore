@@ -57,7 +57,13 @@ kHAPI.net = {
 
 	// Server -> Home panel
 	, callFromServer : function( msg ){
-		var d = JSON.parse(msg) ; // -> version,method,params,id, 返答が必要なとき、method,idがある。
+    var d = JSON.parse(msg) ;
+
+    if(d.error !== undefined) {
+      console.log("error code " + d.error.code + " : " + d.error.message);
+      alert("error code " + d.error.code + " : " + d.error.message);
+    }
+    // -> version,method,params,id, 返答が必要なとき、method,idがある。
 		// console.log('callFromServer : '+JSON.stringify(d));
 		// onInvoke(methodなし)のときはresult(object)がある。
 		if( d.version !== kHAPI.APIVer ){

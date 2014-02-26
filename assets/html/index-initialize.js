@@ -123,10 +123,27 @@ $(document).on("pagecreate",function(){
     };
 
     var oldOnBackBtn = kHAPI.onBackBtn ;
-    kHAPI.onBackBtn = function(){
+    kHAPI.onBackBtn = function(view){
       if( typeof oldOnBackBtn === 'function' )
         oldOnBackBtn() ;
-      $.mobile.changePage("#devlist_page");
+      
+      if(view === 'appView') {
+        return;
+      }
+      
+      if(kHAPI.isOnAndroid) {
+	  //when device list page is active, exit application.
+	  if ($.mobile.activePage.is($("#devlist_page"))) {
+	      ExitApp.exitActivity();
+	      return;
+	  }
+      }
+      
+      if ($.mobile.activePage.is($("#app_page")) || $.mobile.activePage.is($("#log_page"))) {
+	  $.mobile.changePage("#devlist_page");
+	  return;
+      }
+      $.mobile.back();
     } ;
 
     kHAPI.reqDevListHandlers_onUpdateList() ;

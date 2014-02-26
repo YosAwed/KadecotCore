@@ -254,12 +254,23 @@ public class KadecotCoreActivity extends FragmentActivity {
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 	    if(e.getKeyCode() == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
-	    	callJsOnKadecotMyPage("kHAPI.onBackBtn()") ;
+            if (mAppView.getVisibility() == WebView.VISIBLE) {
+                backAtApp();
+                return true;
+            }
+            backAtMyPage();
 	    	return true ;
 	    }
 	    return super.dispatchKeyEvent(e);
 	}
-	
+
+	private void backAtApp() {
+        callJsOnKadecotMyPage("kHAPI.onBackBtn('appView')") ;
+    }
+
+    private void backAtMyPage() {
+        callJsOnKadecotMyPage("kHAPI.onBackBtn('myPageView')") ;
+    }
 	protected void startKadecot() {
 		loadUrlOnKadecotMyPage("file:///android_asset/html/index.html");
 	}
