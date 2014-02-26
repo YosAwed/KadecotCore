@@ -1,4 +1,6 @@
+
 package org.java_websocket.client;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ByteChannel;
@@ -17,36 +19,36 @@ import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient.WebSocketClientFactory;
 import org.java_websocket.drafts.Draft;
 
-
 public class DefaultSSLWebSocketClientFactory implements WebSocketClientFactory {
-	protected SSLContext sslcontext;
-	protected ExecutorService exec;
+    protected SSLContext sslcontext;
 
-	public DefaultSSLWebSocketClientFactory( SSLContext sslContext ) {
-		this( sslContext, Executors.newSingleThreadScheduledExecutor() );
-	}
+    protected ExecutorService exec;
 
-	public DefaultSSLWebSocketClientFactory( SSLContext sslContext , ExecutorService exec ) {
-		if( sslContext == null || exec == null )
-			throw new IllegalArgumentException();
-		this.sslcontext = sslContext;
-		this.exec = exec;
-	}
+    public DefaultSSLWebSocketClientFactory(SSLContext sslContext) {
+        this(sslContext, Executors.newSingleThreadScheduledExecutor());
+    }
 
-	@Override
-	public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key, String host, int port ) throws IOException {
-		SSLEngine e = sslcontext.createSSLEngine( host, port );
-		e.setUseClientMode( true );
-		return new SSLSocketChannel2( channel, e, exec, key );
-	}
+    public DefaultSSLWebSocketClientFactory(SSLContext sslContext, ExecutorService exec) {
+        if (sslContext == null || exec == null) throw new IllegalArgumentException();
+        this.sslcontext = sslContext;
+        this.exec = exec;
+    }
 
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket c ) {
-		return new WebSocketImpl( a, d, c );
-	}
+    @Override
+    public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key, String host, int port)
+        throws IOException {
+        SSLEngine e = sslcontext.createSSLEngine(host, port);
+        e.setUseClientMode(true);
+        return new SSLSocketChannel2(channel, e, exec, key);
+    }
 
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-		return new WebSocketImpl( a, d, s );
-	}
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d, Socket c) {
+        return new WebSocketImpl(a, d, c);
+    }
+
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d, Socket s) {
+        return new WebSocketImpl(a, d, s);
+    }
 }

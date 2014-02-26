@@ -1,3 +1,4 @@
+
 package com.sonycsl.Kadecot.device;
 
 import android.content.Context;
@@ -19,451 +20,457 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- *
  * Deviceを管理するクラス
- *
  */
 public class DeviceManager {
-	@SuppressWarnings("unused")
-	private static final String TAG = DeviceManager.class.getSimpleName();
-	private final DeviceManager self = this;
-	
-	private static DeviceManager sInstance = null;
-	
-	private final Context mContext;
-	private final HashMap<String, DeviceProtocol> mDeviceProtocols;
-	private boolean mStarted = false;
-	private DeviceDatabase mDeviceDatabase;
-	private Logger mLogger;
-	
-	public static final int ALL_ACCESS_CLIENT_PERMISSION_LEVEL = 0;
-	
-	private DeviceManager(Context context) {
-		mContext = context.getApplicationContext();
-		mDeviceProtocols = new HashMap<String, DeviceProtocol>();
-		registerDeviceProtocol(EchoManager.getInstance(mContext));
+    @SuppressWarnings("unused")
+    private static final String TAG = DeviceManager.class.getSimpleName();
 
-	}
-	
-	public static synchronized DeviceManager getInstance(Context context) {
-		if(sInstance == null) {
-			sInstance = new DeviceManager(context);
-		}
+    private final DeviceManager self = this;
 
-		return sInstance;
-	}
-	
-	public synchronized void start(){
-		mStarted = true;
-		
-		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
-			protocol.start();
-		}
-		
-		refreshList(0);
-	}
-	
-	public synchronized void stop() {
-		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
-			protocol.stop();
-		}
-		getLogger().unwatchAll();
-		
-		Notification.informAllOnUpdateList(mContext);
-		
-		mStarted = false;
-	}
-	
-	public boolean isStarted() {
-		return mStarted;
-	}
-	
-	public void refreshList(int permissionLevel) {
-		if(isStarted() == false) {
-			return;
-		}
+    private static DeviceManager sInstance = null;
 
-		//Notification.informAllEmptyOnUpdateList(mContext);
-		Notification.informAllInactiveDeviceList(mContext);
-		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
-			protocol.refreshDeviceList();
-		}
-		//Notification.informAllOnUpdateList(mContext);
-		
-	}
+    private final Context mContext;
 
-	public synchronized void deleteAllDeviceData() {
-		boolean started = mStarted;
-		stop();
-		for(DeviceProtocol protocol : mDeviceProtocols.values()) {
-			protocol.deleteAllDeviceData();
-		}
-		getDeviceDatabase().deleteAllDeviceData();
-		if(started) {
-			start();
-		}
-	}
-	
-	/**
-	 * clientPermission が 0 なら 全ての操作を許可
-	 *                    1 なら 一部の操作の許可
-	 * protocolPermission が 0 なら 一部のClientのみ許可
-	 *                       1 なら 全部のClientを許可
-	 * clientPermission : {0,1}
-	 * protocolPermission : {0,1}
-	 * @param clientPermissionLevel
-	 * @param protocolPermissionLevel
-	 * @return
-	 */
-	public static boolean isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
-		return (clientPermissionLevel <= protocolPermissionLevel);
-	}
-	
-	public JSONArray list(int permissionLevel) {
-		if(isStarted() == false) {
-			return new JSONArray();
-		}
-		JSONArray list = new JSONArray();
-		
-		List<DeviceData> dataList = getDeviceDatabase().getDeviceDataList();
-		
-		for(DeviceData data : dataList) {
-			JSONObject device = getDeviceInfo(data,permissionLevel);
-			if(device != null) {
-				list.put(device);
-			}
-		}
-		
-		return list;
-	}
-	
-	
-	public JSONObject getDeviceInfo(long deviceId, int permissionLevel) {
-		DeviceData data = getDeviceDatabase().getDeviceData(deviceId);
-		if(data != null) {
-			return getDeviceInfo(data, permissionLevel);
-		} else {
-			return null;
-		}
-	}
-	
-	public JSONObject getDeviceInfo(DeviceData data, int permissionLevel) {
-		JSONObject device = new JSONObject();
-		try {
-			device.put("nickname", data.nickname);
-			device.put("protocol", data.protocolName);
-			
-			DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+    private final HashMap<String, DeviceProtocol> mDeviceProtocols;
 
-			DeviceInfo info = null;
-			if(protocol != null) {
-				if(!(isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel()))) {
-					return null;
-				}
-				info = protocol.getDeviceInfo(data.deviceId, "ja");
-			}
-			
-			if(protocol != null && info != null) {
-				
-				device.put("active", info.active);
-				device.put("deviceName", info.deviceName);
-				device.put("deviceType", info.deviceType);
-				device.put("option", info.option);
-				
-				return device;
+    private boolean mStarted = false;
 
-			} else {
-				//device.put("active", null);
-				
-				return null;
+    private DeviceDatabase mDeviceDatabase;
 
-			}
-		} catch (JSONException e) {
-			return null;
-		}
-	}
-	
-	public void registerDeviceProtocol(DeviceProtocol protocol) {
-		mDeviceProtocols.put(protocol.getProtocolName(), protocol);
-	}
-	
-	public Response set(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+    private Logger mLogger;
 
-		if(isStarted() == false) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
-		}
+    public static final int ALL_ACCESS_CLIENT_PERMISSION_LEVEL = 0;
 
-		DeviceData data = getDeviceDatabase().getDeviceData(nickname);
-		if(data == null) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
-		}
-		
-		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
-		
-		if(isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
-			try {
-				List<DeviceProperty> list = protocol.set(data.deviceId, propertyList);
+    private DeviceManager(Context context) {
+        mContext = context.getApplicationContext();
+        mDeviceProtocols = new HashMap<String, DeviceProtocol>();
+        registerDeviceProtocol(EchoManager.getInstance(mContext));
 
-				
-				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
-				for(DeviceProperty p : list) {
-					completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_SET, p);
-				}
-				
-				return toAccessResponse(nickname, list);
+    }
 
-			} catch (AccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return e.getErrorResponse();
-			}
-		} else {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
-		}
+    public static synchronized DeviceManager getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new DeviceManager(context);
+        }
 
-	}
+        return sInstance;
+    }
 
+    public synchronized void start() {
+        mStarted = true;
 
-	public Response get(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+        for (DeviceProtocol protocol : mDeviceProtocols.values()) {
+            protocol.start();
+        }
 
-		if(isStarted() == false) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
-		}
+        refreshList(0);
+    }
 
-		DeviceData data = getDeviceDatabase().getDeviceData(nickname);
-		if(data == null) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
-		}
+    public synchronized void stop() {
+        for (DeviceProtocol protocol : mDeviceProtocols.values()) {
+            protocol.stop();
+        }
+        getLogger().unwatchAll();
 
-		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
+        Notification.informAllOnUpdateList(mContext);
 
-		if(isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
-			try {
+        mStarted = false;
+    }
 
-				List<DeviceProperty> list = protocol.get(data.deviceId, propertyList);
+    public boolean isStarted() {
+        return mStarted;
+    }
 
-				// log
-				DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
-				for(DeviceProperty p : list) {
-					completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
+    public void refreshList(int permissionLevel) {
+        if (isStarted() == false) {
+            return;
+        }
 
-				}
+        // Notification.informAllEmptyOnUpdateList(mContext);
+        Notification.informAllInactiveDeviceList(mContext);
+        for (DeviceProtocol protocol : mDeviceProtocols.values()) {
+            protocol.refreshDeviceList();
+        }
+        // Notification.informAllOnUpdateList(mContext);
 
-				return toAccessResponse(nickname, list);
-			} catch (AccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return e.getErrorResponse();
-			}
-		} else {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
-		}
-	}
-	
-	private Response toAccessResponse(String nickname, List<DeviceProperty> list) {
+    }
 
-		JSONObject result = new JSONObject();
-		try {
-			result.put("nickname", nickname);
-			JSONArray array = new JSONArray();
-			for(DeviceProperty p : list) {
-				JSONObject prop = new JSONObject();
+    public synchronized void deleteAllDeviceData() {
+        boolean started = mStarted;
+        stop();
+        for (DeviceProtocol protocol : mDeviceProtocols.values()) {
+            protocol.deleteAllDeviceData();
+        }
+        getDeviceDatabase().deleteAllDeviceData();
+        if (started) {
+            start();
+        }
+    }
 
-				prop.put("name", p.name);
-				prop.put("value", p.value);
-				prop.put("success", p.success);
-				prop.put("message", p.message);
-				
-				array.put(prop);
-			}
-			result.put("property", array);
+    /**
+     * clientPermission が 0 なら 全ての操作を許可 1 なら 一部の操作の許可 protocolPermission が 0 なら 一部のClientのみ許可 1 なら
+     * 全部のClientを許可 clientPermission : {0,1} protocolPermission : {0,1}
+     * 
+     * @param clientPermissionLevel
+     * @param protocolPermissionLevel
+     * @return
+     */
+    public static
+        boolean
+        isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
+        return (clientPermissionLevel <= protocolPermissionLevel);
+    }
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return new Response(result);
-	}
-	
-	public synchronized Response deleteDeviceData(JSONArray params) {
+    public JSONArray list(int permissionLevel) {
+        if (isStarted() == false) {
+            return new JSONArray();
+        }
+        JSONArray list = new JSONArray();
 
-		if(isStarted() == false) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
-		}
-		
-		if(params == null || params.length() < 1) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-		}
+        List<DeviceData> dataList = getDeviceDatabase().getDeviceDataList();
 
-		String nickname = null;
-		try {
-			nickname = params.getString(0);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-		}
-		
-		DeviceData data = getDeviceDatabase().getDeviceData(nickname);
-		if(data == null) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
-		}
-		
-		return deleteDeviceData(data);
-	}
-	
-	public synchronized Response deleteDeviceData(DeviceData data) {
+        for (DeviceData data : dataList) {
+            JSONObject device = getDeviceInfo(data, permissionLevel);
+            if (device != null) {
+                list.put(device);
+            }
+        }
 
-		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
-		CannotProcessRequestException cpre = null;
-		
-		try {
-			protocol.deleteDeviceData(data.deviceId);
-		} catch(CannotProcessRequestException e) {
-			cpre = e;
-		}
+        return list;
+    }
 
-		boolean b = getDeviceDatabase().deleteDeviceData(data.deviceId);
-		if(b) {
-			Notification.informAllOnDeviceDeleted(data.nickname, protocol.getAllowedPermissionLevel());
-		}
-		if(cpre != null) {
-			// error
-			return cpre.getErrorResponse();
-		} else {
-			return new Response(null);
-		}
-	}
-	
-	public synchronized Response deleteInactiveDevices(int permissionLevel) {
+    public JSONObject getDeviceInfo(long deviceId, int permissionLevel) {
+        DeviceData data = getDeviceDatabase().getDeviceData(deviceId);
+        if (data != null) {
+            return getDeviceInfo(data, permissionLevel);
+        } else {
+            return null;
+        }
+    }
 
-		if(isStarted() == false) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
-		}
-		
-		
-		List<DeviceData> dataList = getDeviceDatabase().getDeviceDataList();
-		for(DeviceData data : dataList) {
-			DeviceInfo info = null;
-			DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
-			if(protocol != null) {
-				info = protocol.getDeviceInfo(data.deviceId, "jp");
-				if(info != null && !info.active) {
-					protocol.deleteDeviceData(data.deviceId);
-					getDeviceDatabase().deleteDeviceData(data.deviceId);
-				}
-			}
-		}
-		Notification.informAllOnUpdateList(mContext);
-		return new Response(null);
-	}
-	
-	public synchronized Response changeNickname(JSONArray params) {
+    public JSONObject getDeviceInfo(DeviceData data, int permissionLevel) {
+        JSONObject device = new JSONObject();
+        try {
+            device.put("nickname", data.nickname);
+            device.put("protocol", data.protocolName);
 
-		if(isStarted() == false) {
-			return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
-		}
-		
-		
-		if(params == null || params.length() < 2) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-		}
+            DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
 
-		String oldNickname = null;
-		String newNickname = null;
-		try {
-			oldNickname = params.getString(0);
-			newNickname = params.getString(1);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-		}
-		DeviceData data = getDeviceDatabase().getDeviceData(oldNickname);
-		if(data == null) {
-			return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
-		}
-		boolean result = getDeviceDatabase().update(oldNickname, newNickname);
-		if(!result) {
-		    return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "New nickname exists.");
-		}
-		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
-		Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol.getAllowedPermissionLevel());
-		return new Response(null);
-	}
+            DeviceInfo info = null;
+            if (protocol != null) {
+                if (!(isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel()))) {
+                    return null;
+                }
+                info = protocol.getDeviceInfo(data.deviceId, "ja");
+            }
 
+            if (protocol != null && info != null) {
 
-	public void onPropertyChanged(DeviceData data, List<DeviceProperty> list) {
-		JSONObject obj = new JSONObject();
-		if(data == null) {
-			return;
-		}
-		try {
-			obj.put("nickname", data.nickname);
-			JSONArray array = new JSONArray();
-			for(DeviceProperty p : list) {
-				JSONObject prop = new JSONObject();
+                device.put("active", info.active);
+                device.put("deviceName", info.deviceName);
+                device.put("deviceType", info.deviceType);
+                device.put("option", info.option);
 
-				prop.put("name", p.name);
-				prop.put("value", p.value);
-				prop.put("success", p.success);
-				
-				array.put(prop);
-			}
-			obj.put("property", array);
-			Notification.informAllOnPropertyChanged(obj, 1);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		// log
-		DeviceProtocol protocol =  mDeviceProtocols.get(data.protocolName);
-		DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
-		for(DeviceProperty p : list) {
-			completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
-		}
+                return device;
 
-		
-	}
-	
-	private DeviceDatabase getDeviceDatabase() {
-		if(mDeviceDatabase == null) {
-			mDeviceDatabase = DeviceDatabase.getInstance(mContext);
-		}
-		return mDeviceDatabase;
-	}
-	
-	private Logger getLogger() {
-		if(mLogger == null) {
-			mLogger = Logger.getInstance(mContext);
-		}
-		return mLogger;
-	}
-	
-	private void completeAccessDeviceProperty(final DeviceData data, DeviceInfo info, String accessType, DeviceProperty property) {
-		getLogger().insertLog(data, info, accessType, property);
-		if(data.protocolName.equals(EchoManager.PROTOCOL_TYPE_ECHO) && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
-			JSONArray propertyValue = (JSONArray) property.value;
-			try {
-				if(property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
-						&& propertyValue.getInt(0) == 0x41) {
+            } else {
+                // device.put("active", null);
 
-					final ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
-					propertyList.add(new DeviceProperty(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
-					(new Thread(new Runnable(){
-						@Override
-						public void run() {
-							try {
-								get(data.nickname, propertyList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
-							} catch(Exception e) {
-							}
-						}
-					})).start();
-				} else if(property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
-					(new DeviceNotification(mContext)).buildEchoErrorNotification(data.nickname, propertyValue).show();
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+                return null;
+
+            }
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public void registerDeviceProtocol(DeviceProtocol protocol) {
+        mDeviceProtocols.put(protocol.getProtocolName(), protocol);
+    }
+
+    public
+        Response
+        set(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        DeviceData data = getDeviceDatabase().getDeviceData(nickname);
+        if (data == null) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
+        }
+
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+
+        if (isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
+            try {
+                List<DeviceProperty> list = protocol.set(data.deviceId, propertyList);
+
+                DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
+                for (DeviceProperty p : list) {
+                    completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_SET, p);
+                }
+
+                return toAccessResponse(nickname, list);
+
+            } catch (AccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return e.getErrorResponse();
+            }
+        } else {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
+        }
+
+    }
+
+    public
+        Response
+        get(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        DeviceData data = getDeviceDatabase().getDeviceData(nickname);
+        if (data == null) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
+        }
+
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+
+        if (isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
+            try {
+
+                List<DeviceProperty> list = protocol.get(data.deviceId, propertyList);
+
+                // log
+                DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
+                for (DeviceProperty p : list) {
+                    completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
+
+                }
+
+                return toAccessResponse(nickname, list);
+            } catch (AccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return e.getErrorResponse();
+            }
+        } else {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
+        }
+    }
+
+    private Response toAccessResponse(String nickname, List<DeviceProperty> list) {
+
+        JSONObject result = new JSONObject();
+        try {
+            result.put("nickname", nickname);
+            JSONArray array = new JSONArray();
+            for (DeviceProperty p : list) {
+                JSONObject prop = new JSONObject();
+
+                prop.put("name", p.name);
+                prop.put("value", p.value);
+                prop.put("success", p.success);
+                prop.put("message", p.message);
+
+                array.put(prop);
+            }
+            result.put("property", array);
+
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return new Response(result);
+    }
+
+    public synchronized Response deleteDeviceData(JSONArray params) {
+
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        if (params == null || params.length() < 1) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+        }
+
+        String nickname = null;
+        try {
+            nickname = params.getString(0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+        }
+
+        DeviceData data = getDeviceDatabase().getDeviceData(nickname);
+        if (data == null) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
+        }
+
+        return deleteDeviceData(data);
+    }
+
+    public synchronized Response deleteDeviceData(DeviceData data) {
+
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+        CannotProcessRequestException cpre = null;
+
+        try {
+            protocol.deleteDeviceData(data.deviceId);
+        } catch (CannotProcessRequestException e) {
+            cpre = e;
+        }
+
+        boolean b = getDeviceDatabase().deleteDeviceData(data.deviceId);
+        if (b) {
+            Notification.informAllOnDeviceDeleted(data.nickname, protocol
+                .getAllowedPermissionLevel());
+        }
+        if (cpre != null) {
+            // error
+            return cpre.getErrorResponse();
+        } else {
+            return new Response(null);
+        }
+    }
+
+    public synchronized Response deleteInactiveDevices(int permissionLevel) {
+
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        List<DeviceData> dataList = getDeviceDatabase().getDeviceDataList();
+        for (DeviceData data : dataList) {
+            DeviceInfo info = null;
+            DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+            if (protocol != null) {
+                info = protocol.getDeviceInfo(data.deviceId, "jp");
+                if (info != null && !info.active) {
+                    protocol.deleteDeviceData(data.deviceId);
+                    getDeviceDatabase().deleteDeviceData(data.deviceId);
+                }
+            }
+        }
+        Notification.informAllOnUpdateList(mContext);
+        return new Response(null);
+    }
+
+    public synchronized Response changeNickname(JSONArray params) {
+
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        if (params == null || params.length() < 2) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+        }
+
+        String oldNickname = null;
+        String newNickname = null;
+        try {
+            oldNickname = params.getString(0);
+            newNickname = params.getString(1);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+        }
+        DeviceData data = getDeviceDatabase().getDeviceData(oldNickname);
+        if (data == null) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
+        }
+        boolean result = getDeviceDatabase().update(oldNickname, newNickname);
+        if (!result) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "New nickname exists.");
+        }
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+        Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol
+            .getAllowedPermissionLevel());
+        return new Response(null);
+    }
+
+    public void onPropertyChanged(DeviceData data, List<DeviceProperty> list) {
+        JSONObject obj = new JSONObject();
+        if (data == null) {
+            return;
+        }
+        try {
+            obj.put("nickname", data.nickname);
+            JSONArray array = new JSONArray();
+            for (DeviceProperty p : list) {
+                JSONObject prop = new JSONObject();
+
+                prop.put("name", p.name);
+                prop.put("value", p.value);
+                prop.put("success", p.success);
+
+                array.put(prop);
+            }
+            obj.put("property", array);
+            Notification.informAllOnPropertyChanged(obj, 1);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // log
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+        DeviceInfo info = protocol.getDeviceInfo(data.deviceId, "jp");
+        for (DeviceProperty p : list) {
+            completeAccessDeviceProperty(data, info, Logger.ACCESS_TYPE_GET, p);
+        }
+
+    }
+
+    private DeviceDatabase getDeviceDatabase() {
+        if (mDeviceDatabase == null) {
+            mDeviceDatabase = DeviceDatabase.getInstance(mContext);
+        }
+        return mDeviceDatabase;
+    }
+
+    private Logger getLogger() {
+        if (mLogger == null) {
+            mLogger = Logger.getInstance(mContext);
+        }
+        return mLogger;
+    }
+
+    private void completeAccessDeviceProperty(final DeviceData data, DeviceInfo info,
+        String accessType, DeviceProperty property) {
+        getLogger().insertLog(data, info, accessType, property);
+        if (data.protocolName.equals(EchoManager.PROTOCOL_TYPE_ECHO)
+            && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
+            JSONArray propertyValue = (JSONArray)property.value;
+            try {
+                if (property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
+                    && propertyValue.getInt(0) == 0x41) {
+
+                    final ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
+                    propertyList.add(new DeviceProperty(EchoManager
+                        .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
+                    (new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                get(data.nickname, propertyList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
+                            } catch (Exception e) {
+                            }
+                        }
+                    })).start();
+                } else if (property.name.equals(EchoManager
+                    .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
+                    (new DeviceNotification(mContext)).buildEchoErrorNotification(data.nickname,
+                        propertyValue).show();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

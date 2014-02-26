@@ -1,3 +1,4 @@
+
 package org.java_websocket.framing;
 
 import java.nio.ByteBuffer;
@@ -8,103 +9,110 @@ import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.util.Charsetfunctions;
 
 public class FramedataImpl1 implements FrameBuilder {
-	protected static byte[] emptyarray = {};
-	protected boolean fin;
-	protected Opcode optcode;
-	private ByteBuffer unmaskedpayload;
-	protected boolean transferemasked;
+    protected static byte[] emptyarray = {};
 
-	public FramedataImpl1() {
-	}
+    protected boolean fin;
 
-	public FramedataImpl1( Opcode op ) {
-		this.optcode = op;
-		unmaskedpayload = ByteBuffer.wrap( emptyarray );
-	}
+    protected Opcode optcode;
 
-	/**
-	 * Helper constructor which helps to create "echo" frames.
-	 * The new object will use the same underlying payload data.
-	 **/
-	public FramedataImpl1( Framedata f ) {
-		fin = f.isFin();
-		optcode = f.getOpcode();
-		unmaskedpayload = f.getPayloadData();
-		transferemasked = f.getTransfereMasked();
-	}
+    private ByteBuffer unmaskedpayload;
 
-	@Override
-	public boolean isFin() {
-		return fin;
-	}
+    protected boolean transferemasked;
 
-	@Override
-	public Opcode getOpcode() {
-		return optcode;
-	}
+    public FramedataImpl1() {
+    }
 
-	@Override
-	public boolean getTransfereMasked() {
-		return transferemasked;
-	}
+    public FramedataImpl1(Opcode op) {
+        this.optcode = op;
+        unmaskedpayload = ByteBuffer.wrap(emptyarray);
+    }
 
-	@Override
-	public ByteBuffer getPayloadData() {
-		return unmaskedpayload;
-	}
+    /**
+     * Helper constructor which helps to create "echo" frames. The new object will use the same
+     * underlying payload data.
+     **/
+    public FramedataImpl1(Framedata f) {
+        fin = f.isFin();
+        optcode = f.getOpcode();
+        unmaskedpayload = f.getPayloadData();
+        transferemasked = f.getTransfereMasked();
+    }
 
-	@Override
-	public void setFin( boolean fin ) {
-		this.fin = fin;
-	}
+    @Override
+    public boolean isFin() {
+        return fin;
+    }
 
-	@Override
-	public void setOptcode( Opcode optcode ) {
-		this.optcode = optcode;
-	}
+    @Override
+    public Opcode getOpcode() {
+        return optcode;
+    }
 
-	@Override
-	public void setPayload( ByteBuffer payload ) throws InvalidDataException {
-		unmaskedpayload = payload;
-	}
+    @Override
+    public boolean getTransfereMasked() {
+        return transferemasked;
+    }
 
-	@Override
-	public void setTransferemasked( boolean transferemasked ) {
-		this.transferemasked = transferemasked;
-	}
+    @Override
+    public ByteBuffer getPayloadData() {
+        return unmaskedpayload;
+    }
 
-	@Override
-	public void append( Framedata nextframe ) throws InvalidFrameException {
-		ByteBuffer b = nextframe.getPayloadData();
-		if( unmaskedpayload == null ) {
-			unmaskedpayload = ByteBuffer.allocate( b.remaining() );
-			b.mark();
-			unmaskedpayload.put( b );
-			b.reset();
-		} else {
-			b.mark();
-			unmaskedpayload.position( unmaskedpayload.limit() );
-			unmaskedpayload.limit( unmaskedpayload.capacity() );
+    @Override
+    public void setFin(boolean fin) {
+        this.fin = fin;
+    }
 
-			if( b.remaining() > unmaskedpayload.remaining() ) {
-				ByteBuffer tmp = ByteBuffer.allocate( b.remaining() + unmaskedpayload.capacity() );
-				unmaskedpayload.flip();
-				tmp.put( unmaskedpayload );
-				tmp.put( b );
-				unmaskedpayload = tmp;
+    @Override
+    public void setOptcode(Opcode optcode) {
+        this.optcode = optcode;
+    }
 
-			} else {
-				unmaskedpayload.put( b );
-			}
-			unmaskedpayload.rewind();
-			b.reset();
-		}
-		fin = nextframe.isFin();
-	}
+    @Override
+    public void setPayload(ByteBuffer payload) throws InvalidDataException {
+        unmaskedpayload = payload;
+    }
 
-	@Override
-	public String toString() {
-		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Arrays.toString( Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) ) + "}";
-	}
+    @Override
+    public void setTransferemasked(boolean transferemasked) {
+        this.transferemasked = transferemasked;
+    }
+
+    @Override
+    public void append(Framedata nextframe) throws InvalidFrameException {
+        ByteBuffer b = nextframe.getPayloadData();
+        if (unmaskedpayload == null) {
+            unmaskedpayload = ByteBuffer.allocate(b.remaining());
+            b.mark();
+            unmaskedpayload.put(b);
+            b.reset();
+        } else {
+            b.mark();
+            unmaskedpayload.position(unmaskedpayload.limit());
+            unmaskedpayload.limit(unmaskedpayload.capacity());
+
+            if (b.remaining() > unmaskedpayload.remaining()) {
+                ByteBuffer tmp = ByteBuffer.allocate(b.remaining() + unmaskedpayload.capacity());
+                unmaskedpayload.flip();
+                tmp.put(unmaskedpayload);
+                tmp.put(b);
+                unmaskedpayload = tmp;
+
+            } else {
+                unmaskedpayload.put(b);
+            }
+            unmaskedpayload.rewind();
+            b.reset();
+        }
+        fin = nextframe.isFin();
+    }
+
+    @Override
+    public String toString() {
+        return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:"
+            + unmaskedpayload.limit() + ", payload:"
+            + Arrays.toString(Charsetfunctions.utf8Bytes(new String(unmaskedpayload.array())))
+            + "}";
+    }
 
 }

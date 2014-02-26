@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Kadecot</title>
-    <script>
-     onload=function(){
-       if(window.localStorage.getItem("IsAppLicenseAgreed") === 'true'){
-         Local.startKadecot();
-       }else{
-         location.href="agreement.html";
-       }
-     };
-    </script>
-  </head>
-  <body>
-    <div align=center>
-      <img src="boot.png">
-    </div>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<title>Kadecot</title>
+<script>
+  onload = function() {
+    if (window.localStorage.getItem("IsAppLicenseAgreed") === 'true') {
+      Local.startKadecot();
+    } else {
+      location.href = "agreement.html";
+    }
+  };
+</script>
+</head>
+<body>
+	<div align=center>
+		<img src="boot.png">
+	</div>
+</body>
 </html>

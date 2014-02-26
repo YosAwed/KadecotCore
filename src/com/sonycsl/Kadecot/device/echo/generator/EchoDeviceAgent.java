@@ -1,3 +1,4 @@
+
 package com.sonycsl.Kadecot.device.echo.generator;
 
 import android.util.Log;
@@ -10,98 +11,99 @@ import com.sonycsl.echo.eoj.device.DeviceObject;
 import com.sonycsl.echo.node.EchoNode;
 
 public class EchoDeviceAgent extends DeviceObject {
-	@SuppressWarnings("unused")
-	private static final String TAG = EchoDeviceAgent.class.getSimpleName();
-	private final EchoDeviceAgent self = this;
-	
-	private final EchoDeviceData mData;
-	private final EchoDeviceGenerator mGenerator;
-	
-	public EchoDeviceAgent(EchoDeviceData data, EchoDeviceGenerator gen) {
-		mData = data;
-		mGenerator = gen;
+    @SuppressWarnings("unused")
+    private static final String TAG = EchoDeviceAgent.class.getSimpleName();
 
+    private final EchoDeviceAgent self = this;
 
-		byte[] props = mGenerator.getStatusChangeAnnouncementProperties(mData);
-		for(byte p : props) {
-			addStatusChangeAnnouncementProperty(p);
-		}
-		props = mGenerator.getSetProperties(mData);
-		for(byte p : props) {
-			addSetProperty(p);
-		}
-		props = mGenerator.getGetProperties(mData);
-		for(byte p : props) {
-			addGetProperty(p);
-		}
-	}
+    private final EchoDeviceData mData;
 
-	@Override
-	protected void setupPropertyMaps() {
-		//super.setupPropertyMaps();
-	}
+    private final EchoDeviceGenerator mGenerator;
 
-	@Override
-	public byte getInstanceCode() {
-		return mData.instanceCode;
-	}
+    public EchoDeviceAgent(EchoDeviceData data, EchoDeviceGenerator gen) {
+        mData = data;
+        mGenerator = gen;
 
-	@Override
-	protected byte[] getProperty(byte epc) {
-		//return super.getProperty(epc);
-		Dbg.print(epc);
+        byte[] props = mGenerator.getStatusChangeAnnouncementProperties(mData);
+        for (byte p : props) {
+            addStatusChangeAnnouncementProperty(p);
+        }
+        props = mGenerator.getSetProperties(mData);
+        for (byte p : props) {
+            addSetProperty(p);
+        }
+        props = mGenerator.getGetProperties(mData);
+        for (byte p : props) {
+            addGetProperty(p);
+        }
+    }
 
-		return mGenerator.getProperty(mData, epc);
-	}
+    @Override
+    protected void setupPropertyMaps() {
+        // super.setupPropertyMaps();
+    }
 
-	@Override
-	protected boolean isValidProperty(EchoProperty property) {
-		//return super.isValidProperty(property);
+    @Override
+    public byte getInstanceCode() {
+        return mData.instanceCode;
+    }
 
-		boolean b =  mGenerator.isValidProperty(mData, property.epc, property.edt);
-		return b;
+    @Override
+    protected byte[] getProperty(byte epc) {
+        // return super.getProperty(epc);
+        Dbg.print(epc);
 
-	}
+        return mGenerator.getProperty(mData, epc);
+    }
 
-	@Override
-	protected boolean setProperty(EchoProperty property) {
-		//return super.setProperty(property);
-		return mGenerator.setProperty(mData, property.epc, property.edt);
-	}
+    @Override
+    protected boolean isValidProperty(EchoProperty property) {
+        // return super.isValidProperty(property);
 
-	@Override
-	protected byte[] getFaultStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        boolean b = mGenerator.isValidProperty(mData, property.epc, property.edt);
+        return b;
 
-	@Override
-	protected byte[] getInstallationLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    }
 
-	@Override
-	protected byte[] getManufacturerCode() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    protected boolean setProperty(EchoProperty property) {
+        // return super.setProperty(property);
+        return mGenerator.setProperty(mData, property.epc, property.edt);
+    }
 
-	@Override
-	protected byte[] getOperationStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    protected byte[] getFaultStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	protected boolean setInstallationLocation(byte[] arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    protected byte[] getInstallationLocation() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public short getEchoClassCode() {
-		return mData.echoClassCode;
-	}
+    @Override
+    protected byte[] getManufacturerCode() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected byte[] getOperationStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected boolean setInstallationLocation(byte[] arg0) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public short getEchoClassCode() {
+        return mData.echoClassCode;
+    }
 
 }

@@ -1,3 +1,4 @@
+
 package com.sonycsl.Kadecot.device.echo;
 
 import android.content.Context;
@@ -21,128 +22,138 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class EchoDiscovery {
-	@SuppressWarnings("unused")
-	private static final String TAG = EchoDiscovery.class.getSimpleName();
-	private final EchoDiscovery self = this;
+    @SuppressWarnings("unused")
+    private static final String TAG = EchoDiscovery.class.getSimpleName();
 
-	private final Context mContext;
-	private final Set<DeviceObject> mActiveDevices;
-	private final EchoDeviceDatabase mEchoDeviceDatabase;
-	private final Logger mLogger;
+    private final EchoDiscovery self = this;
 
-	public EchoDiscovery(Context context) {
-		mContext = context.getApplicationContext();
-		mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
-		mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
-		mLogger = Logger.getInstance(mContext);
-	}
+    private final Context mContext;
 
-	protected synchronized void onDiscoverNewActiveDevice(DeviceObject device) {
-		EchoDeviceData data;
+    private final Set<DeviceObject> mActiveDevices;
 
-		if(mEchoDeviceDatabase.containsDeviceData(device)) {
-			data = mEchoDeviceDatabase.getDeviceData(device);
-			//Log.d(TAG,"already " + data.nickname);
-		} else {
-			data = mEchoDeviceDatabase.addDeviceData(device);
-			//Log.d(TAG,"new " + data.nickname);
-		}
+    private final EchoDeviceDatabase mEchoDeviceDatabase;
 
+    private final Logger mLogger;
 
-		//Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data, 0).toString());
-		//onDiscover(device);
-		Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data, 0)
-				, EchoManager.getInstance(mContext).getAllowedPermissionLevel());
+    public EchoDiscovery(Context context) {
+        mContext = context.getApplicationContext();
+        mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
+        mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
+        mLogger = Logger.getInstance(mContext);
+    }
 
-		// logger
-		HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
-		long delay = (Logger.DEFAULT_INTERVAL_MILLS) - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
+    protected synchronized void onDiscoverNewActiveDevice(DeviceObject device) {
+        EchoDeviceData data;
 
-		switch(device.getEchoClassCode()) {
-		case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
-			try {
-				device.get().reqGetGetPropertyMap().send();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			break;
-		case TemperatureSensor.ECHO_CLASS_CODE:
-			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
+        if (mEchoDeviceDatabase.containsDeviceData(device)) {
+            data = mEchoDeviceDatabase.getDeviceData(device);
+            // Log.d(TAG,"already " + data.nickname);
+        } else {
+            data = mEchoDeviceDatabase.addDeviceData(device);
+            // Log.d(TAG,"new " + data.nickname);
+        }
 
-			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
-			break;
-		case HumiditySensor.ECHO_CLASS_CODE:
-			propertySet.add(new DeviceProperty(EchoManager.toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY), null));
+        // Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data, 0).toString());
+        // onDiscover(device);
+        Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data,
+            0), EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
-			mLogger.watch(data.nickname, propertySet,Logger.DEFAULT_INTERVAL_MILLS, delay);
-			break;
-		}
-	}
+        // logger
+        HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
+        long delay =
+            (Logger.DEFAULT_INTERVAL_MILLS)
+                - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
+        switch (device.getEchoClassCode()) {
+        case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
+            try {
+                device.get().reqGetGetPropertyMap().send();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            break;
+        case TemperatureSensor.ECHO_CLASS_CODE:
+            propertySet.add(new DeviceProperty(EchoManager
+                .toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
 
-	protected void startDiscovering() {
-		if(Echo.isStarted()) {
-			// TODO:Why need this?
-			EchoNode[] nodes = Echo.getNodes();
-			for(EchoNode n : nodes) {
-				DeviceObject[] devices = n.getDevices();
-				for(DeviceObject d : devices) {
-					onDiscover(d);
-				}
-			}
+            mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
+            break;
+        case HumiditySensor.ECHO_CLASS_CODE:
+            propertySet.add(new DeviceProperty(EchoManager
+                .toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY), null));
 
-			try {
-				NodeProfile.getG().reqGetSelfNodeInstanceListS().send();
-			} catch (IOException e) {
-			}
-		}
+            mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
+            break;
+        }
+    }
 
-	}
+    protected void startDiscovering() {
+        if (Echo.isStarted()) {
+            // TODO:Why need this?
+            EchoNode[] nodes = Echo.getNodes();
+            for (EchoNode n : nodes) {
+                DeviceObject[] devices = n.getDevices();
+                for (DeviceObject d : devices) {
+                    onDiscover(d);
+                }
+            }
 
+            try {
+                NodeProfile.getG().reqGetSelfNodeInstanceListS().send();
+            } catch (IOException e) {
+            }
+        }
 
-	public void onDiscover(DeviceObject device) {
-		if(!mActiveDevices.contains(device)) {
-			mActiveDevices.add(device);
-			onDiscoverNewActiveDevice(device);
-		}
-	}
+    }
 
-	protected synchronized void stopDiscovering() {
+    public void onDiscover(DeviceObject device) {
+        if (!mActiveDevices.contains(device)) {
+            mActiveDevices.add(device);
+            onDiscoverNewActiveDevice(device);
+        }
+    }
 
-	}
+    protected synchronized void stopDiscovering() {
 
-	protected synchronized void clearActiveDevices() {
-		for(DeviceObject d : mActiveDevices){
-			if(d.isProxy()){
-				d.getNode().removeDevice(d);
-			}
-		}
-		mActiveDevices.clear();
-	}
+    }
 
-	protected synchronized void removeActiveDevices(long deviceId) {
-		EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(deviceId);
-		EchoObject eoj = getEchoObject(data.address, data.echoClassCode, data.instanceCode);
-		if(eoj == null) {return;}
-		//if(!eoj.isProxy()) {
-		//	Echo.getNode().removeDevice((DeviceObject)eoj);
-		eoj.getNode().removeDevice((DeviceObject)eoj);
+    protected synchronized void clearActiveDevices() {
+        for (DeviceObject d : mActiveDevices) {
+            if (d.isProxy()) {
+                d.getNode().removeDevice(d);
+            }
+        }
+        mActiveDevices.clear();
+    }
 
-		//}
-		mActiveDevices.remove(eoj);
-	}
+    protected synchronized void removeActiveDevices(long deviceId) {
+        EchoDeviceData data = mEchoDeviceDatabase.getDeviceData(deviceId);
+        EchoObject eoj = getEchoObject(data.address, data.echoClassCode, data.instanceCode);
+        if (eoj == null) {
+            return;
+        }
+        // if(!eoj.isProxy()) {
+        // Echo.getNode().removeDevice((DeviceObject)eoj);
+        eoj.getNode().removeDevice((DeviceObject)eoj);
 
-	private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
-		EchoNode en = Echo.getNode(address);
-		if(en == null) return null;
-		return en.getInstance(echoClassCode,instanceCode);
-	}
+        // }
+        mActiveDevices.remove(eoj);
+    }
 
-	public synchronized boolean isActiveDevice(String address, short echoClassCode, byte instanceCode) {
-		EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
-		if(eoj == null) {return false;}
-		return mActiveDevices.contains(eoj);
-	}
+    private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
+        EchoNode en = Echo.getNode(address);
+        if (en == null) return null;
+        return en.getInstance(echoClassCode, instanceCode);
+    }
+
+    public synchronized boolean isActiveDevice(String address, short echoClassCode,
+        byte instanceCode) {
+        EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
+        if (eoj == null) {
+            return false;
+        }
+        return mActiveDevices.contains(eoj);
+    }
 
 }
