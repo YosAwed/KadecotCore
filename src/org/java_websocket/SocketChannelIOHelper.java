@@ -9,7 +9,7 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 public class SocketChannelIOHelper {
 
     public static boolean read(final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel)
-        throws IOException {
+            throws IOException {
         buf.clear();
         int read = channel.read(buf);
         buf.flip();
@@ -27,7 +27,7 @@ public class SocketChannelIOHelper {
      *         {@link #readMore(ByteBuffer, WebSocketImpl, WrappedByteChannel)}
      **/
     public static boolean readMore(final ByteBuffer buf, WebSocketImpl ws,
-        WrappedByteChannel channel) throws IOException {
+            WrappedByteChannel channel) throws IOException {
         buf.clear();
         int read = channel.readMore(buf);
         buf.flip();
@@ -46,7 +46,7 @@ public class SocketChannelIOHelper {
 
         if (buffer == null) {
             if (sockchannel instanceof WrappedByteChannel) {
-                c = (WrappedByteChannel)sockchannel;
+                c = (WrappedByteChannel) sockchannel;
                 if (c.isNeedWrite()) {
                     c.writeMore();
                 }
@@ -63,21 +63,24 @@ public class SocketChannelIOHelper {
             } while (buffer != null);
         }
 
-        if (ws.outQueue.isEmpty() && ws.isFlushAndClose() /* && ( c == null || c.isNeedWrite() ) */) {
+        if (ws.outQueue.isEmpty() && ws.isFlushAndClose() /*
+                                                           * && ( c == null ||
+                                                           * c.isNeedWrite() )
+                                                           */) {
             synchronized (ws) {
                 ws.closeConnection();
             }
         }
-        return c != null ? !((WrappedByteChannel)sockchannel).isNeedWrite() : true;
+        return c != null ? !((WrappedByteChannel) sockchannel).isNeedWrite() : true;
     }
 
     public static void writeBlocking(WebSocketImpl ws, ByteChannel channel)
-        throws InterruptedException, IOException {
-        assert (channel instanceof AbstractSelectableChannel == true ? ((AbstractSelectableChannel)channel)
-            .isBlocking()
-            : true);
-        assert (channel instanceof WrappedByteChannel == true ? ((WrappedByteChannel)channel)
-            .isBlocking() : true);
+            throws InterruptedException, IOException {
+        assert (channel instanceof AbstractSelectableChannel == true ? ((AbstractSelectableChannel) channel)
+                .isBlocking()
+                : true);
+        assert (channel instanceof WrappedByteChannel == true ? ((WrappedByteChannel) channel)
+                .isBlocking() : true);
 
         ByteBuffer buf = ws.outQueue.take();
         while (buf.hasRemaining())

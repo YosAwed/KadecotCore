@@ -109,16 +109,16 @@ public class DeviceManager {
     }
 
     /**
-     * clientPermission が 0 なら 全ての操作を許可 1 なら 一部の操作の許可 protocolPermission が 0 なら 一部のClientのみ許可 1 なら
-     * 全部のClientを許可 clientPermission : {0,1} protocolPermission : {0,1}
+     * clientPermission が 0 なら 全ての操作を許可 1 なら 一部の操作の許可 protocolPermission が 0 なら
+     * 一部のClientのみ許可 1 なら 全部のClientを許可 clientPermission : {0,1}
+     * protocolPermission : {0,1}
      * 
      * @param clientPermissionLevel
      * @param protocolPermissionLevel
      * @return
      */
-    public static
-        boolean
-        isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
+    public static boolean
+            isAllowedPermission(int clientPermissionLevel, int protocolPermissionLevel) {
         return (clientPermissionLevel <= protocolPermissionLevel);
     }
 
@@ -189,9 +189,8 @@ public class DeviceManager {
         mDeviceProtocols.put(protocol.getProtocolName(), protocol);
     }
 
-    public
-        Response
-        set(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+    public Response
+            set(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
 
         if (isStarted() == false) {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
@@ -226,9 +225,8 @@ public class DeviceManager {
 
     }
 
-    public
-        Response
-        get(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
+    public Response
+            get(String nickname, ArrayList<DeviceProperty> propertyList, int permissionLevel) {
 
         if (isStarted() == false) {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
@@ -329,7 +327,7 @@ public class DeviceManager {
         boolean b = getDeviceDatabase().deleteDeviceData(data.deviceId);
         if (b) {
             Notification.informAllOnDeviceDeleted(data.nickname, protocol
-                .getAllowedPermissionLevel());
+                    .getAllowedPermissionLevel());
         }
         if (cpre != null) {
             // error
@@ -390,7 +388,7 @@ public class DeviceManager {
         }
         DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
         Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol
-            .getAllowedPermissionLevel());
+                .getAllowedPermissionLevel());
         return new Response(null);
     }
 
@@ -442,18 +440,18 @@ public class DeviceManager {
     }
 
     private void completeAccessDeviceProperty(final DeviceData data, DeviceInfo info,
-        String accessType, DeviceProperty property) {
+            String accessType, DeviceProperty property) {
         getLogger().insertLog(data, info, accessType, property);
         if (data.protocolName.equals(EchoManager.PROTOCOL_TYPE_ECHO)
-            && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
-            JSONArray propertyValue = (JSONArray)property.value;
+                && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
+            JSONArray propertyValue = (JSONArray) property.value;
             try {
                 if (property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
-                    && propertyValue.getInt(0) == 0x41) {
+                        && propertyValue.getInt(0) == 0x41) {
 
                     final ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
                     propertyList.add(new DeviceProperty(EchoManager
-                        .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
+                            .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
                     (new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -464,9 +462,9 @@ public class DeviceManager {
                         }
                     })).start();
                 } else if (property.name.equals(EchoManager
-                    .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
+                        .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
                     (new DeviceNotification(mContext)).buildEchoErrorNotification(data.nickname,
-                        propertyValue).show();
+                            propertyValue).show();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

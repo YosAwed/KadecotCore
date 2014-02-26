@@ -44,7 +44,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
         if (code == CloseFrame.NOCODE) {
             if (0 < m.length()) {
                 throw new InvalidDataException(PROTOCOL_ERROR,
-                    "A close frame must have a closecode if it has a reason");
+                        "A close frame must have a closecode if it has a reason");
             }
             return;// empty payload
         }
@@ -72,7 +72,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
             code = bb.getInt();
 
             if (code == CloseFrame.ABNORMAL_CLOSE || code == CloseFrame.TLS_ERROR
-                || code == CloseFrame.NOCODE || code > 4999 || code < 1000 || code == 1004) {
+                    || code == CloseFrame.NOCODE || code > 4999 || code < 1000 || code == 1004) {
                 throw new InvalidFrameException("closecode must not be sent over the wire: " + code);
             }
         }
@@ -120,7 +120,8 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 
     @Override
     public ByteBuffer getPayloadData() {
-        if (code == NOCODE) return emptybytebuffer;
+        if (code == NOCODE)
+            return emptybytebuffer;
         return super.getPayloadData();
     }
 

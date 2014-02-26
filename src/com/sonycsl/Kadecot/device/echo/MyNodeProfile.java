@@ -14,7 +14,7 @@ public class MyNodeProfile extends NodeProfile {
     };
 
     byte[] mStatus = {
-        0x30
+            0x30
     };
 
     byte[] mVersion = {
@@ -22,7 +22,7 @@ public class MyNodeProfile extends NodeProfile {
     };
 
     byte[] mIdNumber = {
-            (byte)0xFE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            (byte) 0xFE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
     byte[] mUniqueId = {
@@ -40,9 +40,10 @@ public class MyNodeProfile extends NodeProfile {
     }
 
     public void changeOperatingStatus(boolean status) {
-        byte b = (status ? (byte)0x30 : (byte)0x31);
+        byte b = (status ? (byte) 0x30 : (byte) 0x31);
 
-        if (mStatus[0] == b) return;
+        if (mStatus[0] == b)
+            return;
         mStatus[0] = b;
         try {
             inform().reqInformOperatingStatus().send();
@@ -63,9 +64,10 @@ public class MyNodeProfile extends NodeProfile {
 
     @Override
     protected boolean setUniqueIdentifierData(byte[] edt) {
-        if ((edt[0] & 0x40) != 0x40) return false;
+        if ((edt[0] & 0x40) != 0x40)
+            return false;
 
-        mUniqueId[0] = (byte)((edt[0] & (byte)0x7F) | (mUniqueId[0] & 0x80));
+        mUniqueId[0] = (byte) ((edt[0] & (byte) 0x7F) | (mUniqueId[0] & 0x80));
         mUniqueId[1] = edt[1];
         return true;
     }

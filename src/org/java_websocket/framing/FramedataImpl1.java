@@ -28,8 +28,8 @@ public class FramedataImpl1 implements FrameBuilder {
     }
 
     /**
-     * Helper constructor which helps to create "echo" frames. The new object will use the same
-     * underlying payload data.
+     * Helper constructor which helps to create "echo" frames. The new object
+     * will use the same underlying payload data.
      **/
     public FramedataImpl1(Framedata f) {
         fin = f.isFin();
@@ -110,9 +110,9 @@ public class FramedataImpl1 implements FrameBuilder {
     @Override
     public String toString() {
         return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:"
-            + unmaskedpayload.limit() + ", payload:"
-            + Arrays.toString(Charsetfunctions.utf8Bytes(new String(unmaskedpayload.array())))
-            + "}";
+                + unmaskedpayload.limit() + ", payload:"
+                + Arrays.toString(Charsetfunctions.utf8Bytes(new String(unmaskedpayload.array())))
+                + "}";
     }
 
 }

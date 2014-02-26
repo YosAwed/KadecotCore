@@ -17,7 +17,8 @@ public interface Framedata {
 
     public Opcode getOpcode();
 
-    public ByteBuffer getPayloadData();// TODO the separation of the application data and the
+    public ByteBuffer getPayloadData();// TODO the separation of the application
+                                       // data and the
                                        // extension data is yet to be done
 
     public abstract void append(Framedata nextframe) throws InvalidFrameException;

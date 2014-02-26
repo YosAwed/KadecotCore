@@ -113,7 +113,7 @@ public class Notification {
     }
 
     public static void informAllOnNicknameChanged(String oldNickname, String newNickname,
-        int protocolPermissionLevel) {
+            int protocolPermissionLevel) {
         JSONArray params = new JSONArray();
         params.put(oldNickname);
         params.put(newNickname);

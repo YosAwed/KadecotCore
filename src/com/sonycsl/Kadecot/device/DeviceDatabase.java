@@ -14,8 +14,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
- * デバイス全体のデータベース protocol_name : デバイスのプロトコル(どのクラス由来のデバイスか調べるために使う) nickname : デバイスのニックネーム _id :
- * デバイスのid(デバイスの詳細情報を持つデータベースと共有する)
+ * デバイス全体のデータベース protocol_name : デバイスのプロトコル(どのクラス由来のデバイスか調べるために使う) nickname :
+ * デバイスのニックネーム _id : デバイスのid(デバイスの詳細情報を持つデータベースと共有する)
  */
 public class DeviceDatabase {
     @SuppressWarnings("unused")
@@ -47,11 +47,11 @@ public class DeviceDatabase {
 
         HashMap<String, String> columns = new HashMap<String, String>();
         columns.put(KEY_DEVICE_ID, DatabaseOpenHelper.DATA_TYPE_INTEGER
-            + DatabaseOpenHelper.OPTION_PRIMARY_KEY_AUTOINCREMENT);
+                + DatabaseOpenHelper.OPTION_PRIMARY_KEY_AUTOINCREMENT);
         columns.put(KEY_NICKNAME, DatabaseOpenHelper.DATA_TYPE_TEXT
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
         columns.put(KEY_PROTOCOL_NAME, DatabaseOpenHelper.DATA_TYPE_TEXT
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
 
         mHelper = new DatabaseOpenHelper(mContext, DB_NAME, DB_VERSION, TABLE_NAME, columns);
 
@@ -78,20 +78,22 @@ public class DeviceDatabase {
         ContentValues values = new ContentValues();
         values.put(KEY_NICKNAME, newNickname);
         mHelper.update(new DatabaseOpenHelper.Where(new String[] {
-            KEY_NICKNAME
+                KEY_NICKNAME
         }, new String[] {
-            oldNickname
+                oldNickname
         }), values);
         return true;
     }
 
     public synchronized boolean addDeviceData(String nickname, String protocolType) {
-        if (containsNickname(nickname)) return false;
+        if (containsNickname(nickname))
+            return false;
         ContentValues values = new ContentValues();
         values.put(KEY_NICKNAME, nickname);
         values.put(KEY_PROTOCOL_NAME, protocolType);
         Long rowid = mHelper.insert(values);
-        if (rowid == null || rowid < 0) return false;
+        if (rowid == null || rowid < 0)
+            return false;
         return true;
     }
 
@@ -157,7 +159,7 @@ public class DeviceDatabase {
     public class DeviceDatabaseHelper extends DatabaseOpenHelper {
 
         public DeviceDatabaseHelper(Context context, String dbName, int version, String tableName,
-            Map<String, String> columns) {
+                Map<String, String> columns) {
             super(context, dbName, version, tableName, columns);
         }
 

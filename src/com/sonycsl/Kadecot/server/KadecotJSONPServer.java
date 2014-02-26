@@ -153,7 +153,8 @@ public class KadecotJSONPServer {
     }
 
     public void start(int port) throws IOException {
-        if (mRunning == true) return;
+        if (mRunning == true)
+            return;
         mServerSocket = new ServerSocket();
         mServerSocket.setReuseAddress(true);
         mServerSocket.bind(new InetSocketAddress(port));
@@ -219,7 +220,8 @@ public class KadecotJSONPServer {
 
     // assumute encoding is utf-8
     private String urldecode(String s) {
-        if (s == null) return null;
+        if (s == null)
+            return null;
         try {
             return URLDecoder.decode(s, "utf-8");
         } catch (UnsupportedEncodingException e) {
@@ -238,7 +240,8 @@ public class KadecotJSONPServer {
             return "{\"error\":\"Incomplete parameters for callmethod : nickname, epc are mandatory parameters.\"}";
 
         // DeviceInfoDB db = new DeviceInfoDB(mContext);
-        // DeviceDatabaseManager db = DeviceDatabaseManager.getInstance(mContext);
+        // DeviceDatabaseManager db =
+        // DeviceDatabaseManager.getInstance(mContext);
         // if(!db.containsNickname(nickname_s)) {
         // db.close();
         // return "{\"error\":\""+nickname_s+" does not exist.\"}" ;
@@ -254,7 +257,8 @@ public class KadecotJSONPServer {
         // get method
         if (args_sp == null) {
             // return mDevManager.callMethod( node_id,obj,epc,null ,null) ;
-            // return DeviceManager.getInstance(mContext).callMethod(null, null, nickname_s,
+            // return DeviceManager.getInstance(mContext).callMethod(null, null,
+            // nickname_s,
             // epc_s,null) ;
             return "";
         }
@@ -263,10 +267,12 @@ public class KadecotJSONPServer {
         // split args_s into byte array
         String[] args_s = args_sp.split(",");
         // byte[] params = new byte[args_s.length] ;
-        // for( int ai=0;ai<args_s.length;++ai ) params[ai] = Integer.decode(args_s[ai]).byteValue()
+        // for( int ai=0;ai<args_s.length;++ai ) params[ai] =
+        // Integer.decode(args_s[ai]).byteValue()
         // ;
         // return mDevManager.callMethod( node_id,obj,epc,params ,null) ;
-        // return DeviceManager.getInstance(mContext).callMethod(null, null, nickname_s,
+        // return DeviceManager.getInstance(mContext).callMethod(null, null,
+        // nickname_s,
         // epc_s,args_s) ;
         return "";
     }
@@ -301,7 +307,8 @@ public class KadecotJSONPServer {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            if (requests.size() < 1) return;
+            if (requests.size() < 1)
+                return;
             line = requests.get(0);
             Matcher m = REQUEST_LINE_PATTERN.matcher(line);
             if (m.matches()) {
@@ -316,7 +323,8 @@ public class KadecotJSONPServer {
                     ss = q.split("&");
                     for (String s : ss) {
                         String[] r = s.split("=");
-                        if (r.length != 2) continue;
+                        if (r.length != 2)
+                            continue;
                         query.put(r[0], r[1]);
                     }
                 }

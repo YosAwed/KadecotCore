@@ -39,7 +39,7 @@ public abstract class KadecotCall {
     private final int mPermissionLevel;
 
     public KadecotCall(Context context, int permissionLevel, RequestProcessor request,
-        NotificationProcessor notification) {
+            NotificationProcessor notification) {
         mContext = context.getApplicationContext();
         mRequestProcessor = request;
         mNotificationProcessor = notification;
@@ -99,7 +99,7 @@ public abstract class KadecotCall {
             if (!obj.isNull("id")) {
                 try {
                     sendResponse(obj.getString("id"), new ErrorResponse(
-                        ErrorResponse.INTERNAL_ERROR_CODE, "not found version"));
+                            ErrorResponse.INTERNAL_ERROR_CODE, "not found version"));
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -118,7 +118,8 @@ public abstract class KadecotCall {
             if (!obj.isNull("id")) {
                 try {
                     sendResponse(obj.getString("id"), new ErrorResponse(
-                        ErrorResponse.INTERNAL_ERROR_CODE, "version:" + version + " is not latest"));
+                            ErrorResponse.INTERNAL_ERROR_CODE, "version:" + version
+                                    + " is not latest"));
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -179,11 +180,12 @@ public abstract class KadecotCall {
             @Override
             public void run() {
                 /*
-                 * final Thread currentThread = Thread.currentThread(); Thread t = new Thread(new
-                 * Runnable(){
-                 * @Override public void run() { try { Thread.sleep(REQUEST_TIMEOUT); } catch
-                 * (InterruptedException e) { e.printStackTrace(); } currentThread.interrupt(); }
-                 * }); t.start();
+                 * final Thread currentThread = Thread.currentThread(); Thread t
+                 * = new Thread(new Runnable(){
+                 * @Override public void run() { try {
+                 * Thread.sleep(REQUEST_TIMEOUT); } catch (InterruptedException
+                 * e) { e.printStackTrace(); } currentThread.interrupt(); } });
+                 * t.start();
                  */
                 Response res = mRequestProcessor.process(method, params);
 
@@ -216,9 +218,9 @@ public abstract class KadecotCall {
         // onDeviceFound
         mKadecotCalls.add(this);
         this.sendNotification(Notification.ON_NOTIFY_SERVER_SETTINGS, Notification
-            .getParamsOnNotifyServerSettings(mContext));
+                .getParamsOnNotifyServerSettings(mContext));
         this.sendNotification(Notification.ON_UPDATE_LIST, Notification.getParamsOnUpdateList(
-            mContext, mPermissionLevel));
+                mContext, mPermissionLevel));
 
     }
 
@@ -237,7 +239,7 @@ public abstract class KadecotCall {
     }
 
     protected static void informAll(final String method, final JSONArray params,
-        int protocolPermissionLevel) {
+            int protocolPermissionLevel) {
         for (KadecotCall kc : mKadecotCalls) {
             if (DeviceManager.isAllowedPermission(kc.getPermissionLevel(), protocolPermissionLevel)) {
                 kc.sendNotification(method, params);

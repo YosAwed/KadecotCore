@@ -137,39 +137,39 @@ public class EchoManager implements DeviceProtocol {
             public void receiveEvent(EchoFrame frame) {
                 // System.err.println(frame);
                 EchoObject eoj =
-                    Echo.getNode(frame.getSrcEchoAddress()).getInstance(
-                        frame.getSrcEchoClassCode(), frame.getSrcEchoInstanceCode());
+                        Echo.getNode(frame.getSrcEchoAddress()).getInstance(
+                                frame.getSrcEchoClassCode(), frame.getSrcEchoInstanceCode());
                 EchoProperty[] properties = frame.getProperties();
                 short tid = frame.getTID();
                 final String callbackId = getCallbackId(tid, eoj);
 
                 switch (frame.getESV()) {
-                case EchoFrame.ESV_SET_RES:
-                case EchoFrame.ESV_SETI_SNA:
-                case EchoFrame.ESV_SETC_SNA:
-                case EchoFrame.ESV_GET_RES:
-                case EchoFrame.ESV_GET_SNA:
-                    Dbg.print("receive:" + callbackId);
+                    case EchoFrame.ESV_SET_RES:
+                    case EchoFrame.ESV_SETI_SNA:
+                    case EchoFrame.ESV_SETC_SNA:
+                    case EchoFrame.ESV_GET_RES:
+                    case EchoFrame.ESV_GET_SNA:
+                        Dbg.print("receive:" + callbackId);
 
-                    Callback callback = mCallbacks.get(callbackId);
+                        Callback callback = mCallbacks.get(callbackId);
 
-                    // synchronized(EchoSocket.class) {
+                        // synchronized(EchoSocket.class) {
 
-                    if (callback != null) {
-                        Dbg.print("callback:" + callbackId);
+                        if (callback != null) {
+                            Dbg.print("callback:" + callbackId);
 
-                        mCallbacks.remove(callbackId);
+                            mCallbacks.remove(callbackId);
 
-                        callback.run(properties);
-                    }
+                            callback.run(properties);
+                        }
 
-                    // }
-                    break;
-                case EchoFrame.ESV_INF:
-                case EchoFrame.ESV_INF_SNA:
-                case EchoFrame.ESV_INFC:
-                    onReceiveInformerFrame(eoj, properties);
-                    break;
+                        // }
+                        break;
+                    case EchoFrame.ESV_INF:
+                    case EchoFrame.ESV_INF_SNA:
+                    case EchoFrame.ESV_INFC:
+                        onReceiveInformerFrame(eoj, properties);
+                        break;
                 }
             }
 
@@ -182,8 +182,9 @@ public class EchoManager implements DeviceProtocol {
                 for (EchoProperty p : properties) {
                     boolean success = p.edt != null;
                     DeviceProperty prop =
-                        new DeviceProperty(toPropertyName(p.epc), success ? toPropertyValue(p.edt)
-                            : null, success);
+                            new DeviceProperty(toPropertyName(p.epc),
+                                    success ? toPropertyValue(p.edt)
+                                            : null, success);
                     list.add(prop);
                 }
                 getDeviceManager().onPropertyChanged(data, list);
@@ -191,39 +192,40 @@ public class EchoManager implements DeviceProtocol {
 
             @Override
             public void onGetProperty(EchoObject eoj, short tid, byte esv, EchoProperty property,
-                boolean success) {
+                    boolean success) {
                 super.onGetProperty(eoj, tid, esv, property, success);
 
                 if (success && (property.epc == DeviceObject.EPC_GET_PROPERTY_MAP)) {
                     byte[] properties = EchoUtils.propertyMapToProperties(property.edt);
                     HashSet<DeviceProperty> watchingPropertySet = new HashSet<DeviceProperty>();
                     switch (eoj.getEchoClassCode()) {
-                    case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
-                        watchingPropertySet
-                            .add(new DeviceProperty(
-                                toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_NORMAL_DIRECTION)));
-                        watchingPropertySet
-                            .add(new DeviceProperty(
-                                toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_REVERSE_DIRECTION)));
-                        watchingPropertySet
-                            .add(new DeviceProperty(
-                                toPropertyName(PowerDistributionBoardMetering.EPC_UNIT_FOR_CUMULATIVE_AMOUNTS_OF_ELECTRIC_ENERGY)));
-                        for (byte p : properties) {
-                            int i = p & 0xFF;
-                            if (i >= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL1 & 0xFF)
-                                && i <= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL32 & 0xFF)) {
-                                watchingPropertySet.add(new DeviceProperty(toPropertyName(p)));
+                        case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
+                            watchingPropertySet
+                                    .add(new DeviceProperty(
+                                            toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_NORMAL_DIRECTION)));
+                            watchingPropertySet
+                                    .add(new DeviceProperty(
+                                            toPropertyName(PowerDistributionBoardMetering.EPC_MEASURED_CUMULATIVE_AMOUNT_OF_ELECTRIC_ENERGY_REVERSE_DIRECTION)));
+                            watchingPropertySet
+                                    .add(new DeviceProperty(
+                                            toPropertyName(PowerDistributionBoardMetering.EPC_UNIT_FOR_CUMULATIVE_AMOUNTS_OF_ELECTRIC_ENERGY)));
+                            for (byte p : properties) {
+                                int i = p & 0xFF;
+                                if (i >= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL1 & 0xFF)
+                                        && i <= (PowerDistributionBoardMetering.EPC_MEASUREMENT_CHANNEL32 & 0xFF)) {
+                                    watchingPropertySet.add(new DeviceProperty(toPropertyName(p)));
+                                }
                             }
-                        }
-                        EchoDeviceData data = getEchoDeviceDatabase().getDeviceData(eoj);
-                        if (data != null) {
-                            long delay =
-                                (Logger.DEFAULT_INTERVAL_MILLS)
-                                    - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
-                            Logger.getInstance(mContext).watch(data.nickname, watchingPropertySet,
-                                Logger.DEFAULT_INTERVAL_MILLS, delay);
-                        }
-                        break;
+                            EchoDeviceData data = getEchoDeviceDatabase().getDeviceData(eoj);
+                            if (data != null) {
+                                long delay =
+                                        (Logger.DEFAULT_INTERVAL_MILLS)
+                                                - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
+                                Logger.getInstance(mContext).watch(data.nickname,
+                                        watchingPropertySet,
+                                        Logger.DEFAULT_INTERVAL_MILLS, delay);
+                            }
+                            break;
                     }
                 }
             }
@@ -248,7 +250,7 @@ public class EchoManager implements DeviceProtocol {
             for (String protocolName : mGenerators.keySet()) {
                 EchoDeviceGenerator gen = mGenerators.get(protocolName);
                 List<EchoDeviceData> agentDataList =
-                    getEchoDeviceDatabase().getDeviceDataList(protocolName);
+                        getEchoDeviceDatabase().getDeviceDataList(protocolName);
 
                 gen.onInitGenerator(agentDataList);
 
@@ -339,7 +341,7 @@ public class EchoManager implements DeviceProtocol {
     }
 
     public static JSONObject convertPropertyAsJSON(String nickname, String propertyName,
-        Object propertyData) {
+            Object propertyData) {
         JSONObject jsonObj = new JSONObject();
         try {
             jsonObj.put("nickname", nickname);
@@ -397,26 +399,27 @@ public class EchoManager implements DeviceProtocol {
         }
 
         EchoNode ne = Echo.getNode(address);
-        if (ne == null) return null;
+        if (ne == null)
+            return null;
         EchoObject eoj = ne.getInstance(data.echoClassCode, data.instanceCode);
         return eoj;
     }
 
     @Override
     public List<DeviceProperty> set(long deviceId, List<DeviceProperty> propertyList)
-        throws AccessException {
+            throws AccessException {
         EchoObject eoj = null;
         try {
             eoj = getEchoObject(deviceId);
         } catch (UnknownHostException e) {
             e.printStackTrace();
             throw new AccessException(new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE,
-                "unknown host"));
+                    "unknown host"));
         }
 
         if (eoj == null) {
             throw new AccessException(new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE,
-                "Not found echo object"));
+                    "Not found echo object"));
         }
 
         ArrayList<EchoProperty> list = new ArrayList<EchoProperty>();
@@ -425,16 +428,16 @@ public class EchoManager implements DeviceProtocol {
                 byte epc = Integer.decode(p.name).byteValue();
                 if (p.value instanceof Integer) {
                     JSONArray ja = new JSONArray();
-                    ja.put(((Integer)p.value).intValue());
+                    ja.put(((Integer) p.value).intValue());
                     p.value = ja;
                 }
                 if (!(p.value instanceof JSONArray)) {
                     throw new AccessException(new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE));
                 }
-                JSONArray value = (JSONArray)p.value;
+                JSONArray value = (JSONArray) p.value;
                 byte[] edt = new byte[value.length()];
                 for (int i = 0; i < value.length(); i++) {
-                    edt[i] = (byte)value.getInt(i);
+                    edt[i] = (byte) value.getInt(i);
                 }
                 list.add(new EchoProperty(epc, edt));
             }
@@ -447,7 +450,7 @@ public class EchoManager implements DeviceProtocol {
     }
 
     private List<DeviceProperty> setProperty(EchoObject eoj, List<EchoProperty> propertyList)
-        throws AccessException {
+            throws AccessException {
         try {
             final Thread current = Thread.currentThread();
             Callback callback = new Callback() {
@@ -467,15 +470,16 @@ public class EchoManager implements DeviceProtocol {
             EchoObject.Setter setter = eoj.set();
             for (EchoProperty p : propertyList) {
                 setter.reqSetProperty(p.epc, p.edt);
-                map.put((Byte)p.epc, p.edt);
+                map.put((Byte) p.epc, p.edt);
             }
             String id = send(eoj, setter, callback);
 
             /*
-             * short nextTid = EchoSocket.getNextTIDNoIncrement(); id = getCallbackId(nextTid, eoj);
-             * mCallbacks.put(id, callback); short tid = setter.send(); if (nextTid != tid) {
-             * mCallbacks.remove(id); Dbg.print("fault"); throw new AccessException(new
-             * ErrorResponse( ErrorResponse.INTERNAL_ERROR_CODE, "fault")); }
+             * short nextTid = EchoSocket.getNextTIDNoIncrement(); id =
+             * getCallbackId(nextTid, eoj); mCallbacks.put(id, callback); short
+             * tid = setter.send(); if (nextTid != tid) { mCallbacks.remove(id);
+             * Dbg.print("fault"); throw new AccessException(new ErrorResponse(
+             * ErrorResponse.INTERNAL_ERROR_CODE, "fault")); }
              */
             // }
 
@@ -491,15 +495,15 @@ public class EchoManager implements DeviceProtocol {
                 // timeout
                 Dbg.print("ECHONET Lite Timeout:" + id);
                 throw new AccessException(new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE,
-                    "ECHONET Lite Timeout"));
+                        "ECHONET Lite Timeout"));
             } else {
                 if (callback.properties != null) {
                     List<DeviceProperty> list = new ArrayList<DeviceProperty>();
 
                     for (EchoProperty p : callback.properties) {
                         DeviceProperty prop =
-                            new DeviceProperty(toPropertyName(p.epc), toPropertyValue(map
-                                .get(p.epc)), p.edt == null);
+                                new DeviceProperty(toPropertyName(p.epc), toPropertyValue(map
+                                        .get(p.epc)), p.edt == null);
                         list.add(prop);
                     }
                     return list;
@@ -516,19 +520,19 @@ public class EchoManager implements DeviceProtocol {
 
     @Override
     public List<DeviceProperty> get(long deviceId, List<DeviceProperty> propertyList)
-        throws AccessException {
+            throws AccessException {
         EchoObject eoj = null;
         try {
             eoj = getEchoObject(deviceId);
         } catch (UnknownHostException e) {
             e.printStackTrace();
             throw new AccessException(new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE,
-                "unknown host"));
+                    "unknown host"));
         }
 
         if (eoj == null) {
             throw new AccessException(new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE,
-                "Not found echo object"));
+                    "Not found echo object"));
         }
 
         ArrayList<Byte> list = new ArrayList<Byte>();
@@ -569,7 +573,7 @@ public class EchoManager implements DeviceProtocol {
     }
 
     private List<DeviceProperty> getProperty(EchoObject eoj, List<Byte> epcList)
-        throws AccessException {
+            throws AccessException {
         try {
             final Thread current = Thread.currentThread();
             Callback callback = new Callback() {
@@ -590,10 +594,11 @@ public class EchoManager implements DeviceProtocol {
             }
             String id = send(eoj, getter, callback);
             /*
-             * short nextTid = EchoSocket.getNextTIDNoIncrement(); id = getCallbackId(nextTid, eoj);
-             * mCallbacks.put(id, callback); short tid = getter.send(); if (nextTid != tid) {
-             * mCallbacks.remove(id); Dbg.print("fault"); throw new AccessException(new
-             * ErrorResponse( ErrorResponse.INTERNAL_ERROR_CODE, "fault")); }
+             * short nextTid = EchoSocket.getNextTIDNoIncrement(); id =
+             * getCallbackId(nextTid, eoj); mCallbacks.put(id, callback); short
+             * tid = getter.send(); if (nextTid != tid) { mCallbacks.remove(id);
+             * Dbg.print("fault"); throw new AccessException(new ErrorResponse(
+             * ErrorResponse.INTERNAL_ERROR_CODE, "fault")); }
              */
             // }
 
@@ -609,7 +614,7 @@ public class EchoManager implements DeviceProtocol {
                 // timeout
                 Dbg.print("ECHONET Lite Timeout:" + id);
                 throw new AccessException(new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE,
-                    "ECHONET Lite Timeout"));
+                        "ECHONET Lite Timeout"));
             } else {
                 if (callback.properties != null) {
 
@@ -640,17 +645,17 @@ public class EchoManager implements DeviceProtocol {
     }
 
     private synchronized String send(EchoObject eoj, Object sender, Callback callback)
-        throws AccessException, IOException {
+            throws AccessException, IOException {
 
         short nextTid = EchoSocket.getNextTIDNoIncrement();
         String id = getCallbackId(nextTid, eoj);
         mCallbacks.put(id, callback);
 
-        short tid = (short)(nextTid - 1);
+        short tid = (short) (nextTid - 1);
         if (sender instanceof EchoObject.Setter) {
-            tid = ((EchoObject.Setter)sender).send().getTID();
+            tid = ((EchoObject.Setter) sender).send().getTID();
         } else if (sender instanceof EchoObject.Getter) {
-            tid = ((EchoObject.Getter)sender).send().getTID();
+            tid = ((EchoObject.Getter) sender).send().getTID();
         }
 
         if (nextTid != tid) {
@@ -674,7 +679,7 @@ public class EchoManager implements DeviceProtocol {
             return null;
         }
         boolean active =
-            mEchoDiscovery.isActiveDevice(data.address, data.echoClassCode, data.instanceCode);
+                mEchoDiscovery.isActiveDevice(data.address, data.echoClassCode, data.instanceCode);
         JSONObject option = new JSONObject();
         if (data.parentId != null) {
             JSONObject obj = getDeviceManager().getDeviceInfo(data.parentId, 0);
@@ -689,10 +694,10 @@ public class EchoManager implements DeviceProtocol {
             }
         }
         DeviceInfo info =
-            new DeviceInfo(active, EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
-                + EchoUtils.toHexString(data.echoClassCode), option);
+                new DeviceInfo(active, EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
+                        + EchoUtils.toHexString(data.echoClassCode), option);
         Dbg.print("(echo device info)nickname:" + data.nickname + ",address:" + data.address
-            + ",instanceCode:" + data.instanceCode + ",active:" + active);
+                + ",instanceCode:" + data.instanceCode + ",active:" + active);
         return info;
     }
 
@@ -725,7 +730,7 @@ public class EchoManager implements DeviceProtocol {
         // synchronized(mEchoDeviceDatabase) {
         // / instance codeを決める
         List<Integer> instanceCodeList =
-            getEchoDeviceDatabase().getLocalDeviceInstanceCodeList(echoClassCode);
+                getEchoDeviceDatabase().getLocalDeviceInstanceCodeList(echoClassCode);
 
         if (instanceCodeList.size() == 0) {
             instanceCode = EchoDeviceDatabase.MIN_INSTANCE_CODE;
@@ -752,7 +757,8 @@ public class EchoManager implements DeviceProtocol {
         Dbg.print("new device instance code:" + instanceCode);
         // /
         data =
-            getEchoDeviceDatabase().addLocalDeviceData(echoClassCode, (byte)instanceCode, parentId);
+                getEchoDeviceDatabase().addLocalDeviceData(echoClassCode, (byte) instanceCode,
+                        parentId);
         if (data == null) {
             return 0;
         }
@@ -767,7 +773,7 @@ public class EchoManager implements DeviceProtocol {
         }
         Dbg.print(instanceCode);
 
-        return (byte)instanceCode;
+        return (byte) instanceCode;
     }
 
 }

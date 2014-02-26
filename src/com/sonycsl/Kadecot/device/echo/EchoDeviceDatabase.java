@@ -69,15 +69,15 @@ public class EchoDeviceDatabase {
         HashMap<String, String> columns = new HashMap<String, String>();
 
         columns.put(KEY_ID, DatabaseOpenHelper.DATA_TYPE_INTEGER
-            + DatabaseOpenHelper.OPTION_PRIMARY_KEY_AUTOINCREMENT);
+                + DatabaseOpenHelper.OPTION_PRIMARY_KEY_AUTOINCREMENT);
         columns.put(KEY_DEVICE_ID, DatabaseOpenHelper.DATA_TYPE_INTEGER
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
         columns.put(KEY_ADDRESS, DatabaseOpenHelper.DATA_TYPE_TEXT
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
         columns.put(KEY_ECHO_CLASS_CODE, DatabaseOpenHelper.DATA_TYPE_INTEGER
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
         columns.put(KEY_INSTANCE_CODE, DatabaseOpenHelper.DATA_TYPE_INTEGER
-            + DatabaseOpenHelper.OPTION_NOT_NULL);
+                + DatabaseOpenHelper.OPTION_NOT_NULL);
 
         columns.put(KEY_PARENT_ID, DatabaseOpenHelper.DATA_TYPE_INTEGER);
 
@@ -117,7 +117,7 @@ public class EchoDeviceDatabase {
     }
 
     public synchronized EchoDeviceData addLocalDeviceData(short echoClassCode, byte instanceCode,
-        long generatorId) {
+            long generatorId) {
 
         String name = EchoDeviceUtils.getClassName(echoClassCode);
 
@@ -135,7 +135,7 @@ public class EchoDeviceDatabase {
             }
             if (!getDeviceDatabase().containsNickname(nickname)) {
                 boolean b =
-                    getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
+                        getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
                 if (!b) {
                     return null;
                 }
@@ -161,7 +161,7 @@ public class EchoDeviceDatabase {
 
     private synchronized EchoDeviceData addDeviceData(String nickname, DeviceObject device) {
         boolean result =
-            getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
+                getDeviceDatabase().addDeviceData(nickname, EchoManager.PROTOCOL_TYPE_ECHO);
         if (!result) {
             return null;
         }
@@ -186,7 +186,8 @@ public class EchoDeviceDatabase {
         values.put(KEY_DEVICE_ID, d.deviceId);
 
         Long rowid = mHelper.insert(values);
-        if (rowid == null || rowid < 0) return null;
+        if (rowid == null || rowid < 0)
+            return null;
         return getDeviceData(mHelper.getCursorByRowId(rowid));
 
     }
@@ -213,7 +214,7 @@ public class EchoDeviceDatabase {
             address = LOCAL_ADDRESS;
         }
         return containsDeviceData(address, device.getEchoClassCode() & 0xFFFF, device
-            .getInstanceCode() & 0xFF);
+                .getInstanceCode() & 0xFF);
     }
 
     private boolean containsDeviceData(String address, int echoClassCode, int instanceCode) {
@@ -233,7 +234,7 @@ public class EchoDeviceDatabase {
             address = LOCAL_ADDRESS;
         }
         return getDeviceData(address, device.getEchoClassCode() & 0xFFFF,
-            device.getInstanceCode() & 0xFF);
+                device.getInstanceCode() & 0xFF);
     }
 
     public EchoDeviceData getDeviceData(String address, int echoClassCode, int instanceCode) {
@@ -249,13 +250,15 @@ public class EchoDeviceDatabase {
 
     public EchoDeviceData getDeviceData(String nickname) {
         DeviceData device = getDeviceDatabase().getDeviceData(nickname);
-        if (device == null) return null;
+        if (device == null)
+            return null;
         return getDeviceData(device);
     }
 
     public EchoDeviceData getDeviceData(long deviceId) {
         DeviceData device = getDeviceDatabase().getDeviceData(deviceId);
-        if (device == null) return null;
+        if (device == null)
+            return null;
         return getDeviceData(device);
     }
 
@@ -266,7 +269,8 @@ public class EchoDeviceDatabase {
         long deviceId = mHelper.getLong(cursor, KEY_DEVICE_ID);
 
         DeviceData data = getDeviceDatabase().getDeviceData(deviceId);
-        if (data == null) return null;
+        if (data == null)
+            return null;
         return getDeviceData(data, cursor);
     }
 
@@ -293,7 +297,8 @@ public class EchoDeviceDatabase {
         int instanceCode = mHelper.getInt(c, KEY_INSTANCE_CODE);
         Long parentId = mHelper.getLong(c, KEY_PARENT_ID);
 
-        return new EchoDeviceData(data, address, (short)echoClassCode, (byte)instanceCode, parentId);
+        return new EchoDeviceData(data, address, (short) echoClassCode, (byte) instanceCode,
+                parentId);
 
     }
 
@@ -370,7 +375,7 @@ public class EchoDeviceDatabase {
     public class EchoDeviceDatabaseHelper extends DatabaseOpenHelper {
 
         public EchoDeviceDatabaseHelper(Context context, String dbName, int version,
-            String tableName, Map<String, String> columns) {
+                String tableName, Map<String, String> columns) {
             super(context, dbName, version, tableName, columns);
         }
 

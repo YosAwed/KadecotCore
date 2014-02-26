@@ -60,8 +60,8 @@ public class KadecotSnapServer extends HTTPServer {
                 str = buf.toString();
 
                 str =
-                    str.replaceAll(IP_ADDRESS_PLACEHOLDER, ServerNetwork.getInstance(context)
-                        .getIPAddress());
+                        str.replaceAll(IP_ADDRESS_PLACEHOLDER, ServerNetwork.getInstance(context)
+                                .getIPAddress());
                 str = str.replaceAll(PORT_NUMBER_PLACEHOLDER, runningPort + "");
                 res.success(TYPE_XML, str);
             }
@@ -71,7 +71,8 @@ public class KadecotSnapServer extends HTTPServer {
             public void run(Request req, Response res) throws IOException {
                 try {
                     JSONObject response =
-                        new RequestProcessor(context, 1).process("list", new JSONArray()).toJSON();
+                            new RequestProcessor(context, 1).process("list", new JSONArray())
+                                    .toJSON();
                     JSONArray ja = response.getJSONArray("result");
                     // JSONArray is not iterable :<
                     ArrayList<String> nicknames = new ArrayList<String>();
@@ -100,10 +101,10 @@ public class KadecotSnapServer extends HTTPServer {
                     args.put(epc);
                     try {
                         JSONObject response =
-                            new RequestProcessor(context, 1).process("get", args).toJSON();
+                                new RequestProcessor(context, 1).process("get", args).toJSON();
                         JSONArray js =
-                            response.getJSONObject("result").getJSONArray("property")
-                                .getJSONObject(0).getJSONArray("value");
+                                response.getJSONObject("result").getJSONArray("property")
+                                        .getJSONObject(0).getJSONArray("value");
                         ArrayList<String> edt = new ArrayList<String>();
                         for (int i = 0; i < js.length(); i++) {
                             edt.add(String.valueOf(js.getInt(i)));
@@ -122,7 +123,7 @@ public class KadecotSnapServer extends HTTPServer {
             @Override
             public void run(Request req, Response res) throws IOException {
                 if (req.query.containsKey("nickname") && req.query.containsKey("epc")
-                    && req.query.containsKey("edt")) {
+                        && req.query.containsKey("edt")) {
                     String nickname = urldecode(req.query.get("nickname"));
                     String epc = urldecode(req.query.get("epc"));
                     String edt = urldecode(req.query.get("edt"));
@@ -139,18 +140,18 @@ public class KadecotSnapServer extends HTTPServer {
                     args.put(epc_edt_pair);
                     try {
                         JSONObject response =
-                            new RequestProcessor(context, 1).process("set", args).toJSON();
+                                new RequestProcessor(context, 1).process("set", args).toJSON();
                         boolean success =
-                            response.getJSONObject("result").getJSONArray("property")
-                                .getJSONObject(0).getBoolean("success");
+                                response.getJSONObject("result").getJSONArray("property")
+                                        .getJSONObject(0).getBoolean("success");
                         if (!success) {
                             Log.d("Snap", response.toString());
                             res.failure(TYPE_PLAIN, "fail;can't operate device?");
                             return;
                         }
                         JSONArray js =
-                            response.getJSONObject("result").getJSONArray("property")
-                                .getJSONObject(0).getJSONArray("value");
+                                response.getJSONObject("result").getJSONArray("property")
+                                        .getJSONObject(0).getJSONArray("value");
                         ArrayList<String> ed = new ArrayList<String>();
                         for (int i = 0; i < js.length(); i++) {
                             ed.add(String.valueOf(js.getInt(i)));

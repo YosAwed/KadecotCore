@@ -53,38 +53,40 @@ public class EchoDiscovery {
             // Log.d(TAG,"new " + data.nickname);
         }
 
-        // Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data, 0).toString());
+        // Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data,
+        // 0).toString());
         // onDiscover(device);
         Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data,
-            0), EchoManager.getInstance(mContext).getAllowedPermissionLevel());
+                0), EchoManager.getInstance(mContext).getAllowedPermissionLevel());
 
         // logger
         HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
         long delay =
-            (Logger.DEFAULT_INTERVAL_MILLS)
-                - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
+                (Logger.DEFAULT_INTERVAL_MILLS)
+                        - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
 
         switch (device.getEchoClassCode()) {
-        case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
-            try {
-                device.get().reqGetGetPropertyMap().send();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            break;
-        case TemperatureSensor.ECHO_CLASS_CODE:
-            propertySet.add(new DeviceProperty(EchoManager
-                .toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
+            case PowerDistributionBoardMetering.ECHO_CLASS_CODE:
+                try {
+                    device.get().reqGetGetPropertyMap().send();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                break;
+            case TemperatureSensor.ECHO_CLASS_CODE:
+                propertySet.add(new DeviceProperty(EchoManager
+                        .toPropertyName(TemperatureSensor.EPC_MEASURED_TEMPERATURE_VALUE), null));
 
-            mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
-            break;
-        case HumiditySensor.ECHO_CLASS_CODE:
-            propertySet.add(new DeviceProperty(EchoManager
-                .toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY), null));
+                mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
+                break;
+            case HumiditySensor.ECHO_CLASS_CODE:
+                propertySet.add(new DeviceProperty(EchoManager
+                        .toPropertyName(HumiditySensor.EPC_MEASURED_VALUE_OF_RELATIVE_HUMIDITY),
+                        null));
 
-            mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
-            break;
+                mLogger.watch(data.nickname, propertySet, Logger.DEFAULT_INTERVAL_MILLS, delay);
+                break;
         }
     }
 
@@ -135,7 +137,7 @@ public class EchoDiscovery {
         }
         // if(!eoj.isProxy()) {
         // Echo.getNode().removeDevice((DeviceObject)eoj);
-        eoj.getNode().removeDevice((DeviceObject)eoj);
+        eoj.getNode().removeDevice((DeviceObject) eoj);
 
         // }
         mActiveDevices.remove(eoj);
@@ -143,12 +145,13 @@ public class EchoDiscovery {
 
     private EchoObject getEchoObject(String address, short echoClassCode, byte instanceCode) {
         EchoNode en = Echo.getNode(address);
-        if (en == null) return null;
+        if (en == null)
+            return null;
         return en.getInstance(echoClassCode, instanceCode);
     }
 
     public synchronized boolean isActiveDevice(String address, short echoClassCode,
-        byte instanceCode) {
+            byte instanceCode) {
         EchoObject eoj = getEchoObject(address, echoClassCode, instanceCode);
         if (eoj == null) {
             return false;

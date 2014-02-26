@@ -29,14 +29,15 @@ public class DefaultSSLWebSocketClientFactory implements WebSocketClientFactory 
     }
 
     public DefaultSSLWebSocketClientFactory(SSLContext sslContext, ExecutorService exec) {
-        if (sslContext == null || exec == null) throw new IllegalArgumentException();
+        if (sslContext == null || exec == null)
+            throw new IllegalArgumentException();
         this.sslcontext = sslContext;
         this.exec = exec;
     }
 
     @Override
     public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key, String host, int port)
-        throws IOException {
+            throws IOException {
         SSLEngine e = sslcontext.createSSLEngine(host, port);
         e.setUseClientMode(true);
         return new SSLSocketChannel2(channel, e, exec, key);

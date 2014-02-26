@@ -69,7 +69,9 @@ public class Logger {
 
     private static final String LABEL_PROTOCOL = "protocol";
 
-    private static final String LABEL_ACCESS_TYPE = "access_type"; // set or get(& inform)
+    private static final String LABEL_ACCESS_TYPE = "access_type"; // set or
+                                                                   // get(&
+                                                                   // inform)
 
     private static final String LABEL_PROPERTY_NAME = "property_name";
 
@@ -114,7 +116,7 @@ public class Logger {
     }
 
     public void watch(String nickname, HashSet<DeviceProperty> propertySet, long intervalMills,
-        long delayMills) {
+            long delayMills) {
         // 定期的にgetする
         DeviceData data = DeviceDatabase.getInstance(mContext).getDeviceData(nickname);
         if (data == null) {
@@ -124,7 +126,7 @@ public class Logger {
     }
 
     public synchronized void watch(long deviceId, HashSet<DeviceProperty> propertySet,
-        long intervalMills, final long delayMills) {
+            long intervalMills, final long delayMills) {
         Watching watching;
         if (mWatchedDevices.containsKey(deviceId)) {
             watching = mWatchedDevices.get(deviceId);
@@ -260,7 +262,7 @@ public class Logger {
     }
 
     public void watchEveryday(String nickname, String propertyName, long intervalMills,
-        long delayMills) {
+            long delayMills) {
         // 定期的にgetする
 
     }
@@ -270,7 +272,7 @@ public class Logger {
     }
 
     public synchronized void insertLog(DeviceData data, DeviceInfo info, String accessType,
-        DeviceProperty property) {
+            DeviceProperty property) {
         LinkedHashMap<String, String> record = new LinkedHashMap<String, String>();
         Date date = new Date();
         record.put(LABEL_VERSION, VERSION);
@@ -281,7 +283,7 @@ public class Logger {
         record.put(LABEL_ACCESS_TYPE, accessType);
         record.put(LABEL_PROPERTY_NAME, property.name);
         record.put(LABEL_PROPERTY_VALUE, (property.value != null) ? property.value.toString()
-            : "null");
+                : "null");
         record.put(LABEL_SUCCESS, Boolean.toString(property.success));
         record.put(LABEL_MESSAGE, property.message != null ? property.message.toString() : null);
 

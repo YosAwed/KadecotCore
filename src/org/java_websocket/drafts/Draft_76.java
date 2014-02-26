@@ -36,7 +36,7 @@ public class Draft_76 extends Draft_75 {
     private final Random reuseableRandom = new Random();
 
     public static byte[] createChallenge(String key1, String key2, byte[] key3)
-        throws InvalidHandshakeException {
+            throws InvalidHandshakeException {
         byte[] part1 = getPart(key1);
         byte[] part2 = getPart(key2);
         byte[] challenge = new byte[16];
@@ -79,7 +79,7 @@ public class Draft_76 extends Draft_75 {
         for (int i = 0; i < numChars; i++) {
             int position = r.nextInt(key.length());
             position = Math.abs(position);
-            char randChar = (char)(r.nextInt(95) + 33);
+            char randChar = (char) (r.nextInt(95) + 33);
             // exclude numbers here
             if (randChar >= 48 && randChar <= 57) {
                 randChar -= 15;
@@ -103,8 +103,8 @@ public class Draft_76 extends Draft_75 {
             }
             long part = new Long(keyNumber / keySpace);
             return new byte[] {
-                    (byte)(part >> 24), (byte)((part << 8) >> 24), (byte)((part << 16) >> 24),
-                    (byte)((part << 24) >> 24)
+                    (byte) (part >> 24), (byte) ((part << 8) >> 24), (byte) ((part << 16) >> 24),
+                    (byte) ((part << 24) >> 24)
             };
         } catch (NumberFormatException e) {
             throw new InvalidHandshakeException("invalid Sec-WebSocket-Key (/key1/ or /key2/)");
@@ -112,17 +112,16 @@ public class Draft_76 extends Draft_75 {
     }
 
     @Override
-    public
-        HandshakeState
-        acceptHandshakeAsClient(ClientHandshake request, ServerHandshake response) {
+    public HandshakeState
+            acceptHandshakeAsClient(ClientHandshake request, ServerHandshake response) {
         if (failed) {
             return HandshakeState.NOT_MATCHED;
         }
 
         try {
             if (!response.getFieldValue("Sec-WebSocket-Origin").equals(
-                request.getFieldValue("Origin"))
-                || !basicAccept(response)) {
+                    request.getFieldValue("Origin"))
+                    || !basicAccept(response)) {
                 return HandshakeState.NOT_MATCHED;
             }
             byte[] content = response.getContent();
@@ -130,7 +129,7 @@ public class Draft_76 extends Draft_75 {
                 throw new IncompleteHandshakeException();
             }
             if (Arrays.equals(content, createChallenge(request.getFieldValue("Sec-WebSocket-Key1"),
-                request.getFieldValue("Sec-WebSocket-Key2"), request.getContent()))) {
+                    request.getFieldValue("Sec-WebSocket-Key2"), request.getContent()))) {
                 return HandshakeState.MATCHED;
             } else {
                 return HandshakeState.NOT_MATCHED;
@@ -143,17 +142,17 @@ public class Draft_76 extends Draft_75 {
     @Override
     public HandshakeState acceptHandshakeAsServer(ClientHandshake handshakedata) {
         if (handshakedata.getFieldValue("Upgrade").equals("WebSocket")
-            && handshakedata.getFieldValue("Connection").contains("Upgrade")
-            && handshakedata.getFieldValue("Sec-WebSocket-Key1").length() > 0
-            && !handshakedata.getFieldValue("Sec-WebSocket-Key2").isEmpty()
-            && handshakedata.hasFieldValue("Origin")) return HandshakeState.MATCHED;
+                && handshakedata.getFieldValue("Connection").contains("Upgrade")
+                && handshakedata.getFieldValue("Sec-WebSocket-Key1").length() > 0
+                && !handshakedata.getFieldValue("Sec-WebSocket-Key2").isEmpty()
+                && handshakedata.hasFieldValue("Origin"))
+            return HandshakeState.MATCHED;
         return HandshakeState.NOT_MATCHED;
     }
 
     @Override
-    public
-        ClientHandshakeBuilder
-        postProcessHandshakeRequestAsClient(ClientHandshakeBuilder request) {
+    public ClientHandshakeBuilder
+            postProcessHandshakeRequestAsClient(ClientHandshakeBuilder request) {
         request.put("Upgrade", "WebSocket");
         request.put("Connection", "Upgrade");
         request.put("Sec-WebSocket-Key1", generateKey());
@@ -172,11 +171,15 @@ public class Draft_76 extends Draft_75 {
 
     @Override
     public HandshakeBuilder postProcessHandshakeResponseAsServer(ClientHandshake request,
-        ServerHandshakeBuilder response) throws InvalidHandshakeException {
+            ServerHandshakeBuilder response) throws InvalidHandshakeException {
         response.setHttpStatusMessage("WebSocket Protocol Handshake");
         response.put("Upgrade", "WebSocket");
-        response.put("Connection", request.getFieldValue("Connection")); // to respond to a
-                                                                         // Connection keep alive
+        response.put("Connection", request.getFieldValue("Connection")); // to
+                                                                         // respond
+                                                                         // to a
+                                                                         // Connection
+                                                                         // keep
+                                                                         // alive
         response.put("Sec-WebSocket-Origin", request.getFieldValue("Origin"));
         String location = "ws://" + request.getFieldValue("Host") + request.getResourceDescriptor();
         response.put("Sec-WebSocket-Location", location);
@@ -194,10 +197,11 @@ public class Draft_76 extends Draft_75 {
     public Handshakedata translateHandshake(ByteBuffer buf) throws InvalidHandshakeException {
 
         HandshakeBuilder bui = translateHandshakeHttp(buf, role);
-        // the first drafts are lacking a protocol number which makes them difficult to distinguish.
+        // the first drafts are lacking a protocol number which makes them
+        // difficult to distinguish.
         // Sec-WebSocket-Key1 is typical for draft76
         if ((bui.hasFieldValue("Sec-WebSocket-Key1") || role == Role.CLIENT)
-            && !bui.hasFieldValue("Sec-WebSocket-Version")) {
+                && !bui.hasFieldValue("Sec-WebSocket-Version")) {
             byte[] key3 = new byte[role == Role.SERVER ? 8 : 16];
             try {
                 buf.get(key3);
@@ -246,7 +250,8 @@ public class Draft_76 extends Draft_75 {
 
     @Override
     public ByteBuffer createBinaryFrame(Framedata framedata) {
-        if (framedata.getOpcode() == Opcode.CLOSING) return ByteBuffer.wrap(closehandshake);
+        if (framedata.getOpcode() == Opcode.CLOSING)
+            return ByteBuffer.wrap(closehandshake);
         return super.createBinaryFrame(framedata);
     }
 

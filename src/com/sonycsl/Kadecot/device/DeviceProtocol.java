@@ -31,10 +31,10 @@ public interface DeviceProtocol {
 
     // デバイスにアクセスする
     public List<DeviceProperty> set(long deviceId, List<DeviceProperty> propertyList)
-        throws AccessException;
+            throws AccessException;
 
     public List<DeviceProperty> get(long deviceId, List<DeviceProperty> propertyList)
-        throws AccessException;
+            throws AccessException;
 
     // デバイスのアクセスを許可するレベルを取得する(1ならどこからでも可，0ならWebViewのみ可)
     public int getAllowedPermissionLevel();

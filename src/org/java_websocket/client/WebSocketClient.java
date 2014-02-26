@@ -31,10 +31,12 @@ import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 
 /**
- * The <tt>WebSocketClient</tt> is an abstract class that expects a valid "ws://" URI to connect to.
- * When connected, an instance recieves important events related to the life of the connection. A
- * subclass must implement <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
- * useful. An instance can send messages to it's connected server via the <var>send</var> method.
+ * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
+ * "ws://" URI to connect to. When connected, an instance recieves important
+ * events related to the life of the connection. A subclass must implement
+ * <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be useful.
+ * An instance can send messages to it's connected server via the
+ * <var>send</var> method.
  * 
  * @author Nathan Rajlich
  */
@@ -77,22 +79,22 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     }
 
     /**
-     * Constructs a WebSocketClient instance and sets it to the connect to the specified URI. The
-     * channel does not attampt to connect automatically. You must call <var>connect</var> first to
-     * initiate the socket connection.
+     * Constructs a WebSocketClient instance and sets it to the connect to the
+     * specified URI. The channel does not attampt to connect automatically. You
+     * must call <var>connect</var> first to initiate the socket connection.
      */
     public WebSocketClient(URI serverUri, Draft draft) {
         this(serverUri, draft, null, 0);
     }
 
     public WebSocketClient(URI serverUri, Draft draft, Map<String, String> headers,
-        int connecttimeout) {
+            int connecttimeout) {
         if (serverUri == null) {
             throw new IllegalArgumentException();
         }
         if (draft == null) {
             throw new IllegalArgumentException(
-                "null as draft is permitted for `WebSocketServer` only!");
+                    "null as draft is permitted for `WebSocketServer` only!");
         }
         this.uri = serverUri;
         this.draft = draft;
@@ -107,10 +109,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
             onWebsocketError(null, e);
         }
         if (channel == null) {
-            conn = (WebSocketImpl)wsfactory.createWebSocket(this, draft, null);
+            conn = (WebSocketImpl) wsfactory.createWebSocket(this, draft, null);
             conn.close(CloseFrame.NEVER_CONNECTED, "Failed to create or configure SocketChannel.");
         } else {
-            conn = (WebSocketImpl)wsfactory.createWebSocket(this, draft, channel.socket());
+            conn = (WebSocketImpl) wsfactory.createWebSocket(this, draft, channel.socket());
         }
 
     }
@@ -130,8 +132,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     }
 
     /**
-     * Starts a background thread that attempts and maintains a WebSocket connection to the URI
-     * specified in the constructor or via <var>setURI</var>. <var>setURI</var>.
+     * Starts a background thread that attempts and maintains a WebSocket
+     * connection to the URI specified in the constructor or via
+     * <var>setURI</var>. <var>setURI</var>.
      */
     public void connect() {
         if (writethread != null)
@@ -141,7 +144,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     }
 
     /**
-     * Same as connect but blocks until the websocket connected or failed to do so.<br>
+     * Same as connect but blocks until the websocket connected or failed to do
+     * so.<br>
      * Returns whether it succeeded or not.
      **/
     public boolean connectBlocking() throws InterruptedException {
@@ -181,7 +185,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
     // Runnable IMPLEMENTATION /////////////////////////////////////////////////
     public void run() {
-        if (writethread == null) writethread = Thread.currentThread();
+        if (writethread == null)
+            writethread = Thread.currentThread();
         interruptableRun();
 
         assert (!channel.isOpen());
@@ -190,8 +195,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
     private final void interruptableRun() {
         if (channel == null) {
-            return;// channel will be initialized in the constructor and only be null if no socket
-                   // channel could be created or if blocking mode could be established
+            return;// channel will be initialized in the constructor and only be
+                   // null if no socket
+                   // channel could be created or if blocking mode could be
+                   // established
         }
 
         try {
@@ -207,8 +214,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
             }
             channel.connect(new InetSocketAddress(host, port));
             conn.channel =
-                wrappedchannel =
-                    createProxyChannel(wsfactory.wrapChannel(channel, null, host, port));
+                    wrappedchannel =
+                            createProxyChannel(wsfactory.wrapChannel(channel, null, host, port));
 
             timeout = 0; // since connect is over
             sendHandshake();
@@ -217,7 +224,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
         } catch (ClosedByInterruptException e) {
             onWebsocketError(null, e);
             return;
-        } catch ( /* IOException | SecurityException | UnresolvedAddressException */Exception e) {//
+        } catch ( /*
+                   * IOException | SecurityException |
+                   * UnresolvedAddressException
+                   */Exception e) {//
             onWebsocketError(conn, e);
             conn.closeConnection(CloseFrame.NEVER_CONNECTED, e.getMessage());
             return;
@@ -233,7 +243,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
                 }
 
                 if (wrappedchannel instanceof WrappedByteChannel) {
-                    WrappedByteChannel w = (WrappedByteChannel)wrappedchannel;
+                    WrappedByteChannel w = (WrappedByteChannel) wrappedchannel;
                     if (w.isNeedRead()) {
                         while (SocketChannelIOHelper.readMore(buff, conn, w)) {
                             conn.decode(buff);
@@ -248,7 +258,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
         } catch (IOException e) {
             conn.eot();
         } catch (RuntimeException e) {
-            // this catch case covers internal errors only and indicates a bug in this websocket
+            // this catch case covers internal errors only and indicates a bug
+            // in this websocket
             // implementation
             onError(e);
             conn.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
@@ -278,7 +289,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
             path = "/";
         else
             path = part1;
-        if (part2 != null) path += "?" + part2;
+        if (part2 != null)
+            path += "?" + part2;
         int port = getPort();
         String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
 
@@ -294,7 +306,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     }
 
     /**
-     * This represents the state of the connection. You can use this method instead of
+     * This represents the state of the connection. You can use this method
+     * instead of
      */
     public READYSTATE getReadyState() {
         return conn.getReadyState();
@@ -324,7 +337,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     @Override
     public final void onWebsocketOpen(WebSocket conn, Handshakedata handshake) {
         connectLatch.countDown();
-        onOpen((ServerHandshake)handshake);
+        onOpen((ServerHandshake) handshake);
     }
 
     /**
@@ -336,7 +349,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     public final void onWebsocketClose(WebSocket conn, int code, String reason, boolean remote) {
         connectLatch.countDown();
         closeLatch.countDown();
-        if (readthread != null) readthread.interrupt();
+        if (readthread != null)
+            readthread.interrupt();
         onClose(code, reason, remote);
     }
 
@@ -385,13 +399,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
     @Override
     public InetSocketAddress getLocalSocketAddress(WebSocket conn) {
-        if (channel != null) return (InetSocketAddress)channel.socket().getLocalSocketAddress();
+        if (channel != null)
+            return (InetSocketAddress) channel.socket().getLocalSocketAddress();
         return null;
     }
 
     @Override
     public InetSocketAddress getRemoteSocketAddress(WebSocket conn) {
-        if (channel != null) return (InetSocketAddress)channel.socket().getLocalSocketAddress();
+        if (channel != null)
+            return (InetSocketAddress) channel.socket().getLocalSocketAddress();
         return null;
     }
 
@@ -430,7 +446,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
     public interface WebSocketClientFactory extends WebSocketFactory {
         public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key, String host,
-            int port) throws IOException;
+                int port) throws IOException;
     }
 
     private class WebsocketWriteThread implements Runnable {

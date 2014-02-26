@@ -9,11 +9,11 @@ public class MyController extends Controller {
     private static final String TAG = Controller.class.getSimpleName();
 
     byte[] mStatus = {
-        0x30
+            0x30
     };
 
     byte[] mLocation = {
-        0x00
+            0x00
     };
 
     byte[] mVersion = {
@@ -21,7 +21,7 @@ public class MyController extends Controller {
     };
 
     byte[] mFaultStatus = {
-        0x42
+            0x42
     };
 
     byte[] mManufacturerCode = {
@@ -34,9 +34,10 @@ public class MyController extends Controller {
     }
 
     public void changeOperationStatus(boolean status) {
-        byte b = (status ? (byte)0x30 : (byte)0x31);
+        byte b = (status ? (byte) 0x30 : (byte) 0x31);
 
-        if (mStatus[0] == b) return;
+        if (mStatus[0] == b)
+            return;
 
         mStatus[0] = b;
         try {
@@ -58,7 +59,8 @@ public class MyController extends Controller {
     }
 
     public void changeInstallationLocation(byte location) {
-        if (mLocation[0] == location) return;
+        if (mLocation[0] == location)
+            return;
         mLocation[0] = location;
         try {
             inform().reqInformInstallationLocation().send();
@@ -78,9 +80,10 @@ public class MyController extends Controller {
     }
 
     public void changeFaultStatus(boolean status) {
-        byte b = (status ? (byte)0x41 : (byte)0x42);
+        byte b = (status ? (byte) 0x41 : (byte) 0x42);
 
-        if (mFaultStatus[0] == b) return;
+        if (mFaultStatus[0] == b)
+            return;
         mFaultStatus[0] = b;
         try {
             inform().reqInformFaultStatus().send();

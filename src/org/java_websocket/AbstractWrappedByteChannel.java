@@ -42,35 +42,36 @@ public class AbstractWrappedByteChannel implements WrappedByteChannel {
 
     @Override
     public boolean isNeedWrite() {
-        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel)channel).isNeedWrite()
-            : false;
+        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel) channel).isNeedWrite()
+                : false;
     }
 
     @Override
     public void writeMore() throws IOException {
-        if (channel instanceof WrappedByteChannel) ((WrappedByteChannel)channel).writeMore();
+        if (channel instanceof WrappedByteChannel)
+            ((WrappedByteChannel) channel).writeMore();
 
     }
 
     @Override
     public boolean isNeedRead() {
-        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel)channel).isNeedRead()
-            : false;
+        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel) channel).isNeedRead()
+                : false;
 
     }
 
     @Override
     public int readMore(ByteBuffer dst) throws SSLException {
-        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel)channel).readMore(dst)
-            : 0;
+        return channel instanceof WrappedByteChannel ? ((WrappedByteChannel) channel).readMore(dst)
+                : 0;
     }
 
     @Override
     public boolean isBlocking() {
         if (channel instanceof SocketChannel)
-            return ((SocketChannel)channel).isBlocking();
+            return ((SocketChannel) channel).isBlocking();
         else if (channel instanceof WrappedByteChannel)
-            return ((WrappedByteChannel)channel).isBlocking();
+            return ((WrappedByteChannel) channel).isBlocking();
         return false;
     }
 

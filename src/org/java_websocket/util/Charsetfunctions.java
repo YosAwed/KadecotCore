@@ -54,11 +54,12 @@ public class Charsetfunctions {
     }
 
     /*
-     * public static String stringUtf8( byte[] bytes, int off, int length ) throws
-     * InvalidDataException { CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
-     * decode.onMalformedInput( codingErrorAction ); decode.onUnmappableCharacter( codingErrorAction
-     * ); //decode.replaceWith( "X" ); String s; try { s = decode.decode( ByteBuffer.wrap( bytes,
-     * off, length ) ).toString(); } catch ( CharacterCodingException e ) { throw new
+     * public static String stringUtf8( byte[] bytes, int off, int length )
+     * throws InvalidDataException { CharsetDecoder decode = Charset.forName(
+     * "UTF8" ).newDecoder(); decode.onMalformedInput( codingErrorAction );
+     * decode.onUnmappableCharacter( codingErrorAction ); //decode.replaceWith(
+     * "X" ); String s; try { s = decode.decode( ByteBuffer.wrap( bytes, off,
+     * length ) ).toString(); } catch ( CharacterCodingException e ) { throw new
      * InvalidDataException( CloseFrame.NO_UTF8, e ); } return s; }
      */
 
