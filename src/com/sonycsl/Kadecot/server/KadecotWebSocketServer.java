@@ -1,3 +1,4 @@
+
 package com.sonycsl.Kadecot.server;
 
 import java.io.FileNotFoundException;
@@ -42,155 +43,154 @@ import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 
 public class KadecotWebSocketServer {
-	@SuppressWarnings("unused")
-	private static final String TAG = KadecotWebSocketServer.class
-			.getSimpleName();
-	private final KadecotWebSocketServer self = this;
+    @SuppressWarnings("unused")
+    private static final String TAG = KadecotWebSocketServer.class.getSimpleName();
 
-	
-	private static final int portno = 41314;
+    private final KadecotWebSocketServer self = this;
 
-	private Context mContext;
+    private static final int portno = 41314;
 
-	protected static KadecotWebSocketServer sInstance = null;
-	
-	private WebSocketServerImpl mWebSocketServer = null;
-	
-	private boolean mStarted = false;
-	
-	public synchronized static KadecotWebSocketServer getInstance(Context context) {
-		if (sInstance == null) {
-			sInstance = new KadecotWebSocketServer(context);
-		}
-		return sInstance;
-	}
+    private Context mContext;
 
-	private KadecotWebSocketServer(Context context) {
-		mContext = context.getApplicationContext();
+    protected static KadecotWebSocketServer sInstance = null;
 
-		WebSocketImpl.DEBUG = false;//true;
-	}
+    private WebSocketServerImpl mWebSocketServer = null;
 
-	public synchronized void start() {
-		if (isStarted()) {
-			return;
-		}
-		stop();
-		mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
-		mWebSocketServer.start();
-		mStarted = true;
-	}
-	
-	public synchronized boolean isStarted() {
-		return mStarted;
-	}
-	
-	public synchronized void stop() {
-		if (!isStarted()) {
-			return;
-		}
-		try {
-			if(mWebSocketServer != null) {
-				mWebSocketServer.stop();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		mWebSocketServer = null;
-		mStarted = false;
-	}
-	
-	public class WebSocketServerImpl extends WebSocketServer {
-		
-		private Map<WebSocket, KadecotCall> mKadecotCalls = new HashMap<WebSocket, KadecotCall>();
+    private boolean mStarted = false;
 
-		public WebSocketServerImpl(InetSocketAddress address) {
-			super(address);
-		}
+    public synchronized static KadecotWebSocketServer getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new KadecotWebSocketServer(context);
+        }
+        return sInstance;
+    }
 
-		@Override
-		public void onOpen(WebSocket conn, ClientHandshake handshake) {
+    private KadecotWebSocketServer(Context context) {
+        mContext = context.getApplicationContext();
 
-			// origin
-			String origin = handshake.getFieldValue("origin");
-			KadecotCall kc = new WebSocketCall(mContext, conn);
-				
-			mKadecotCalls.put(conn, kc);
-			kc.start();
-			
-		}
+        WebSocketImpl.DEBUG = false;// true;
+    }
 
-		@Override
-		public void onClose(WebSocket conn, int code, String reason,
-				boolean remote) {
-			if (mKadecotCalls.containsKey(conn)) {
-				KadecotCall kc = mKadecotCalls.get(conn);
-				mKadecotCalls.remove(conn);
-				kc.stop();
-			}
-			
-		}
+    public synchronized void start() {
+        if (isStarted()) {
+            return;
+        }
+        stop();
+        mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
+        mWebSocketServer.start();
+        mStarted = true;
+    }
 
-		@Override
-		public void onMessage(WebSocket conn, String message) {
-			// TODO Auto-generated method stub
+    public synchronized boolean isStarted() {
+        return mStarted;
+    }
 
-			Dbg.print(message);
-			if (mKadecotCalls.containsKey(conn)) {
-				try {
-					mKadecotCalls.get(conn).receive(new JSONObject(message));
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+    public synchronized void stop() {
+        if (!isStarted()) {
+            return;
+        }
+        try {
+            if (mWebSocketServer != null) {
+                mWebSocketServer.stop();
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        mWebSocketServer = null;
+        mStarted = false;
+    }
 
-		@Override
-		public void onError(WebSocket conn, Exception ex) {
-			//if (mKadecotCalls.containsKey(conn)) {
-			//	KadecotCall kc = mKadecotCalls.get(conn);
-			//	kc.stop();
-			//	mKadecotCalls.remove(conn);
-			//}
-		}
+    public class WebSocketServerImpl extends WebSocketServer {
 
+        private Map<WebSocket, KadecotCall> mKadecotCalls = new HashMap<WebSocket, KadecotCall>();
 
-		@Override
-		public synchronized void stop(int timeout) throws IOException, InterruptedException {
-			super.stop(timeout);
+        public WebSocketServerImpl(InetSocketAddress address) {
+            super(address);
+        }
 
-			for(WebSocket ws : mKadecotCalls.keySet()) {
-				mKadecotCalls.get(ws).stop();
-			}
-			mKadecotCalls.clear();
-			
-			self.mWebSocketServer = null;
-			
-			if(self.isStarted()) {
-				self.start();
-			}
-			
-		}
-	}
-	
-	public class WebSocketCall extends KadecotCall {
+        @Override
+        public void onOpen(WebSocket conn, ClientHandshake handshake) {
 
-		private WebSocket ws;
-		public WebSocketCall(Context context, WebSocket ws) {
-			super(context, 1, new RequestProcessor(context, 1), new NotificationProcessor(context, 1));
-			// TODO Auto-generated constructor stub
-			this.ws = ws;
-		}
+            // origin
+            String origin = handshake.getFieldValue("origin");
+            KadecotCall kc = new WebSocketCall(mContext, conn);
 
-		@Override
-		public void send(JSONObject obj) {
-			ws.send(obj.toString());
-		}
-		
-	}
+            mKadecotCalls.put(conn, kc);
+            kc.start();
+
+        }
+
+        @Override
+        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+            if (mKadecotCalls.containsKey(conn)) {
+                KadecotCall kc = mKadecotCalls.get(conn);
+                mKadecotCalls.remove(conn);
+                kc.stop();
+            }
+
+        }
+
+        @Override
+        public void onMessage(WebSocket conn, String message) {
+            // TODO Auto-generated method stub
+
+            Dbg.print(message);
+            if (mKadecotCalls.containsKey(conn)) {
+                try {
+                    mKadecotCalls.get(conn).receive(new JSONObject(message));
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void onError(WebSocket conn, Exception ex) {
+            // if (mKadecotCalls.containsKey(conn)) {
+            // KadecotCall kc = mKadecotCalls.get(conn);
+            // kc.stop();
+            // mKadecotCalls.remove(conn);
+            // }
+        }
+
+        @Override
+        public synchronized void stop(int timeout) throws IOException, InterruptedException {
+            super.stop(timeout);
+
+            for (WebSocket ws : mKadecotCalls.keySet()) {
+                mKadecotCalls.get(ws).stop();
+            }
+            mKadecotCalls.clear();
+
+            self.mWebSocketServer = null;
+
+            if (self.isStarted()) {
+                self.start();
+            }
+
+        }
+    }
+
+    public class WebSocketCall extends KadecotCall {
+
+        private WebSocket ws;
+
+        public WebSocketCall(Context context, WebSocket ws) {
+            super(context, 1, new RequestProcessor(context, 1), new NotificationProcessor(context,
+                1));
+            // TODO Auto-generated constructor stub
+            this.ws = ws;
+        }
+
+        @Override
+        public void send(JSONObject obj) {
+            ws.send(obj.toString());
+        }
+
+    }
 }
