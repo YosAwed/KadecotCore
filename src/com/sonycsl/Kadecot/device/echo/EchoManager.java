@@ -1,22 +1,5 @@
 package com.sonycsl.Kadecot.device.echo;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 
 import com.sonycsl.Kadecot.call.ErrorResponse;
@@ -39,11 +22,21 @@ import com.sonycsl.echo.EchoUtils;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.eoj.device.DeviceObject;
 import com.sonycsl.echo.eoj.device.housingfacilities.PowerDistributionBoardMetering;
-import com.sonycsl.echo.eoj.device.managementoperation.Controller;
-import com.sonycsl.echo.eoj.device.sensor.HumiditySensor;
-import com.sonycsl.echo.eoj.device.sensor.TemperatureSensor;
-import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EchoManager implements DeviceProtocol {
 	@SuppressWarnings("unused")
@@ -649,7 +642,7 @@ public class EchoManager implements DeviceProtocol {
 					ErrorResponse.INTERNAL_ERROR_CODE, e));
 		}
 	}
-	
+
 	private synchronized String send(EchoObject eoj, Object sender, Callback callback) throws AccessException, IOException {
 
 		short nextTid = EchoSocket.getNextTIDNoIncrement();
@@ -672,7 +665,7 @@ public class EchoManager implements DeviceProtocol {
 		}
 		return id;
 	}
-	
+
 	public void addEchoDeviceGenerator(EchoDeviceGenerator generator) {
 		mGenerators.put(generator.getProtocolName(), generator);
 	}
@@ -736,7 +729,7 @@ public class EchoManager implements DeviceProtocol {
 		// / instance codeを決める
 		List<Integer> instanceCodeList = getEchoDeviceDatabase()
 				.getLocalDeviceInstanceCodeList(echoClassCode);
-		
+
 		if (instanceCodeList.size() == 0) {
 			instanceCode = EchoDeviceDatabase.MIN_INSTANCE_CODE;
 		} else {
@@ -781,4 +774,11 @@ public class EchoManager implements DeviceProtocol {
 		return (byte) instanceCode;
 	}
 
+	public DeviceData getDeviceData(long deviceId) {
+	    return mEchoDeviceDatabase.getDeviceData(deviceId);
+	}
+
+	public void onPropertyChanged(DeviceData data, List<DeviceProperty> list) {
+
+	}
 }

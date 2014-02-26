@@ -2,16 +2,12 @@ package com.sonycsl.Kadecot.device;
 
 import java.util.List;
 
-import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.call.Response;
-
 /**
  * デバイスとの情報をやりとりするプロトコルのクラス
  *
  */
 public interface DeviceProtocol {
-	
+
 	// デバイスへのアクセス開始
 	public void start();
 	// デバイスへのアクセス終了
@@ -33,4 +29,7 @@ public interface DeviceProtocol {
 	public DeviceInfo getDeviceInfo(long deviceId, String locale);
 	// プロトコル名を取得
 	public String getProtocolName();
+
+	public DeviceData getDeviceData(long deviceId);
+	public void onPropertyChanged(DeviceData data, List<DeviceProperty> list);
 }
