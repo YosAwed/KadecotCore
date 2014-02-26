@@ -25,8 +25,8 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.util.Charsetfunctions;
 
 /**
- * Base class for everything of a websocket specification which is not common such as the way the
- * handshake is read or frames are transfered.
+ * Base class for everything of a websocket specification which is not common
+ * such as the way the handshake is read or frames are transfered.
  **/
 public abstract class Draft {
 
@@ -46,9 +46,11 @@ public abstract class Draft {
     public static int INITIAL_FAMESIZE = 64;
 
     public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions
-        .utf8Bytes("<policy-file-request/>\0");
+            .utf8Bytes("<policy-file-request/>\0");
 
-    /** In some cases the handshake will be parsed different depending on whether */
+    /**
+     * In some cases the handshake will be parsed different depending on whether
+     */
     protected Role role = null;
 
     public static ByteBuffer readLine(ByteBuffer buf) {
@@ -59,7 +61,7 @@ public abstract class Draft {
             prev = cur;
             cur = buf.get();
             sbuf.put(cur);
-            if (prev == (byte)'\r' && cur == (byte)'\n') {
+            if (prev == (byte) '\r' && cur == (byte) '\n') {
                 sbuf.limit(sbuf.position() - 2);
                 sbuf.position(0);
                 return sbuf;
@@ -77,13 +79,15 @@ public abstract class Draft {
     }
 
     public static HandshakeBuilder translateHandshakeHttp(ByteBuffer buf, Role role)
-        throws InvalidHandshakeException, IncompleteHandshakeException {
+            throws InvalidHandshakeException, IncompleteHandshakeException {
         HandshakeBuilder handshake;
 
         String line = readStringLine(buf);
-        if (line == null) throw new IncompleteHandshakeException(buf.capacity() + 128);
+        if (line == null)
+            throw new IncompleteHandshakeException(buf.capacity() + 128);
 
-        String[] firstLineTokens = line.split(" ", 3);// eg. HTTP/1.1 101 Switching the Protocols
+        String[] firstLineTokens = line.split(" ", 3);// eg. HTTP/1.1 101
+                                                      // Switching the Protocols
         if (firstLineTokens.length != 3) {
             throw new InvalidHandshakeException();
         }
@@ -91,7 +95,7 @@ public abstract class Draft {
         if (role == Role.CLIENT) {
             // translating/parsing the response from the SERVER
             handshake = new HandshakeImpl1Server();
-            ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder)handshake;
+            ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
             serverhandshake.setHttpStatus(Short.parseShort(firstLineTokens[1]));
             serverhandshake.setHttpStatusMessage(firstLineTokens[2]);
         } else {
@@ -104,28 +108,39 @@ public abstract class Draft {
         line = readStringLine(buf);
         while (line != null && line.length() > 0) {
             String[] pair = line.split(":", 2);
-            if (pair.length != 2) throw new InvalidHandshakeException("not an http header");
+            if (pair.length != 2)
+                throw new InvalidHandshakeException("not an http header");
             handshake.put(pair[0], pair[1].replaceFirst("^ +", ""));
             line = readStringLine(buf);
         }
-        if (line == null) throw new IncompleteHandshakeException();
+        if (line == null)
+            throw new IncompleteHandshakeException();
         return handshake;
     }
 
     public abstract HandshakeState acceptHandshakeAsClient(ClientHandshake request,
-        ServerHandshake response) throws InvalidHandshakeException;
+            ServerHandshake response) throws InvalidHandshakeException;
 
     public abstract HandshakeState acceptHandshakeAsServer(ClientHandshake handshakedata)
-        throws InvalidHandshakeException;
+            throws InvalidHandshakeException;
 
     protected boolean basicAccept(Handshakedata handshakedata) {
         return handshakedata.getFieldValue("Upgrade").equalsIgnoreCase("websocket")
-            && handshakedata.getFieldValue("Connection").toLowerCase(Locale.ENGLISH).contains(
-                "upgrade");
+                && handshakedata.getFieldValue("Connection").toLowerCase(Locale.ENGLISH).contains(
+                        "upgrade");
     }
 
-    public abstract ByteBuffer createBinaryFrame(Framedata framedata); // TODO Allow to send data on
-                                                                       // the base of an Iterator or
+    public abstract ByteBuffer createBinaryFrame(Framedata framedata); // TODO
+                                                                       // Allow
+                                                                       // to
+                                                                       // send
+                                                                       // data
+                                                                       // on
+                                                                       // the
+                                                                       // base
+                                                                       // of an
+                                                                       // Iterator
+                                                                       // or
                                                                        // InputStream
 
     public abstract List<Framedata> createFrames(ByteBuffer binary, boolean mask);
@@ -139,14 +154,14 @@ public abstract class Draft {
     }
 
     public List<ByteBuffer> createHandshake(Handshakedata handshakedata, Role ownrole,
-        boolean withcontent) {
+            boolean withcontent) {
         StringBuilder bui = new StringBuilder(100);
         if (handshakedata instanceof ClientHandshake) {
             bui.append("GET ");
-            bui.append(((ClientHandshake)handshakedata).getResourceDescriptor());
+            bui.append(((ClientHandshake) handshakedata).getResourceDescriptor());
             bui.append(" HTTP/1.1");
         } else if (handshakedata instanceof ServerHandshake) {
-            bui.append("HTTP/1.1 101 " + ((ServerHandshake)handshakedata).getHttpStatusMessage());
+            bui.append("HTTP/1.1 101 " + ((ServerHandshake) handshakedata).getHttpStatusMessage());
         } else {
             throw new RuntimeException("unknow role");
         }
@@ -165,28 +180,30 @@ public abstract class Draft {
 
         byte[] content = withcontent ? handshakedata.getContent() : null;
         ByteBuffer bytebuffer =
-            ByteBuffer.allocate((content == null ? 0 : content.length) + httpheader.length);
+                ByteBuffer.allocate((content == null ? 0 : content.length) + httpheader.length);
         bytebuffer.put(httpheader);
-        if (content != null) bytebuffer.put(content);
+        if (content != null)
+            bytebuffer.put(content);
         bytebuffer.flip();
         return Collections.singletonList(bytebuffer);
     }
 
     public abstract ClientHandshakeBuilder postProcessHandshakeRequestAsClient(
-        ClientHandshakeBuilder request) throws InvalidHandshakeException;
+            ClientHandshakeBuilder request) throws InvalidHandshakeException;
 
     public abstract HandshakeBuilder postProcessHandshakeResponseAsServer(ClientHandshake request,
-        ServerHandshakeBuilder response) throws InvalidHandshakeException;
+            ServerHandshakeBuilder response) throws InvalidHandshakeException;
 
     public abstract List<Framedata> translateFrame(ByteBuffer buffer) throws InvalidDataException;
 
     public abstract CloseHandshakeType getCloseHandshakeType();
 
     /**
-     * Drafts must only be by one websocket at all. To prevent drafts to be used more than once the
-     * Websocket implementation should call this method in order to create a new usable version of a
-     * given draft instance.<br>
-     * The copy can be safely used in conjunction with a new websocket connection.
+     * Drafts must only be by one websocket at all. To prevent drafts to be used
+     * more than once the Websocket implementation should call this method in
+     * order to create a new usable version of a given draft instance.<br>
+     * The copy can be safely used in conjunction with a new websocket
+     * connection.
      */
     public abstract Draft copyInstance();
 

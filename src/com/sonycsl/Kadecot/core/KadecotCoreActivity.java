@@ -74,7 +74,7 @@ public class KadecotCoreActivity extends FragmentActivity {
     private ServiceConnection mServerConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mServerBinder = (ServerBinder)service;
+            mServerBinder = (ServerBinder) service;
         }
 
         @Override
@@ -93,28 +93,29 @@ public class KadecotCoreActivity extends FragmentActivity {
         bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
 
         mKadecotCall =
-            new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(this,
-                0)) {
-                @Override
-                public void send(JSONObject obj) {
-                    Dbg.print(obj);
+                new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(
+                        this,
+                        0)) {
+                    @Override
+                    public void send(JSONObject obj) {
+                        Dbg.print(obj);
 
-                    StringBuilder builder = new StringBuilder();
-                    // builder.append("if(\"kHAPI\" in window){kHAPI.net.callFromServer(");
-                    builder
-                        .append("if((\"kHAPI\" in window) && (\"net\" in kHAPI) && (\"callFromServer\" in kHAPI.net)){kHAPI.net.callFromServer(");
-                    builder.append("\"");
-                    // this in String,so we must espace double quotes.
-                    String jsonObjStr = obj.toString().replaceAll("\\\\", "\\\\\\\\");
-                    jsonObjStr = jsonObjStr.replaceAll("\\\"", "\\\\\"");
-                    builder.append(jsonObjStr);
-                    builder.append("\"");
-                    builder.append(");};");
-                    final String script = new String(builder);
-                    // System.out.println(script);
-                    callJsOnKadecotMyPage(script);
-                }
-            };
+                        StringBuilder builder = new StringBuilder();
+                        // builder.append("if(\"kHAPI\" in window){kHAPI.net.callFromServer(");
+                        builder
+                                .append("if((\"kHAPI\" in window) && (\"net\" in kHAPI) && (\"callFromServer\" in kHAPI.net)){kHAPI.net.callFromServer(");
+                        builder.append("\"");
+                        // this in String,so we must espace double quotes.
+                        String jsonObjStr = obj.toString().replaceAll("\\\\", "\\\\\\\\");
+                        jsonObjStr = jsonObjStr.replaceAll("\\\"", "\\\\\"");
+                        builder.append(jsonObjStr);
+                        builder.append("\"");
+                        builder.append(");};");
+                        final String script = new String(builder);
+                        // System.out.println(script);
+                        callJsOnKadecotMyPage(script);
+                    }
+                };
 
         mLocal = new LocalCoreObject(self);
 
@@ -173,7 +174,7 @@ public class KadecotCoreActivity extends FragmentActivity {
         setupWebView(mKadecotMyPage);
 
         mMainLayout.addView(mKadecotMyPage, new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
+                FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
 
         // mAppView
         mAppView = new WebView(this);
@@ -182,7 +183,7 @@ public class KadecotCoreActivity extends FragmentActivity {
         mAppView.setVisibility(WebView.INVISIBLE);
 
         mMainLayout.addView(mAppView, 1, new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
+                FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
 
         // JS interface
         mKadecotMyPage.addJavascriptInterface(getLocalObject(), "Local");
@@ -234,7 +235,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin,
-                GeolocationPermissions.Callback callback) {
+                    GeolocationPermissions.Callback callback) {
                 super.onGeolocationPermissionsShowPrompt(origin, callback);
                 callback.invoke(origin, true, false);
             }

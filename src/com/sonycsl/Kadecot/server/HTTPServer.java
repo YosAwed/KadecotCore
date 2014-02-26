@@ -67,7 +67,8 @@ public abstract class HTTPServer {
     }
 
     public void start(int port) throws IOException {
-        if (isRunning()) return;
+        if (isRunning())
+            return;
         socket = new ServerSocket();
         socket.setReuseAddress(true);
         socket.bind(new InetSocketAddress(port));
@@ -133,7 +134,8 @@ public abstract class HTTPServer {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            if (requests.size() < 1) return;
+            if (requests.size() < 1)
+                return;
             line = requests.get(0);
             Matcher m = REQUEST_LINE_PATTERN.matcher(line);
             if (m.matches()) {
@@ -148,7 +150,8 @@ public abstract class HTTPServer {
                     ss = q.split("&");
                     for (String s : ss) {
                         String[] r = s.split("=");
-                        if (r.length != 2) continue;
+                        if (r.length != 2)
+                            continue;
                         query.put(r[0], r[1]);
                     }
                 }
@@ -313,7 +316,8 @@ public abstract class HTTPServer {
     }
 
     static String urldecode(String s) {
-        if (s == null) return null;
+        if (s == null)
+            return null;
         try {
             return URLDecoder.decode(s, "utf-8");
         } catch (UnsupportedEncodingException e) {

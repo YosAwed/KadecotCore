@@ -37,7 +37,8 @@ public class DefaultWebSocketClientFactory implements WebSocketClient.WebSocketC
 
     @Override
     public ByteChannel wrapChannel(SocketChannel channel, SelectionKey c, String host, int port) {
-        if (c == null) return channel;
+        if (c == null)
+            return channel;
         return channel;
     }
 }

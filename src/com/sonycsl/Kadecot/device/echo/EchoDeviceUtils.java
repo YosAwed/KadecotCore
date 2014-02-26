@@ -20,33 +20,33 @@ public class EchoDeviceUtils {
 
     static {
         sClassNameMap.put(ActivityAmountSensor.ECHO_CLASS_CODE, ActivityAmountSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(AirPollutionSensor.ECHO_CLASS_CODE, AirPollutionSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(AirSpeedSensor.ECHO_CLASS_CODE, AirSpeedSensor.class.getSimpleName());
         sClassNameMap.put(BathHeatingStatusSensor.ECHO_CLASS_CODE, BathHeatingStatusSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(BathWaterLevelSensor.ECHO_CLASS_CODE, BathWaterLevelSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(BedPresenceSensor.ECHO_CLASS_CODE, BedPresenceSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(CallSensor.ECHO_CLASS_CODE, CallSensor.class.getSimpleName());
         sClassNameMap.put(CigaretteSmokeSensor.ECHO_CLASS_CODE, CigaretteSmokeSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(CO2Sensor.ECHO_CLASS_CODE, CO2Sensor.class.getSimpleName());
         sClassNameMap.put(CondensationSensor.ECHO_CLASS_CODE, CondensationSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(CrimePreventionSensor.ECHO_CLASS_CODE, CrimePreventionSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(CurrentValueSensor.ECHO_CLASS_CODE, CurrentValueSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(DifferentialPressureSensor.ECHO_CLASS_CODE,
-            DifferentialPressureSensor.class.getSimpleName());
+                DifferentialPressureSensor.class.getSimpleName());
         sClassNameMap.put(EarthquakeSensor.ECHO_CLASS_CODE, EarthquakeSensor.class.getSimpleName());
         sClassNameMap.put(ElectricEnergySensor.ECHO_CLASS_CODE, ElectricEnergySensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(ElectricLeakSensor.ECHO_CLASS_CODE, ElectricLeakSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(EmergencyButton.ECHO_CLASS_CODE, EmergencyButton.class.getSimpleName());
         sClassNameMap.put(FireSensor.ECHO_CLASS_CODE, FireSensor.class.getSimpleName());
         sClassNameMap.put(FirstAidSensor.ECHO_CLASS_CODE, FirstAidSensor.class.getSimpleName());
@@ -54,15 +54,15 @@ public class EchoDeviceUtils {
         sClassNameMap.put(GasLeakSensor.ECHO_CLASS_CODE, GasLeakSensor.class.getSimpleName());
         sClassNameMap.put(GasSensor.ECHO_CLASS_CODE, GasSensor.class.getSimpleName());
         sClassNameMap.put(HumanBodyLocationSensor.ECHO_CLASS_CODE, HumanBodyLocationSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(HumanDetectionSensor.ECHO_CLASS_CODE, HumanDetectionSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(HumiditySensor.ECHO_CLASS_CODE, HumiditySensor.class.getSimpleName());
         sClassNameMap.put(IlluminanceSensor.ECHO_CLASS_CODE, IlluminanceSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(MailingSensor.ECHO_CLASS_CODE, MailingSensor.class.getSimpleName());
         sClassNameMap.put(MicromotionSensor.ECHO_CLASS_CODE, MicromotionSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(OdorSensor.ECHO_CLASS_CODE, OdorSensor.class.getSimpleName());
         sClassNameMap.put(OpenCloseSensor.ECHO_CLASS_CODE, OpenCloseSensor.class.getSimpleName());
         sClassNameMap.put(OxygenSensor.ECHO_CLASS_CODE, OxygenSensor.class.getSimpleName());
@@ -71,68 +71,68 @@ public class EchoDeviceUtils {
         sClassNameMap.put(SnowSensor.ECHO_CLASS_CODE, SnowSensor.class.getSimpleName());
         sClassNameMap.put(SoundSensor.ECHO_CLASS_CODE, SoundSensor.class.getSimpleName());
         sClassNameMap.put(TemperatureSensor.ECHO_CLASS_CODE, TemperatureSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(VisitorSensor.ECHO_CLASS_CODE, VisitorSensor.class.getSimpleName());
         sClassNameMap.put(VOCSensor.ECHO_CLASS_CODE, VOCSensor.class.getSimpleName());
         sClassNameMap.put(WaterFlowRateSensor.ECHO_CLASS_CODE, WaterFlowRateSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(WaterLeakSensor.ECHO_CLASS_CODE, WaterLeakSensor.class.getSimpleName());
         sClassNameMap.put(WaterLevelSensor.ECHO_CLASS_CODE, WaterLevelSensor.class.getSimpleName());
         sClassNameMap.put(WaterOverflowSensor.ECHO_CLASS_CODE, WaterOverflowSensor.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(WeightSensor.ECHO_CLASS_CODE, WeightSensor.class.getSimpleName());
         sClassNameMap.put(AirCleaner.ECHO_CLASS_CODE, AirCleaner.class.getSimpleName());
         sClassNameMap.put(AirConditionerVentilationFan.ECHO_CLASS_CODE,
-            AirConditionerVentilationFan.class.getSimpleName());
+                AirConditionerVentilationFan.class.getSimpleName());
         sClassNameMap.put(ElectricHeater.ECHO_CLASS_CODE, ElectricHeater.class.getSimpleName());
         sClassNameMap.put(FanHeater.ECHO_CLASS_CODE, FanHeater.class.getSimpleName());
         sClassNameMap.put(HomeAirConditioner.ECHO_CLASS_CODE, HomeAirConditioner.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(Humidifier.ECHO_CLASS_CODE, Humidifier.class.getSimpleName());
         sClassNameMap.put(PackageTypeCommercialAirConditionerIndoorUnit.ECHO_CLASS_CODE,
-            PackageTypeCommercialAirConditionerIndoorUnit.class.getSimpleName());
+                PackageTypeCommercialAirConditionerIndoorUnit.class.getSimpleName());
         sClassNameMap.put(PackageTypeCommercialAirConditionerOutdoorUnit.ECHO_CLASS_CODE,
-            PackageTypeCommercialAirConditionerOutdoorUnit.class.getSimpleName());
+                PackageTypeCommercialAirConditionerOutdoorUnit.class.getSimpleName());
         sClassNameMap.put(VentilationFan.ECHO_CLASS_CODE, VentilationFan.class.getSimpleName());
         sClassNameMap.put(BathroomHeaterAndDryer.ECHO_CLASS_CODE, BathroomHeaterAndDryer.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(Battery.ECHO_CLASS_CODE, Battery.class.getSimpleName());
         sClassNameMap.put(Buzzer.ECHO_CLASS_CODE, Buzzer.class.getSimpleName());
         sClassNameMap.put(ColdOrHotWaterHeatSourceEquipment.ECHO_CLASS_CODE,
-            ColdOrHotWaterHeatSourceEquipment.class.getSimpleName());
+                ColdOrHotWaterHeatSourceEquipment.class.getSimpleName());
         sClassNameMap.put(ElectricallyOperatedShade.ECHO_CLASS_CODE,
-            ElectricallyOperatedShade.class.getSimpleName());
+                ElectricallyOperatedShade.class.getSimpleName());
         sClassNameMap.put(ElectricLock.ECHO_CLASS_CODE, ElectricLock.class.getSimpleName());
         sClassNameMap.put(ElectricShutter.ECHO_CLASS_CODE, ElectricShutter.class.getSimpleName());
         sClassNameMap.put(ElectricStormWindow.ECHO_CLASS_CODE, ElectricStormWindow.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(ElectricToiletSeat.ECHO_CLASS_CODE, ElectricToiletSeat.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(ElectricWaterHeater.ECHO_CLASS_CODE, ElectricWaterHeater.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(FloorHeater.ECHO_CLASS_CODE, FloorHeater.class.getSimpleName());
         sClassNameMap.put(FuelCell.ECHO_CLASS_CODE, FuelCell.class.getSimpleName());
         sClassNameMap.put(GasMeter.ECHO_CLASS_CODE, GasMeter.class.getSimpleName());
         sClassNameMap.put(GeneralLighting.ECHO_CLASS_CODE, GeneralLighting.class.getSimpleName());
         sClassNameMap.put(HouseholdSolarPowerGeneration.ECHO_CLASS_CODE,
-            HouseholdSolarPowerGeneration.class.getSimpleName());
+                HouseholdSolarPowerGeneration.class.getSimpleName());
         sClassNameMap.put(InstantaneousWaterHeater.ECHO_CLASS_CODE, InstantaneousWaterHeater.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(LPGasMeter.ECHO_CLASS_CODE, LPGasMeter.class.getSimpleName());
         sClassNameMap.put(PowerDistributionBoardMetering.ECHO_CLASS_CODE,
-            PowerDistributionBoardMetering.class.getSimpleName());
+                PowerDistributionBoardMetering.class.getSimpleName());
         sClassNameMap.put(SmartElectricEnergyMeter.ECHO_CLASS_CODE, SmartElectricEnergyMeter.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(SmartGasMeter.ECHO_CLASS_CODE, SmartGasMeter.class.getSimpleName());
         sClassNameMap.put(Sprinkler.ECHO_CLASS_CODE, Sprinkler.class.getSimpleName());
         sClassNameMap.put(WaterFlowmeter.ECHO_CLASS_CODE, WaterFlowmeter.class.getSimpleName());
         sClassNameMap.put(WattHourMeter.ECHO_CLASS_CODE, WattHourMeter.class.getSimpleName());
         sClassNameMap.put(ClothesDryer.ECHO_CLASS_CODE, ClothesDryer.class.getSimpleName());
         sClassNameMap.put(CombinationMicrowaveOven.ECHO_CLASS_CODE, CombinationMicrowaveOven.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(CookingHeater.ECHO_CLASS_CODE, CookingHeater.class.getSimpleName());
         sClassNameMap.put(ElectricHotWaterPot.ECHO_CLASS_CODE, ElectricHotWaterPot.class
-            .getSimpleName());
+                .getSimpleName());
         sClassNameMap.put(Refrigerator.ECHO_CLASS_CODE, Refrigerator.class.getSimpleName());
         sClassNameMap.put(RiceCooker.ECHO_CLASS_CODE, RiceCooker.class.getSimpleName());
         sClassNameMap.put(WasherAndDryer.ECHO_CLASS_CODE, WasherAndDryer.class.getSimpleName());
@@ -150,7 +150,8 @@ public class EchoDeviceUtils {
 
     public static String getClassName(short echoClassCode) {
         String s = sClassNameMap.get(echoClassCode);
-        if (s == null) return "UnknownDevice";
+        if (s == null)
+            return "UnknownDevice";
         return s;
     }
 

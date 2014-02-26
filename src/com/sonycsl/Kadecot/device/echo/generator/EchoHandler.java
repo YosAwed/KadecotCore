@@ -57,18 +57,18 @@ public class EchoHandler {
 
     public EchoDeviceData getDeviceData(String nickname) {
         return mEchoDeviceDatabase.getDeviceData(DeviceDatabase.getInstance(mContext)
-            .getDeviceData(nickname));
+                .getDeviceData(nickname));
     }
 
     public EchoDeviceData getDeviceData(long deviceId) {
         return mEchoDeviceDatabase.getDeviceData(DeviceDatabase.getInstance(mContext)
-            .getDeviceData(deviceId));
+                .getDeviceData(deviceId));
     }
 
     public EchoDeviceData getLocalDeviceData(int echoObjectCode) {
         return mEchoDeviceDatabase.getDeviceData(EchoDeviceDatabase.LOCAL_ADDRESS, EchoUtils
-            .getEchoClassCodeFromObjectCode(echoObjectCode) & 0xFFFF, EchoUtils
-            .getInstanceCodeFromObjectCode(echoObjectCode) & 0xFF);
+                .getEchoClassCodeFromObjectCode(echoObjectCode) & 0xFFFF, EchoUtils
+                .getInstanceCodeFromObjectCode(echoObjectCode) & 0xFF);
     }
 
     public JSONObject getDeviceInfo(EchoDeviceData data) {

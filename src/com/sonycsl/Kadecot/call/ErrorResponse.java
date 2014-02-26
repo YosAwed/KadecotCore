@@ -78,21 +78,21 @@ public class ErrorResponse extends Response {
     private static String getErrorMessage(int code) {
         String message = "";
         switch (code) {
-        case PARSE_ERROR_CODE:
-            message = PARSE_ERROR_MSG;
-            break;
-        case INVALID_REQUEST_CODE:
-            message = INVALID_REQUEST_MSG;
-            break;
-        case METHOD_NOT_FOUND_CODE:
-            message = METHOD_NOT_FOUND_MSG;
-            break;
-        case INVALID_PARAMS_CODE:
-            message = INVALID_PARAMS_MSG;
-            break;
-        case INTERNAL_ERROR_CODE:
-            message = INTERNAL_ERROR_MSG;
-            break;
+            case PARSE_ERROR_CODE:
+                message = PARSE_ERROR_MSG;
+                break;
+            case INVALID_REQUEST_CODE:
+                message = INVALID_REQUEST_MSG;
+                break;
+            case METHOD_NOT_FOUND_CODE:
+                message = METHOD_NOT_FOUND_MSG;
+                break;
+            case INVALID_PARAMS_CODE:
+                message = INVALID_PARAMS_MSG;
+                break;
+            case INTERNAL_ERROR_CODE:
+                message = INTERNAL_ERROR_MSG;
+                break;
         }
         return message;
     }

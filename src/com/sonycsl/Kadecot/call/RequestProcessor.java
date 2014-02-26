@@ -54,12 +54,12 @@ public class RequestProcessor {
         Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
-                JSONArray.class
+                    JSONArray.class
             });
 
             try {
-                return (Response)method.invoke(this, new Object[] {
-                    params
+                return (Response) method.invoke(this, new Object[] {
+                        params
                 });
             } catch (CannotProcessRequestException e) {
                 return e.getErrorResponse();
@@ -154,7 +154,7 @@ public class RequestProcessor {
                             Iterator keys = obj.keys();
                             boolean flag = true;
                             while (keys.hasNext()) {
-                                String key = (String)keys.next();
+                                String key = (String) keys.next();
                                 String reg = obj.getString(key);
                                 String dataStr = data.get(key);
                                 Pattern p = Pattern.compile(reg);

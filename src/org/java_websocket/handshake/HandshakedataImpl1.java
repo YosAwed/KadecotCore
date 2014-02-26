@@ -15,15 +15,18 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
     }
 
     /*
-     * public HandshakedataImpl1( Handshakedata h ) { httpstatusmessage = h.getHttpStatusMessage();
-     * resourcedescriptor = h.getResourceDescriptor(); content = h.getContent(); map = new
-     * LinkedHashMap<String,String>(); Iterator<String> it = h.iterateHttpFields(); while (
-     * it.hasNext() ) { String key = (String) it.next(); map.put( key, h.getFieldValue( key ) ); } }
+     * public HandshakedataImpl1( Handshakedata h ) { httpstatusmessage =
+     * h.getHttpStatusMessage(); resourcedescriptor = h.getResourceDescriptor();
+     * content = h.getContent(); map = new LinkedHashMap<String,String>();
+     * Iterator<String> it = h.iterateHttpFields(); while ( it.hasNext() ) {
+     * String key = (String) it.next(); map.put( key, h.getFieldValue( key ) );
+     * } }
      */
 
     @Override
     public Iterator<String> iterateHttpFields() {
-        return Collections.unmodifiableSet(map.keySet()).iterator();// Safety first
+        return Collections.unmodifiableSet(map.keySet()).iterator();// Safety
+                                                                    // first
     }
 
     @Override

@@ -87,7 +87,7 @@ public class ServerSettings {
 
     public void setLocation(String lat, String lng) {
         mPreferences.edit().putString(KEY_LOCATION_LAT, lat).putString(KEY_LOCATION_LNG, lng)
-            .commit();
+                .commit();
 
         getServerManager().onChangedServerSettings();
     }
@@ -118,9 +118,10 @@ public class ServerSettings {
     }
 
     /*
-     * public JSONArray getLocationJSONArray() { JSONArray location = new JSONArray(); double[]
-     * dLocation = getLocationDouble(); try { location.put(dLocation[0]);
-     * location.put(dLocation[1]); } catch (JSONException e) { // TODO Auto-generated catch block
+     * public JSONArray getLocationJSONArray() { JSONArray location = new
+     * JSONArray(); double[] dLocation = getLocationDouble(); try {
+     * location.put(dLocation[0]); location.put(dLocation[1]); } catch
+     * (JSONException e) { // TODO Auto-generated catch block
      * e.printStackTrace(); } return location; }
      */
     // network
@@ -150,7 +151,7 @@ public class ServerSettings {
             return new Response(null);
         } else {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE,
-                "cannot register this network");
+                    "cannot register this network");
         }
     }
 

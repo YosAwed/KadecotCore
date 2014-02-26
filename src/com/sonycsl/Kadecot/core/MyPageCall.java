@@ -18,9 +18,9 @@ public class MyPageCall {
         mKadecot.callJsOnKadecotMyPage("kHAPI.app.onMsgFromApp(null," + message + ")");
         /*
          * StringBuilder builder = new StringBuilder();
-         * builder.append("if(\"onMsgFromUserApp\" in window){onMsgFromUserApp(");
-         * builder.append(message); builder.append(");};"); mKadecot.callJsOnKadecotMyPage(new
-         * String(builder));
+         * builder.append("if(\"onMsgFromUserApp\" in window){onMsgFromUserApp("
+         * ); builder.append(message); builder.append(");};");
+         * mKadecot.callJsOnKadecotMyPage(new String(builder));
          */
     }
 }

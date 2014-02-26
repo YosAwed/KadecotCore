@@ -34,10 +34,10 @@ public class NotificationProcessor {
         Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
-                JSONArray.class
+                    JSONArray.class
             });
             method.invoke(this, new Object[] {
-                params
+                    params
             });
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

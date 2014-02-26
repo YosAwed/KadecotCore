@@ -30,7 +30,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public String[] mColumnNames;
 
     public DatabaseOpenHelper(Context context, String dbName, int version, String tableName,
-        Map<String, String> columns) {
+            Map<String, String> columns) {
         super(context, dbName, null, version);
         setup(tableName, columns);
     }
@@ -92,7 +92,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public void update(String key, String arg, ContentValues values) {
         SQLiteDatabase db = getWritableDatabase();
         db.update(mTableName, values, key + "=?", new String[] {
-            arg
+                arg
         });
     }
 
@@ -105,7 +105,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getWritableDatabase();
         db.delete(mTableName, key + "=?", new String[] {
-            arg
+                arg
         });
     }
 
@@ -127,7 +127,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public Cursor getCursorByRowId(long rowid) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(mTableName, mColumnNames, "rowid=?", new String[] {
-            Long.toString(rowid)
+                Long.toString(rowid)
         }, null, null, null);
         cursor.moveToFirst();
         return cursor;
@@ -143,7 +143,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public Cursor getCursor(String key, String arg) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(mTableName, mColumnNames, key + "=?", new String[] {
-            arg
+                arg
         }, null, null, null);
         cursor.moveToFirst();
         return cursor;
@@ -156,7 +156,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor =
-            db.query(mTableName, mColumnNames, where.getClause(), where.args, null, null, null);
+                db.query(mTableName, mColumnNames, where.getClause(), where.args, null, null, null);
         cursor.moveToFirst();
         return cursor;
     }
@@ -165,7 +165,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor =
-            db.query(mTableName, mColumnNames, null, null, null, null, orderBy.getClause());
+                db.query(mTableName, mColumnNames, null, null, null, null, orderBy.getClause());
         cursor.moveToFirst();
         return cursor;
     }
@@ -181,8 +181,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor =
-            db.query(mTableName, mColumnNames, where.getClause(), where.args, null, null, orderBy
-                .getClause());
+                db.query(mTableName, mColumnNames, where.getClause(), where.args, null, null,
+                        orderBy
+                                .getClause());
         cursor.moveToFirst();
         return cursor;
     }
@@ -270,10 +271,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         public Where(String key, String arg) {
             this.keys = new String[] {
-                key
+                    key
             };
             this.args = new String[] {
-                arg
+                    arg
             };
         }
 
@@ -310,10 +311,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         public OrderBy(String key, String order) {
             this.keys = new String[] {
-                key
+                    key
             };
             this.orders = new String[] {
-                order
+                    order
             };
         }
 

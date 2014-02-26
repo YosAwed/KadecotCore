@@ -57,8 +57,8 @@ public class ServerNetwork {
         mContext = context.getApplicationContext();
 
         mConnectivityManager =
-            (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        mWifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        mWifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
 
         mConnectionReceiver = new BroadcastReceiver() {
             @Override
@@ -84,7 +84,7 @@ public class ServerNetwork {
         watchConnection();
 
         mContext.registerReceiver(mConnectionReceiver, new IntentFilter(
-            "android.net.conn.CONNECTIVITY_CHANGE"));
+                "android.net.conn.CONNECTIVITY_CHANGE"));
     }
 
     public void stopWatchingConnection() {
@@ -180,7 +180,7 @@ public class ServerNetwork {
             WifiInfo wInfo = mWifiManager.getConnectionInfo();
             int ipAddress = wInfo.getIpAddress();
             return String.format("%01d.%01d.%01d.%01d", (ipAddress >> 0) & 0xff,
-                (ipAddress >> 8) & 0xff, (ipAddress >> 16) & 0xff, (ipAddress >> 24) & 0xff);
+                    (ipAddress >> 8) & 0xff, (ipAddress >> 16) & 0xff, (ipAddress >> 24) & 0xff);
         } else {
             InetAddress address = null;
             try {

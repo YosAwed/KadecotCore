@@ -28,10 +28,10 @@ public class Dbg {
 
         if (o == null) {
             Log.e("Kadecot", "[Debug]null(class:" + className + ",method:" + methodName + ",line:"
-                + lineNumber + ")");
+                    + lineNumber + ")");
         } else {
             Log.v("Kadecot", "[Debug]" + o.toString() + "(class:" + className + ",method:"
-                + methodName + ",line:" + lineNumber + ")");
+                    + methodName + ",line:" + lineNumber + ")");
         }
     }
 

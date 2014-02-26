@@ -18,7 +18,7 @@ public class EchoDeviceData extends DeviceData {
     public final Long parentId;
 
     public EchoDeviceData(DeviceData d, String address, short echoClassCode, byte instanceCode,
-        Long parentId) {
+            Long parentId) {
         super(d.deviceId, d.nickname, d.protocolName);
         this.address = address;
         this.echoClassCode = echoClassCode;
