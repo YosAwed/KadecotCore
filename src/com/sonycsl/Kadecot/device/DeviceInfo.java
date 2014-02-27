@@ -15,17 +15,12 @@ public class DeviceInfo {
     public final String deviceName;
     public final String deviceType;
     public final JSONObject option;
-    public DevicePollingInfo pollingInfo;
 
     public DeviceInfo(boolean active, String deviceName, String deviceType, JSONObject option) {
         this.active = active;
         this.deviceName = deviceName;
         this.deviceType = deviceType;
         this.option = option;
-        pollingInfo = new DevicePollingInfo();
     }
 
-    public DevicePollingInfo getDevicePollingInfo() {
-        return pollingInfo;
-    }
 }

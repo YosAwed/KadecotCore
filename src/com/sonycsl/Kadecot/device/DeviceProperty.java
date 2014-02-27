@@ -35,7 +35,7 @@ public class DeviceProperty {
         this.success = success;
     }
 
-    public boolean equalsNameValue(DeviceProperty dp) {
+    public boolean equals(DeviceProperty dp) {
         return dp.name.equals(this.name) && dp.value.equals(this.value);
     }
 }
