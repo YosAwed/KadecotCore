@@ -1,6 +1,18 @@
 
 package com.sonycsl.Kadecot.call;
 
+import com.sonycsl.Kadecot.device.DeviceManager;
+import com.sonycsl.Kadecot.device.DeviceProperty;
+import com.sonycsl.Kadecot.log.Logger;
+import com.sonycsl.Kadecot.server.ServerSettings;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
+import android.util.Log;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -9,26 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.device.DeviceDatabase;
-import com.sonycsl.Kadecot.device.DeviceManager;
-import com.sonycsl.Kadecot.device.DeviceProperty;
-import com.sonycsl.Kadecot.log.Logger;
-import com.sonycsl.Kadecot.server.ServerManager;
-import com.sonycsl.Kadecot.server.ServerNetwork;
-import com.sonycsl.Kadecot.server.ServerSettings;
-
-import android.content.Context;
-import android.util.Log;
-
 public class RequestProcessor {
     @SuppressWarnings("unused")
     private static final String TAG = RequestProcessor.class.getSimpleName();
 
-    private final RequestProcessor self = this;
+    protected static final int PERMISSION_ALL = 0;
+
+    protected static final int PERMISSION_LIMIT = 1;
 
     protected final Context mContext;
 
@@ -214,111 +213,6 @@ public class RequestProcessor {
 
     public Response deleteInactiveDevices(JSONArray params) {
         return mDeviceManager.deleteInactiveDevices(mPermissionLevel);
-    }
-
-    // server settings
-    public Response fullInitialize(JSONArray params) {
-        mServerSettings.fullInitialize();
-        return new Response(null);
-    }
-
-    public Response setServerLocation(JSONArray params) {
-        if (params == null || params.length() < 2) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            String lat = params.getString(0);
-            String lng = params.getString(1);
-            mServerSettings.setLocation(lat, lng);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return new Response(null);
-    }
-
-    public Response enableServerNetwork(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            if (enabled) {
-                return mServerSettings.registerNetwork();
-            } else {
-                return mServerSettings.unregisterNetwork();
-            }
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-
-    }
-
-    public Response enableWebSocketServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableWebSocketServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enableJSONPServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableJSONPServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enableSnapServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableSnapServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enablePersistentMode(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enablePersistentMode(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
     }
 
 }

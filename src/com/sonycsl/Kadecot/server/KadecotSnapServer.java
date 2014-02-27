@@ -1,21 +1,21 @@
 
 package com.sonycsl.Kadecot.server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import com.sonycsl.Kadecot.call.RequestProcessor;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sonycsl.Kadecot.call.RequestProcessor;
-
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 // See original python code for protocol.
 public class KadecotSnapServer extends HTTPServer {

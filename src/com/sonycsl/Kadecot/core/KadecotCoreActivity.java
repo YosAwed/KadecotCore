@@ -1,35 +1,27 @@
 
 package com.sonycsl.Kadecot.core;
 
-import java.util.concurrent.Executors;
+import com.sonycsl.Kadecot.call.KadecotCall;
+import com.sonycsl.Kadecot.call.LocalRequestProcessor;
+import com.sonycsl.Kadecot.call.NotificationProcessor;
+import com.sonycsl.Kadecot.server.KadecotServerService;
+import com.sonycsl.Kadecot.server.ServerBinder;
 
 import org.json.JSONObject;
 
-import com.sonycsl.Kadecot.call.KadecotCall;
-import com.sonycsl.Kadecot.call.NotificationProcessor;
-import com.sonycsl.Kadecot.call.RequestProcessor;
-import com.sonycsl.Kadecot.server.KadecotServerService;
-import com.sonycsl.Kadecot.server.ServerBinder;
-import com.sonycsl.Kadecot.server.ServerSettings;
-
-import android.os.Bundle;
-import android.os.IBinder;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.util.Log;
-import android.view.Gravity;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
-import android.view.View.OnTouchListener;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -37,9 +29,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.support.v4.app.FragmentActivity;
+
+import java.util.concurrent.Executors;
 
 public class KadecotCoreActivity extends FragmentActivity {
     @SuppressWarnings("unused")
@@ -93,9 +85,8 @@ public class KadecotCoreActivity extends FragmentActivity {
         bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
 
         mKadecotCall =
-                new KadecotCall(this, 0, new RequestProcessor(this, 0), new NotificationProcessor(
-                        this,
-                        0)) {
+                new KadecotCall(this, 0, new LocalRequestProcessor(this),
+                        new NotificationProcessor(this, 0)) {
                     @Override
                     public void send(JSONObject obj) {
                         Dbg.print(obj);
