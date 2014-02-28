@@ -202,8 +202,8 @@ kHAPI.net.ServerPredefinedReplies = {
       location: d.params.location,
       persistence: d.params.serverMode.persistent,
       jsonp: d.params.serverMode.jsonpServer,
-      websocket: d.params.websocketServer,
-      snap: d.params.snapServer
+      websocket: d.params.serverMode.websocketServer,
+      snap: d.params.serverMode.snapServer
     };
     kHAPI.net.info = settings;
     kHAPI.onServerStatusUpdated(settings);

@@ -128,13 +128,13 @@ $(document)
                                       prop_change.property.value);
                             };
 
-                            kHAPI.onNotifyServerSettings = function(
+                            kHAPI.onServerStatusUpdated = function(
                                     network_info) {
                               // toast("Network settings was changed.");
                               if (kHAPI.isOnAndroid) {
-                                onNotifyServerSettingsOnAndroid(network_info);
+                                onServerStatusUpdatedOnAndroid(network_info);
                               } else {
-                                onNotifyServerSettingsOnBrowser(network_info);
+                                onServerStatusUpdatedOnBrowser(network_info);
                               }
                             };
 
@@ -400,7 +400,7 @@ var onSettingsPageBrowserOpen = function() {
 };
 
 var initialNotifyServerSettings = true;
-var onNotifyServerSettingsOnAndroid = function(settings) {
+var onServerStatusUpdatedOnAndroid = function(settings) {
   // console.log(JSON.stringify(settings));
 
   $("#server_android_ip").val(settings.network.ip).textinput();
@@ -418,7 +418,7 @@ var onNotifyServerSettingsOnAndroid = function(settings) {
   initialNotifyServerSettings = false;
 };
 
-var onNotifyServerSettingsOnBrowser = function(settings) {
+var onServerStatusUpdatedOnBrowser = function(settings) {
   checkCheckBox($("#enable_persistent_browser_checkbox"), settings.persistence);
   checkCheckBox($("#enable_snap_browser_checkbox"), settings.snap);
   checkCheckBox($("#enable_jsonp_browser_checkbox"), settings.jsonp);
