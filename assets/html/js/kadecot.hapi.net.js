@@ -11,6 +11,8 @@ kHAPI.net = {
   // Internal object to achieve invoke-oninvoke match
   ,
   callServerFunc_invokeMatch: {}
+  ,
+  id: -1
   // Home panel -> Server
   ,
   callServerFunc: function(method, arg, callbackfunc) {
@@ -29,9 +31,9 @@ kHAPI.net = {
     var r = this.ServerCall[method].call(this.ServerCall, arg, callbackfunc);
     if (r === undefined) return;
 
-    var id = this.genIdStr();
+    var id = this.genId();
 
-    this.callServerFunc_invokeMatch[id] = function(re, success) {
+    this.callServerFunc_invokeMatch[id + '_'] = function(re, success) {
       if (typeof r.callback === 'function') r.callback(re, success);
       if (typeof callbackfunc === 'function') callbackfunc(re, success);
     };
@@ -97,19 +99,14 @@ kHAPI.net = {
   // Internal variables / utility funcs
   // ///////////////////////////////
 
-  ,
-  genIdStr: function() {
-    if (typeof this.getRandStrSS === 'undefined') {
-      this.getRandStrSS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-              .split('');
+  , genId : function(){
+    if (this.id >= Number.MAX_VALUE - 1) {
+      this.id = -1;
     }
-    var ret = '';
-    for (var i = 0; i < 30; i++) {
-      ret += this.getRandStrSS[Math.floor(Math.random()
-              * this.getRandStrSS.length)];
-    }
-    return ret;
+
+    return ++this.id;
   },
+  
   info: {
     isConnected: false
   }
