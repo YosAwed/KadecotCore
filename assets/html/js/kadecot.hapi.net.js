@@ -44,6 +44,7 @@ kHAPI.net = {
       'params': argObject,
       'id': id
     });
+    console.log("request params: " + st);
 
     if (r.next === 1
             && (kHAPI.isOnAndroid || this.WS.serverConnection !== undefined)) {
