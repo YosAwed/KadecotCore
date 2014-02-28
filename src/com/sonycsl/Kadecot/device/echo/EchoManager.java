@@ -1,25 +1,6 @@
 
 package com.sonycsl.Kadecot.device.echo;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.AccessException;
@@ -40,11 +21,23 @@ import com.sonycsl.echo.EchoUtils;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.eoj.device.DeviceObject;
 import com.sonycsl.echo.eoj.device.housingfacilities.PowerDistributionBoardMetering;
-import com.sonycsl.echo.eoj.device.managementoperation.Controller;
-import com.sonycsl.echo.eoj.device.sensor.HumiditySensor;
-import com.sonycsl.echo.eoj.device.sensor.TemperatureSensor;
-import com.sonycsl.echo.eoj.profile.NodeProfile;
 import com.sonycsl.echo.node.EchoNode;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EchoManager implements DeviceProtocol {
     @SuppressWarnings("unused")
@@ -680,13 +673,13 @@ public class EchoManager implements DeviceProtocol {
         }
         boolean active =
                 mEchoDiscovery.isActiveDevice(data.address, data.echoClassCode, data.instanceCode);
-        JSONObject option = new JSONObject();
+        String parent = "";
         if (data.parentId != null) {
             JSONObject obj = getDeviceManager().getDeviceInfo(data.parentId, 0);
 
             if (obj != null) {
                 try {
-                    option.put("parent", obj);
+                    parent = obj.getString("parent");
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -695,7 +688,7 @@ public class EchoManager implements DeviceProtocol {
         }
         DeviceInfo info =
                 new DeviceInfo(active, EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
-                        + EchoUtils.toHexString(data.echoClassCode), option);
+                        + EchoUtils.toHexString(data.echoClassCode), parent);
         Dbg.print("(echo device info)nickname:" + data.nickname + ",address:" + data.address
                 + ",instanceCode:" + data.instanceCode + ",active:" + active);
         return info;

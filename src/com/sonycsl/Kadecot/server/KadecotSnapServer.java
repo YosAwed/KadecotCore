@@ -71,7 +71,7 @@ public class KadecotSnapServer extends HTTPServer {
             public void run(Request req, Response res) throws IOException {
                 try {
                     JSONObject response =
-                            new RequestProcessor(context, 1).process("list", new JSONArray())
+                            new RequestProcessor(context, 1).process("list", new JSONObject())
                                     .toJSON();
                     JSONArray ja = response.getJSONArray("result");
                     // JSONArray is not iterable :<
@@ -100,8 +100,13 @@ public class KadecotSnapServer extends HTTPServer {
                     args.put(nickname);
                     args.put(epc);
                     try {
+                        // TODO: fix Dummy json
+                        // JSONObject response =
+                        // new RequestProcessor(context, 1).process("get",
+                        // args).toJSON();
                         JSONObject response =
-                                new RequestProcessor(context, 1).process("get", args).toJSON();
+                                new RequestProcessor(context, 1).process("get", new JSONObject())
+                                        .toJSON();
                         JSONArray js =
                                 response.getJSONObject("result").getJSONArray("property")
                                         .getJSONObject(0).getJSONArray("value");
@@ -139,8 +144,13 @@ public class KadecotSnapServer extends HTTPServer {
                     args.put(nickname);
                     args.put(epc_edt_pair);
                     try {
+                        // TODO: fix Dummy json
+                        // JSONObject response =
+                        // new RequestProcessor(context, 1).process("set",
+                        // args).toJSON();
                         JSONObject response =
-                                new RequestProcessor(context, 1).process("set", args).toJSON();
+                                new RequestProcessor(context, 1).process("set", new JSONObject())
+                                        .toJSON();
                         boolean success =
                                 response.getJSONObject("result").getJSONArray("property")
                                         .getJSONObject(0).getBoolean("success");

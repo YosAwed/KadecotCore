@@ -96,7 +96,11 @@ public class KadecotJSONPServer {
                 if (method != null && params != null) {
                     for (String m : ACCESSIBLE_METHODS) {
                         if (m.equals(method)) {
-                            response = (new RequestProcessor(mContext, 1)).process(method, params);
+                            // TODO: fix Dummy json
+                            // response = (new RequestProcessor(mContext,
+                            // 1)).process(method, params);
+                            response = (new RequestProcessor(mContext, 1)).process(method,
+                                    new JSONObject());
                         }
                     }
                 }

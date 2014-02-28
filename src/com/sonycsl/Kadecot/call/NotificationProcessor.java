@@ -55,7 +55,7 @@ public class NotificationProcessor {
     }
 
     public void refreshList(JSONArray params) {
-        mDeviceManager.refreshList(mPermissionLevel);
+        mDeviceManager.refreshDeviceList(mPermissionLevel);
     }
 
 }

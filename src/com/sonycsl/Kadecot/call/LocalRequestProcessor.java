@@ -13,7 +13,7 @@ public class LocalRequestProcessor extends RequestProcessor {
     protected ServerSettings mServerSettings;
 
     public LocalRequestProcessor(Context context) {
-        super(context, PERMISSION_ALL);
+        super(context, Permission.ALL);
         mServerSettings = ServerSettings.getInstance(mContext);
     }
 

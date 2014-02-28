@@ -25,10 +25,6 @@ public class RequestProcessor {
     @SuppressWarnings("unused")
     private static final String TAG = RequestProcessor.class.getSimpleName();
 
-    protected static final int PERMISSION_ALL = 0;
-
-    protected static final int PERMISSION_LIMIT = 1;
-
     protected final Context mContext;
 
     protected final int mPermissionLevel;
@@ -48,12 +44,12 @@ public class RequestProcessor {
         mLogger = Logger.getInstance(mContext);
     }
 
-    public Response process(final String methodName, final JSONArray params) {
+    public Response process(final String methodName, final JSONObject params) {
         Log.v(TAG, methodName);
         Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
-                    JSONArray.class
+                    JSONObject.class
             });
 
             try {
@@ -194,24 +190,24 @@ public class RequestProcessor {
         return new Response(logList);
     }
 
-    public Response refreshList(JSONArray params) {
-        mDeviceManager.refreshList(mPermissionLevel);
-        return new Response(null);
+    public Response refreshDeviceList(JSONObject params) {
+        mDeviceManager.refreshDeviceList(mPermissionLevel);
+        return new Response(new JSONObject());
     }
 
-    public Response list(JSONArray params) {
-        return new Response(mDeviceManager.list(mPermissionLevel));
+    public Response getDeviceList(JSONObject params) {
+        return new Response(mDeviceManager.getDeviceList(mPermissionLevel));
     }
 
-    public Response changeNickname(JSONArray params) {
+    public Response changeNickname(JSONObject params) {
         return mDeviceManager.changeNickname(params);
     }
 
-    public Response deleteDevice(JSONArray params) {
+    public Response deleteDevice(JSONObject params) {
         return mDeviceManager.deleteDeviceData(params);
     }
 
-    public Response deleteInactiveDevices(JSONArray params) {
+    public Response deleteInactiveDevices(JSONObject params) {
         return mDeviceManager.deleteInactiveDevices(mPermissionLevel);
     }
 

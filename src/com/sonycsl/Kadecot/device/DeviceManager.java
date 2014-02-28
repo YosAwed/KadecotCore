@@ -1,8 +1,6 @@
 
 package com.sonycsl.Kadecot.device;
 
-import android.content.Context;
-
 import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
@@ -14,6 +12,9 @@ import com.sonycsl.echo.eoj.device.DeviceObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,34 @@ public class DeviceManager {
 
     public static final int ALL_ACCESS_CLIENT_PERMISSION_LEVEL = 0;
 
+    private static final String KEY_DEVICE = "device";
+
+    private static final String KEY_NICKNAME = "nickname";
+
+    private static final String KEY_PROTOCOL = "protocol";
+
+    private static final String KEY_DEVICE_NAME = "deviceName";
+
+    private static final String KEY_ACTIVE = "active";
+
+    private static final String KEY_PARENT = "parent";
+
+    private static final String KEY_DEVICE_TYPE = "deviceType";
+
+    private static final String KEY_CURRENT_NAME = "currentName";
+
+    private static final String KEY_NEW_NAME = "newName";
+
+    private static final String KEY_TARGET_NAME = "targetName";
+
+    private static final String KEY_SUCCESS = "success";
+
+    private static final String KEY_PROPERTY_NAME = "propertyName";
+
+    private static final String KEY_PROPERTY_VALUE = "propertyValue";
+
+    private static final String KEY_PROPERTY = "property";
+
     private DeviceManager(Context context) {
         mContext = context.getApplicationContext();
         mDeviceProtocols = new HashMap<String, DeviceProtocol>();
@@ -64,7 +93,7 @@ public class DeviceManager {
             protocol.start();
         }
 
-        refreshList(0);
+        refreshDeviceList(0);
     }
 
     public synchronized void stop() {
@@ -82,7 +111,7 @@ public class DeviceManager {
         return mStarted;
     }
 
-    public void refreshList(int permissionLevel) {
+    public void refreshDeviceList(int permissionLevel) {
         if (isStarted() == false) {
             return;
         }
@@ -122,10 +151,12 @@ public class DeviceManager {
         return (clientPermissionLevel <= protocolPermissionLevel);
     }
 
-    public JSONArray list(int permissionLevel) {
+    public JSONObject getDeviceList(int permissionLevel) {
         if (isStarted() == false) {
-            return new JSONArray();
+            return new JSONObject();
         }
+
+        final JSONObject deviceList = new JSONObject();
         JSONArray list = new JSONArray();
 
         List<DeviceData> dataList = getDeviceDatabase().getDeviceDataList();
@@ -136,8 +167,14 @@ public class DeviceManager {
                 list.put(device);
             }
         }
+        try {
+            deviceList.put(KEY_DEVICE, list);
+        } catch (JSONException e) {
+            // Never happens.
+            Log.e(TAG, "JSON exception occurs at getDeviceList");
+        }
 
-        return list;
+        return deviceList;
     }
 
     public JSONObject getDeviceInfo(long deviceId, int permissionLevel) {
@@ -152,8 +189,8 @@ public class DeviceManager {
     public JSONObject getDeviceInfo(DeviceData data, int permissionLevel) {
         JSONObject device = new JSONObject();
         try {
-            device.put("nickname", data.nickname);
-            device.put("protocol", data.protocolName);
+            device.put(KEY_NICKNAME, data.nickname);
+            device.put(KEY_PROTOCOL, data.protocolName);
 
             DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
 
@@ -167,10 +204,10 @@ public class DeviceManager {
 
             if (protocol != null && info != null) {
 
-                device.put("active", info.active);
-                device.put("deviceName", info.deviceName);
-                device.put("deviceType", info.deviceType);
-                device.put("option", info.option);
+                device.put(KEY_ACTIVE, info.active);
+                device.put(KEY_DEVICE_NAME, info.deviceName);
+                device.put(KEY_DEVICE_TYPE, info.deviceType);
+                device.put(KEY_PARENT, info.parent);
 
                 return device;
 
@@ -287,7 +324,7 @@ public class DeviceManager {
         return new Response(result);
     }
 
-    public synchronized Response deleteDeviceData(JSONArray params) {
+    public synchronized Response deleteDeviceData(JSONObject params) {
 
         if (isStarted() == false) {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
@@ -299,7 +336,7 @@ public class DeviceManager {
 
         String nickname = null;
         try {
-            nickname = params.getString(0);
+            nickname = params.getString(KEY_TARGET_NAME);
         } catch (JSONException e) {
             e.printStackTrace();
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
@@ -333,7 +370,7 @@ public class DeviceManager {
             // error
             return cpre.getErrorResponse();
         } else {
-            return new Response(null);
+            return new Response(new JSONObject());
         }
     }
 
@@ -356,10 +393,10 @@ public class DeviceManager {
             }
         }
         Notification.informAllOnUpdateList(mContext);
-        return new Response(null);
+        return new Response(new JSONObject());
     }
 
-    public synchronized Response changeNickname(JSONArray params) {
+    public synchronized Response changeNickname(JSONObject params) {
 
         if (isStarted() == false) {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
@@ -372,8 +409,8 @@ public class DeviceManager {
         String oldNickname = null;
         String newNickname = null;
         try {
-            oldNickname = params.getString(0);
-            newNickname = params.getString(1);
+            oldNickname = params.getString(KEY_CURRENT_NAME);
+            newNickname = params.getString(KEY_NEW_NAME);
         } catch (JSONException e) {
             e.printStackTrace();
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
@@ -387,9 +424,10 @@ public class DeviceManager {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "New nickname exists.");
         }
         DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+
         Notification.informAllOnNicknameChanged(oldNickname, newNickname, protocol
                 .getAllowedPermissionLevel());
-        return new Response(null);
+        return new Response(new JSONObject());
     }
 
     public void onPropertyChanged(DeviceData data, List<DeviceProperty> list) {
@@ -398,18 +436,18 @@ public class DeviceManager {
             return;
         }
         try {
-            obj.put("nickname", data.nickname);
+            obj.put(KEY_NICKNAME, data.nickname);
             JSONArray array = new JSONArray();
             for (DeviceProperty p : list) {
                 JSONObject prop = new JSONObject();
 
-                prop.put("name", p.name);
-                prop.put("value", p.value);
-                prop.put("success", p.success);
+                prop.put(KEY_PROPERTY_NAME, p.name);
+                prop.put(KEY_PROPERTY_VALUE, p.value);
+                prop.put(KEY_SUCCESS, p.success);
 
                 array.put(prop);
             }
-            obj.put("property", array);
+            obj.put(KEY_PROPERTY, array);
             Notification.informAllOnPropertyChanged(obj, 1);
         } catch (JSONException e) {
             // TODO Auto-generated catch block

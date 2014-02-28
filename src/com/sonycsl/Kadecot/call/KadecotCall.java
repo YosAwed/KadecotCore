@@ -1,19 +1,16 @@
 
 package com.sonycsl.Kadecot.call;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.sonycsl.Kadecot.device.DeviceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sonycsl.Kadecot.device.DeviceManager;
-
 import android.content.Context;
+
+import java.util.HashSet;
+import java.util.concurrent.Executors;
 
 /**
  * JSON-RPC 2.0 をベースとしている(paramsは配列のみ)
@@ -24,7 +21,7 @@ public abstract class KadecotCall {
 
     private final KadecotCall self = this;
 
-    private static final String VERSION = "1";
+    private static final String VERSION = "3.0";
 
     private final Context mContext;
 
@@ -64,7 +61,7 @@ public abstract class KadecotCall {
         }
     }
 
-    public final void sendNotification(String method, JSONArray params) {
+    public final void sendNotification(String method, JSONObject params) {
         JSONObject obj = new JSONObject();
         try {
             obj.put("version", VERSION);
@@ -78,7 +75,7 @@ public abstract class KadecotCall {
         }
     }
 
-    public final void sendResponse(String id, Response response) {
+    public final void sendResponse(int id, Response response) {
         JSONObject obj;
         try {
             obj = response.toJSON();
@@ -98,7 +95,7 @@ public abstract class KadecotCall {
         if (obj.isNull("version")) {
             if (!obj.isNull("id")) {
                 try {
-                    sendResponse(obj.getString("id"), new ErrorResponse(
+                    sendResponse(obj.getInt("id"), new ErrorResponse(
                             ErrorResponse.INTERNAL_ERROR_CODE, "not found version"));
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
@@ -117,7 +114,7 @@ public abstract class KadecotCall {
         if (!VERSION.equals(version)) {
             if (!obj.isNull("id")) {
                 try {
-                    sendResponse(obj.getString("id"), new ErrorResponse(
+                    sendResponse(obj.getInt("id"), new ErrorResponse(
                             ErrorResponse.INTERNAL_ERROR_CODE, "version:" + version
                                     + " is not latest"));
                 } catch (JSONException e) {
@@ -132,13 +129,13 @@ public abstract class KadecotCall {
         if (!obj.isNull("method") && !obj.isNull("id")) {
             // request
             try {
-                String id = obj.getString("id");
+                int id = obj.getInt("id");
                 String method = "";
-                JSONArray params = null;
+                JSONObject params = null;
                 try {
                     method = obj.getString("method");
                     if (!obj.isNull("params")) {
-                        params = obj.getJSONArray("params");
+                        params = obj.getJSONObject("params");
                     }
                 } catch (Exception e) {
                     // error
@@ -174,7 +171,7 @@ public abstract class KadecotCall {
         }
     }
 
-    public void receiveRequest(final String id, final String method, final JSONArray params) {
+    public void receiveRequest(final int id, final String method, final JSONObject params) {
 
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
@@ -217,10 +214,11 @@ public abstract class KadecotCall {
         // onNotifyServerSettings
         // onDeviceFound
         mKadecotCalls.add(this);
-        this.sendNotification(Notification.ON_NOTIFY_SERVER_SETTINGS, Notification
+        this.sendNotification(Notification.ON_SERVER_STATUS_UPDATED, Notification
                 .getParamsOnNotifyServerSettings(mContext));
-        this.sendNotification(Notification.ON_UPDATE_LIST, Notification.getParamsOnUpdateList(
-                mContext, mPermissionLevel));
+        this.sendNotification(Notification.ON_DEVICE_LIST_UPDATED,
+                Notification.getParamsOnUpdateList(
+                        mContext, mPermissionLevel));
 
     }
 
@@ -228,7 +226,7 @@ public abstract class KadecotCall {
         mKadecotCalls.remove(this);
     }
 
-    protected static void informAll(final String method, final JSONArray params) {
+    protected static void informAll(final String method, final JSONObject params) {
         for (KadecotCall kc : mKadecotCalls) {
             kc.sendNotification(method, params);
         }
@@ -238,7 +236,7 @@ public abstract class KadecotCall {
         return mPermissionLevel;
     }
 
-    protected static void informAll(final String method, final JSONArray params,
+    protected static void informAll(final String method, final JSONObject params,
             int protocolPermissionLevel) {
         for (KadecotCall kc : mKadecotCalls) {
             if (DeviceManager.isAllowedPermission(kc.getPermissionLevel(), protocolPermissionLevel)) {
