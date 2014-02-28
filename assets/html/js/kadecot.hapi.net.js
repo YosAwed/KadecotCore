@@ -15,7 +15,7 @@ kHAPI.net = {
   id: -1
   // Home panel -> Server
   ,
-  callServerFunc: function(method, arg, callbackfunc) {
+  callServerFunc: function(method, argObject, callbackfunc) {
     // console.log('callServerFunc :
     // '+JSON.stringify([arguments[0],arguments[1]]));
     if (!(method in this.ServerCall)) {
@@ -23,12 +23,12 @@ kHAPI.net = {
       return;
     }
 
-    // arg must be array.
-    if (arg === undefined)
-      arg = [];
-    else if (!(arg instanceof Array)) arg = [arg];
+    // change to JSON String.
+    if (argObject === undefined)
+      argObject = {};
+//    arg = JSON.stringify(argObject);
 
-    var r = this.ServerCall[method].call(this.ServerCall, arg, callbackfunc);
+    var r = this.ServerCall[method].call(this.ServerCall, argObject, callbackfunc);
     if (r === undefined) return;
 
     var id = this.genId();
@@ -41,7 +41,7 @@ kHAPI.net = {
     var st = JSON.stringify({
       'version': kHAPI.APIVer,
       'method': method,
-      'params': arg,
+      'params': argObject,
       'id': id
     });
 
@@ -90,7 +90,7 @@ kHAPI.net = {
       if (typeof kHAPI[d.method] === 'function') {
         kHAPI[d.method](d.params);
       } else {
-        console.log('Undefined method call from the server:');
+        console.log('Undefined method call from the server:' + d.method + ', ' + d.params);
       }
     }
   }
@@ -195,17 +195,17 @@ kHAPI.net.ServerPredefinedReplies = {
     }
     this.callServerFunc_invokeMatch[d.id] = undefined;
   },
-  onNotifyServerSettings: function(d) {
+  onServerStatusUpdated: function(d) {
     var settings = {
-      network: d.params[0],
-      location: d.params[1],
-      persistence: d.params[2],
-      jsonp: d.params[3],
-      websocket: d.params[4],
-      snap: d.params[5]
+      network: d.params.networkInfo,
+      location: d.params.location,
+      persistence: d.params.serverMode.persistent,
+      jsonp: d.params.serverMode.jsonpServer,
+      websocket: d.params.websocketServer,
+      snap: d.params.snapServer
     };
     kHAPI.net.info = settings;
-    kHAPI.onNotifyServerSettings(settings);
+    kHAPI.onServerStatusUpdated(settings);
   },
   onDeviceFound: function(args) {
     if (kHAPI.dev.addDevice(args.params[0])) // Truly new device
@@ -214,16 +214,16 @@ kHAPI.net.ServerPredefinedReplies = {
       kHAPI.devListHandlers
               .onDeviceActivated(args.params[0], kHAPI.dev.devices);
   },
-  onUpdateList: function(args) {
-    kHAPI.dev.setDevicesList(args.params);
+  onDeviceListUpdated: function(args) {
+    kHAPI.dev.setDevicesList(args.params.device);
     kHAPI.devListHandlers.onUpdateList(kHAPI.dev.devices);
   },
   onDeviceDeleted: function(args) {
-    kHAPI.dev.removeDevice(args.params[0]);
-    kHAPI.devListHandlers.onDeviceDeleted(args.params[0], kHAPI.dev.devices);
+    kHAPI.dev.removeDevice(args.params.targetName);
+    kHAPI.devListHandlers.onDeviceDeleted(args.params.targetName, kHAPI.dev.devices);
   },
   onNicknameChanged: function(args) {
-    var oldnickname = args.params[0], newnickname = args.params[1];
+    var oldnickname = args.params.oldName, newnickname = args.params.currentName;
     kHAPI.dev.changeNickname(oldnickname, newnickname);
     kHAPI.devListHandlers.onNicknameChanged(oldnickname, newnickname,
             kHAPI.dev.devices);
@@ -307,12 +307,12 @@ kHAPI.net.ServerCall = {
       next: 1
     };
   },
-  refreshList: function(args, cbfunc) {
+  refreshDeviceList: function(args, cbfunc) {
     return {
       next: 1
     };
   },
-  list: function(args, cbfunc) {
+  getDeviceList: function(args, cbfunc) {
     return {
       next: 1,
       result: []
@@ -401,8 +401,8 @@ kHAPI.net.ServerCall = {
   },
   changeNickname: function(args, cbfunc) {
     var dev = null;
-    var oldNickname = args[0];
-    var newNickname = args[1];
+    var oldNickname = args.currentName;
+    var newNickname = args.newName;
 
     var di;
     for (di = 0; di < kHAPI.dev.devices.length; ++di) {

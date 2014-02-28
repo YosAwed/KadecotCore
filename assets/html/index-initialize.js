@@ -300,7 +300,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
     areYouSure("Join " + SSID + "?",
             "This allows access to home appliances and sensors on " + SSID
                     + ".", "OK", "Cancel", function() {
-              kHAPI.enableServerNetwork(true);
+              kHAPI.enableServerNetwork({enable:true});
               if (!isFirstConfirm) {
                 $("#register_android_button").val("Withdraw from " + SSID)
                         .button("refresh");
@@ -309,7 +309,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
             });
 
   } else {
-    kHAPI.enableServerNetwork(false);
+    kHAPI.enableServerNetwork({enable:false});
     if (!isFirstConfirm) {
       $("#register_android_button").val("Join current network").button(
               "refresh");
@@ -338,7 +338,7 @@ var onSettingsPageAndroidOpen = function() {
 
   var netInfo = kHAPI.getNetInfo();
 
-  $("#server_android_ip").val(netInfo.network.ip).textinput();
+  $("#server_android_ip").val(netInfo.network.ipv4).textinput();
   if (netInfo.network.isDeviceAccessible) {
     $("#register_android_button").val("Withdrow from current network").button(
             "refresh");
@@ -347,30 +347,30 @@ var onSettingsPageAndroidOpen = function() {
   }
   initializeCheckBox($("#enable_websocket_checkbox"), netInfo.websocket,
           function() {
-            kHAPI.enableWebSocketServer([true]);
+            kHAPI.enableWebSocketServer({enable:true});
           }, function() {
-            kHAPI.enableWebSocketServer([false]);
+            kHAPI.enableWebSocketServer({enable:false});
           });
 
   initializeCheckBox($("#enable_persistent_android_checkbox"),
           netInfo.persistence, function() {
-            kHAPI.enablePersistentMode([true]);
+            kHAPI.enablePersistentMode({enable:true});
           }, function() {
-            kHAPI.enablePersistentMode([false]);
+            kHAPI.enablePersistentMode({enable:false});
           });
 
   initializeCheckBox($("#enable_jsonp_android_checkbox"), netInfo.jsonp,
           function() {
-            kHAPI.enableJSONPServer([true]);
+            kHAPI.enableJSONPServer({enable:true});
           }, function() {
-            kHAPI.enableJSONPServer([false]);
+            kHAPI.enableJSONPServer({enable:false});
           });
 
   initializeCheckBox($("#enable_snap_android_checkbox"), netInfo.snap,
           function() {
-            kHAPI.enableSnapServer([true]);
+            kHAPI.enableSnapServer({enable:true});
           }, function() {
-            kHAPI.enableSnapServer([false]);
+            kHAPI.enableSnapServer({enable:false});
           });
 };
 
@@ -379,23 +379,23 @@ var onSettingsPageBrowserOpen = function() {
   var netInfo = kHAPI.getNetInfo();
   initializeCheckBox($("#enable_persistent_browser_checkbox"),
           netInfo.persistence, function() {
-            kHAPI.enablePersistentMode([true]);
+            kHAPI.enablePersistentMode({enable:true});
           }, function() {
-            kHAPI.enablePersistentMode([false]);
+            kHAPI.enablePersistentMode({enable:false});
           });
 
   initializeCheckBox($("#enable_snap_browser_checkbox"), netInfo.snap,
           function() {
-            kHAPI.enableSnapServer([true]);
+            kHAPI.enableSnapServer({enable:true});
           }, function() {
-            kHAPI.enableSnapServer([false]);
+            kHAPI.enableSnapServer({enable:false});
           });
 
   initializeCheckBox($("#enable_jsonp_browser_checkbox"), netInfo.jsonp,
           function() {
-            kHAPI.enableJSONPServer([true]);
+            kHAPI.enableJSONPServer({enable:true});
           }, function() {
-            kHAPI.enableJSONPServer([false]);
+            kHAPI.enableJSONPServer({enable:false});
           });
 };
 
@@ -867,7 +867,11 @@ var onAppSettingPageOpen = function(index) {
 };
 
 var onClickChangeNickname = function(from, to) {
-  kHAPI.changeNickname([from, to]);
+  var args = {
+    currentName:from,
+    newName:to
+  }
+  kHAPI.changeNickname(args);
   $.mobile.changePage("#devlist_page");
 };
 

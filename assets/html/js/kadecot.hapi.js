@@ -257,7 +257,7 @@ var kHAPI = {
   onPropertyChanged: function(arg) {
     // Propertyの変更通知
   },
-  onNotifyServerSettings: function(arg) {
+  onServerStatusUpdated: function(arg) {
     // arg.network,arg.location,arg.jsonp,arg.websocket,arg.persistence
     // network : {"isConnected" : true , "type" : "wifi", "SSID" : "aaa",
     // "ip" : "1.1.1.1", "isDeviceAccessible" : true} // network
