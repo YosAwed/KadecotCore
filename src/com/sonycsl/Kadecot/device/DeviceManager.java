@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Deviceを管理するクラス
@@ -260,6 +261,47 @@ public class DeviceManager {
         } else {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
         }
+    }
+
+    public Response pollProperty(UUID clientId, String nickname, DeviceProperty deviceProperty,
+            int pollingIntervalSec, int permissionLevel) {
+        if (isStarted() == false) {
+            return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
+        }
+
+        DeviceData data = getDeviceDatabase().getDeviceData(nickname);
+        if (data == null) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "nickname not found");
+        }
+
+        DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
+
+        if (isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
+            int actualIntervalSec = protocol.pollProperty(clientId, data.deviceId, deviceProperty,
+                    pollingIntervalSec);
+            return toPollingAPIResponse(nickname, actualIntervalSec);
+        } else {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, "permission denied");
+        }
+    }
+
+    /**
+     * create Response instance for pollProperty API
+     * 
+     * @param nickname
+     * @param intervalSec
+     * @return
+     */
+    private Response toPollingAPIResponse(String nickname, int intervalSec) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("nickname", nickname);
+            result.put("pollingIntervalSec", intervalSec);
+        } catch (JSONException e) {
+            e.printStackTrace();
+
+        }
+        return new Response(result);
     }
 
     private Response toAccessResponse(String nickname, List<DeviceProperty> list) {

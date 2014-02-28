@@ -1,19 +1,17 @@
 
 package com.sonycsl.Kadecot.call;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import android.content.Context;
+
+import com.sonycsl.Kadecot.device.DeviceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sonycsl.Kadecot.device.DeviceManager;
-
-import android.content.Context;
+import java.util.HashSet;
+import java.util.UUID;
+import java.util.concurrent.Executors;
 
 /**
  * JSON-RPC 2.0 をベースとしている(paramsは配列のみ)
@@ -38,13 +36,15 @@ public abstract class KadecotCall {
 
     private final int mPermissionLevel;
 
+    private final UUID mUuid;
+
     public KadecotCall(Context context, int permissionLevel, RequestProcessor request,
             NotificationProcessor notification) {
         mContext = context.getApplicationContext();
         mRequestProcessor = request;
         mNotificationProcessor = notification;
         mPermissionLevel = permissionLevel;
-
+        mUuid = UUID.randomUUID();
     }
 
     public abstract void send(JSONObject obj);
@@ -187,7 +187,7 @@ public abstract class KadecotCall {
                  * e) { e.printStackTrace(); } currentThread.interrupt(); } });
                  * t.start();
                  */
-                Response res = mRequestProcessor.process(method, params);
+                Response res = mRequestProcessor.process(method, params, mUuid);
 
                 // t.interrupt();
 

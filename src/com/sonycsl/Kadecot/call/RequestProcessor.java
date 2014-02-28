@@ -1,33 +1,32 @@
 
 package com.sonycsl.Kadecot.call;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import android.content.Context;
+import android.util.Log;
+
+import com.sonycsl.Kadecot.device.DeviceManager;
+import com.sonycsl.Kadecot.device.DeviceProperty;
+import com.sonycsl.Kadecot.log.Logger;
+import com.sonycsl.Kadecot.server.ServerSettings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sonycsl.Kadecot.device.DeviceDatabase;
-import com.sonycsl.Kadecot.device.DeviceManager;
-import com.sonycsl.Kadecot.device.DeviceProperty;
-import com.sonycsl.Kadecot.log.Logger;
-import com.sonycsl.Kadecot.server.ServerManager;
-import com.sonycsl.Kadecot.server.ServerNetwork;
-import com.sonycsl.Kadecot.server.ServerSettings;
-
-import android.content.Context;
-import android.util.Log;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RequestProcessor {
     @SuppressWarnings("unused")
     private static final String TAG = RequestProcessor.class.getSimpleName();
 
+    private static final String POLLING_METHOD_NAME = "pollProperty";
     private final RequestProcessor self = this;
 
     protected final Context mContext;
@@ -47,6 +46,26 @@ public class RequestProcessor {
         mDeviceManager = DeviceManager.getInstance(mContext);
         mServerSettings = ServerSettings.getInstance(mContext);
         mLogger = Logger.getInstance(mContext);
+    }
+
+    /**
+     * This method adds clientId to params for pollProperty API.
+     * 
+     * @param methodName
+     * @param params
+     * @param clientId This is used to identify client in pollProperty API
+     * @return
+     */
+    public Response process(final String methodName, JSONArray params, UUID clientId) {
+        if (methodName.equals(POLLING_METHOD_NAME)) {
+            try {
+                params.put(0, clientId);
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException for pollProperty.");
+                e.printStackTrace();
+            }
+        }
+        return process(methodName, params);
     }
 
     public Response process(final String methodName, final JSONArray params) {
@@ -125,6 +144,26 @@ public class RequestProcessor {
             e.printStackTrace();
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
         }
+    }
+
+    public Response pollProperty(JSONArray params) {
+        if (params == null || params.length() <= 0) {
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
+        }
+        try {
+            UUID clientId = (UUID) params.get(0);
+            String nickname = params.getString(1);
+            JSONObject prop = params.getJSONObject(2);
+            DeviceProperty dp = new DeviceProperty(prop.getString("proprtyName"),
+                    prop.getJSONObject("propertyValue"));
+            int pollingIntervalSec = params.getInt(3);
+            return mDeviceManager.pollProperty(clientId, nickname, dp, pollingIntervalSec,
+                    mPermissionLevel);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
+        }
+
     }
 
     public Response queryLog(JSONArray params) {

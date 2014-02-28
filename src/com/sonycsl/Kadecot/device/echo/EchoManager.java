@@ -12,6 +12,7 @@ import com.sonycsl.Kadecot.device.DeviceInfo;
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.device.DeviceProtocol;
+import com.sonycsl.Kadecot.device.PropertyPollingInfo;
 import com.sonycsl.Kadecot.device.echo.generator.EchoDeviceAgent;
 import com.sonycsl.Kadecot.device.echo.generator.EchoDeviceGenerator;
 import com.sonycsl.Kadecot.log.Logger;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EchoManager implements DeviceProtocol {
@@ -64,6 +66,7 @@ public class EchoManager implements DeviceProtocol {
     private EchoDeviceDatabase mEchoDeviceDatabase;
     private DeviceManager mDeviceManager;
     private DeviceDatabase mDeviceDatabase;
+    private List<PropertyPollingInfo> mPpiList;
 
     private final Map<InetAddress, Long> mLastAccessTimes;
 
@@ -80,6 +83,8 @@ public class EchoManager implements DeviceProtocol {
         mEchoDiscovery = new EchoDiscovery(mContext);
 
         mLastAccessTimes = new ConcurrentHashMap<InetAddress, Long>();
+
+        mPpiList = new ArrayList<PropertyPollingInfo>();
 
         setup();
     }
@@ -641,6 +646,41 @@ public class EchoManager implements DeviceProtocol {
             throw new AccessException(new ErrorResponse(
                     ErrorResponse.INTERNAL_ERROR_CODE, e));
         }
+    }
+
+    /**
+     * start polling Property
+     * 
+     * @param deviceId
+     * @param dp
+     * @param intervalSec
+     * @return polling interval time(sec)
+     */
+    @Override
+    public int pollProperty(UUID client, long deviceId, DeviceProperty dp, int intervalSec) {
+        PropertyPollingInfo ppi = findTargetPropertyPollingInfo(deviceId, dp);
+
+        return ppi.addPollingElement(client, dp, intervalSec);
+    }
+
+    /**
+     * This method find target PropertyPollingInfo instance from mPpiList. If
+     * there is no instance, create it and add it to mPpiList.
+     * 
+     * @param deviceId targe device id
+     * @param dp target device property
+     * @return
+     */
+    private PropertyPollingInfo findTargetPropertyPollingInfo(long deviceId, DeviceProperty dp) {
+        for (PropertyPollingInfo ppi : mPpiList) {
+            if (ppi.hasSameTarget(dp)) {
+                return ppi;
+            }
+        }
+
+        PropertyPollingInfo ppi = new PropertyPollingInfo(deviceId, dp, this);
+        mPpiList.add(ppi);
+        return ppi;
     }
 
     private synchronized String send(EchoObject eoj, Object sender, Callback callback)

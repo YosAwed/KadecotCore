@@ -6,6 +6,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
+import java.util.UUID;
 
 /**
  * This class has polling information about which application polls ,polling
@@ -56,7 +57,7 @@ public class PropertyPollingInfo {
      *            argument.
      * @param intervalSec polling interval time(second)
      */
-    public void addPollingElement(String client, DeviceProperty property, int intervalSec) {
+    public int addPollingElement(UUID client, DeviceProperty property, int intervalSec) {
         PropertyPollingInfoElement ppie = new PropertyPollingInfoElement(client, property,
                 intervalSec);
 
@@ -70,6 +71,7 @@ public class PropertyPollingInfo {
 
         updatePollingIntervalSec(ppie);
         startTimer();
+        return mPollingIntervalSec;
     }
 
     /**
@@ -81,7 +83,7 @@ public class PropertyPollingInfo {
     public void removePollingElement(String client) {
         int index = 0;
         for (PropertyPollingInfoElement ppie : mPollingList) {
-            if (ppie.getAppName().equals(client)) {
+            if (ppie.getClientId().equals(client)) {
                 mPollingList.remove(index);
                 break;
             }
@@ -174,11 +176,11 @@ public class PropertyPollingInfo {
      * @author Kosuke.Mita
      */
     private class PropertyPollingInfoElement {
-        private String client;
+        private UUID client;
         private DeviceProperty deviceProperty;
         private int intervalSec;
 
-        PropertyPollingInfoElement(String client, DeviceProperty prop, int intervalSec) {
+        PropertyPollingInfoElement(UUID client, DeviceProperty prop, int intervalSec) {
             if (intervalSec < 0) {
                 Log.e(TAG, "Illegal argument");
                 return;
@@ -190,11 +192,11 @@ public class PropertyPollingInfo {
         }
 
         public boolean equalsTarget(PropertyPollingInfoElement ppie) {
-            return this.client.equals(ppie.getAppName())
+            return this.client.equals(ppie.getClientId())
                     && this.deviceProperty.equals(ppie.getDeviceProperty());
         }
 
-        public String getAppName() {
+        public UUID getClientId() {
             return client;
         }
 
