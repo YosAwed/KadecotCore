@@ -55,7 +55,7 @@ public class RequestProcessor {
      * @param clientId This is used to identify client in pollProperty API
      * @return
      */
-    public Response process(final String methodName, JSONObject params, UUID clientId) {
+    public Response prepProcess(final String methodName, JSONObject params, UUID clientId) {
         if (methodName.equals(POLLING_METHOD_NAME)) {
             try {
                 params.put("clientId", clientId);

@@ -187,7 +187,7 @@ public abstract class KadecotCall {
                  * e) { e.printStackTrace(); } currentThread.interrupt(); } });
                  * t.start();
                  */
-                Response res = mRequestProcessor.process(method, params, mUuid);
+                Response res = mRequestProcessor.prepProcess(method, params, mUuid);
 
                 // t.interrupt();
 
