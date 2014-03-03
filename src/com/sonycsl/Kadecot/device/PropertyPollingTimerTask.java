@@ -15,10 +15,10 @@ import java.util.TimerTask;
  */
 public class PropertyPollingTimerTask extends TimerTask {
     private static final String TAG = PropertyPollingTimerTask.class.getSimpleName();
-    private DeviceProtocol dProtocol;
-    private long deviceId;
-    private List<DeviceProperty> targetDP;
-    private Object curPropValue;
+    private DeviceProtocol mDeviceProtocol;
+    private long mDeviceId;
+    private List<DeviceProperty> mTargetDP;
+    private Object mCurPropValue;
 
     /**
      * constructor
@@ -28,11 +28,11 @@ public class PropertyPollingTimerTask extends TimerTask {
      */
     public PropertyPollingTimerTask(DeviceProtocol protocol, long deviceId, DeviceProperty dp,
             Object propValue) {
-        this.dProtocol = protocol;
-        this.deviceId = deviceId;
-        this.targetDP = new ArrayList<DeviceProperty>();
-        targetDP.add(dp);
-        this.curPropValue = propValue;
+        this.mDeviceProtocol = protocol;
+        this.mDeviceId = deviceId;
+        this.mTargetDP = new ArrayList<DeviceProperty>();
+        mTargetDP.add(dp);
+        this.mCurPropValue = propValue;
     }
 
     /**
@@ -41,13 +41,13 @@ public class PropertyPollingTimerTask extends TimerTask {
      * @throws AccessException
      */
     public void run() {
-        Log.i(TAG, "polling " + targetDP.get(0).name);
+        Log.i(TAG, "polling " + mTargetDP.get(0).name);
 
         try {
-            List<DeviceProperty> newDPVal = dProtocol.get(deviceId, targetDP);
-            if (!curPropValue.equals(newDPVal)) {
-                DeviceData data = dProtocol.getDeviceData(deviceId);
-                dProtocol.onPropertyChanged(data, newDPVal);
+            List<DeviceProperty> newDPVal = mDeviceProtocol.get(mDeviceId, mTargetDP);
+            if (!mCurPropValue.equals(newDPVal)) {
+                DeviceData data = mDeviceProtocol.getDeviceData(mDeviceId);
+                mDeviceProtocol.onPropertyChanged(data, newDPVal);
             }
         } catch (AccessException e) {
             e.printStackTrace();
@@ -57,6 +57,6 @@ public class PropertyPollingTimerTask extends TimerTask {
     }
 
     public Object getCurPropValue() {
-        return curPropValue;
+        return mCurPropValue;
     }
 }

@@ -44,6 +44,10 @@ public class PropertyPollingInfo {
         mDeviceProtocol = dProtocol;
     }
 
+    public int getPollingIntervalSec() {
+        return mPollingIntervalSec;
+    }
+
     public boolean hasSameTarget(DeviceProperty dp) {
         return this.mDeviceProperty.equals(dp);
     }
@@ -69,7 +73,7 @@ public class PropertyPollingInfo {
         }
         mPollingList.add(ppie);
 
-        updatePollingIntervalSec(ppie);
+        updatePollingIntervalSec();
         startTimer();
         return mPollingIntervalSec;
     }
@@ -80,7 +84,7 @@ public class PropertyPollingInfo {
      * 
      * @param client
      */
-    public void removePollingElement(String client) {
+    public void removePollingElement(UUID client) {
         int index = 0;
         for (PropertyPollingInfoElement ppie : mPollingList) {
             if (ppie.getClientId().equals(client)) {
@@ -115,13 +119,11 @@ public class PropertyPollingInfo {
     }
 
     /**
-     * This mehotd update pollingIntervalSecMap if new polling time is shorter
-     * than current polling time or shortest polling timer updated.
+     * This mehotd update pollingIntervalSec if shortest polling timer updated.
      * 
-     * @param targetPpi is a target to add polling target list.
      * @return pollingIntervalSec
      */
-    private int updatePollingIntervalSec(PropertyPollingInfoElement targetPpi) {
+    private int updatePollingIntervalSec() {
         int shortestSec = mPollingList.get(0).getIntervalSec();
 
         for (PropertyPollingInfoElement ppi : mPollingList) {
@@ -176,9 +178,9 @@ public class PropertyPollingInfo {
      * @author Kosuke.Mita
      */
     private class PropertyPollingInfoElement {
-        private UUID client;
-        private DeviceProperty deviceProperty;
-        private int intervalSec;
+        private UUID mClient;
+        private DeviceProperty mDeviceProperty;
+        private int mIntervalSec;
 
         PropertyPollingInfoElement(UUID client, DeviceProperty prop, int intervalSec) {
             if (intervalSec < 0) {
@@ -186,26 +188,26 @@ public class PropertyPollingInfo {
                 return;
             }
 
-            this.client = client;
-            this.deviceProperty = prop;
-            this.intervalSec = intervalSec;
+            this.mClient = client;
+            this.mDeviceProperty = prop;
+            this.mIntervalSec = intervalSec;
         }
 
         public boolean equalsTarget(PropertyPollingInfoElement ppie) {
-            return this.client.equals(ppie.getClientId())
-                    && this.deviceProperty.equals(ppie.getDeviceProperty());
+            return this.mClient.equals(ppie.getClientId())
+                    && this.mDeviceProperty.equals(ppie.getDeviceProperty());
         }
 
         public UUID getClientId() {
-            return client;
+            return mClient;
         }
 
         public DeviceProperty getDeviceProperty() {
-            return deviceProperty;
+            return mDeviceProperty;
         }
 
         public int getIntervalSec() {
-            return intervalSec;
+            return mIntervalSec;
         }
     }
 }
