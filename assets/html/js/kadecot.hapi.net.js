@@ -209,11 +209,16 @@ kHAPI.net.ServerPredefinedReplies = {
     kHAPI.onServerStatusUpdated(settings);
   },
   onDeviceFound: function(args) {
-    if (kHAPI.dev.addDevice(args.params.device)) // Truly new device
-      kHAPI.devListHandlers.onDeviceFound(args.params.device, kHAPI.dev.devices);
-    else
-      kHAPI.devListHandlers
-              .onDeviceActivated(args.params.device, kHAPI.dev.devices);
+    var newDevices = args.params.device;
+    if (kHAPI.dev.addDevice(args.params.device)) {// Truly new device
+      for (var devi = 0; devi < newDevices; devi++) {
+        kHAPI.devListHandlers.onDeviceFound(newDevices[i], kHAPI.dev.devices);
+      }
+    } else {
+      for (var devi = 0; devi < newDevices; devi++) {
+        kHAPI.devListHandlers.onDeviceActivated(newDevices[i], kHAPI.dev.devices);
+      }
+    }
   },
   onDeviceListUpdated: function(args) {
     kHAPI.dev.setDevicesList(args.params.device);
