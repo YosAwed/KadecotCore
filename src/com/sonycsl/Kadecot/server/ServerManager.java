@@ -1,17 +1,14 @@
 
 package com.sonycsl.Kadecot.server;
 
-import java.io.IOException;
-import java.util.concurrent.Executors;
+import android.content.Context;
 
-import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceManager;
-import com.sonycsl.Kadecot.server.ServerSettings.ExecutionMode;
 
-import android.content.Context;
-import android.util.Log;
+import java.io.IOException;
+import java.util.concurrent.Executors;
 
 public class ServerManager {
     @SuppressWarnings("unused")

@@ -1,13 +1,13 @@
 
 package com.sonycsl.Kadecot.server;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.call.RequestProcessor;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 import java.io.BufferedReader;
 import java.io.IOException;

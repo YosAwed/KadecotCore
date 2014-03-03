@@ -1,13 +1,13 @@
 
 package com.sonycsl.Kadecot.call;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.device.DeviceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 import java.util.HashSet;
 import java.util.concurrent.Executors;

@@ -1,9 +1,9 @@
 
 package com.sonycsl.Kadecot.device.echo;
 
-import java.io.IOException;
-
 import com.sonycsl.echo.eoj.profile.NodeProfile;
+
+import java.io.IOException;
 
 public class MyNodeProfile extends NodeProfile {
     @SuppressWarnings("unused")

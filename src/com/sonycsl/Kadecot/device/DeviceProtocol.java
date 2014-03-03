@@ -3,10 +3,6 @@ package com.sonycsl.Kadecot.device;
 
 import java.util.List;
 
-import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.call.Response;
-
 /**
  * デバイスとの情報をやりとりするプロトコルのクラス
  */

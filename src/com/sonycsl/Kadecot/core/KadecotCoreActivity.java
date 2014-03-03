@@ -1,14 +1,6 @@
 
 package com.sonycsl.Kadecot.core;
 
-import com.sonycsl.Kadecot.call.KadecotCall;
-import com.sonycsl.Kadecot.call.LocalRequestProcessor;
-import com.sonycsl.Kadecot.call.NotificationProcessor;
-import com.sonycsl.Kadecot.server.KadecotServerService;
-import com.sonycsl.Kadecot.server.ServerBinder;
-
-import org.json.JSONObject;
-
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,6 +22,14 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.sonycsl.Kadecot.call.KadecotCall;
+import com.sonycsl.Kadecot.call.LocalRequestProcessor;
+import com.sonycsl.Kadecot.call.NotificationProcessor;
+import com.sonycsl.Kadecot.server.KadecotServerService;
+import com.sonycsl.Kadecot.server.ServerBinder;
+
+import org.json.JSONObject;
 
 import java.util.concurrent.Executors;
 

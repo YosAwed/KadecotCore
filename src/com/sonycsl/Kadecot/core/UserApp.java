@@ -1,8 +1,6 @@
 
 package com.sonycsl.Kadecot.core;
 
-import android.util.Log;
-import android.view.View;
 import android.webkit.WebView;
 
 public class UserApp {

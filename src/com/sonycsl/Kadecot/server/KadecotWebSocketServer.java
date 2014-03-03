@@ -1,6 +1,8 @@
 
 package com.sonycsl.Kadecot.server;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
@@ -12,8 +14,6 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

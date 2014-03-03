@@ -1,15 +1,15 @@
 
 package com.sonycsl.Kadecot.server;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.device.DeviceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.SharedPreferences;
 
 public class ServerSettings {
     @SuppressWarnings("unused")

@@ -1,6 +1,8 @@
 
 package com.sonycsl.Kadecot.call;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.server.ServerNetwork;
 import com.sonycsl.Kadecot.server.ServerSettings;
@@ -8,8 +10,6 @@ import com.sonycsl.Kadecot.server.ServerSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 import java.util.HashSet;
 

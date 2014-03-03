@@ -1,18 +1,10 @@
 
 package com.sonycsl.Kadecot.core;
 
-import java.io.File;
-import java.io.IOException;
-
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
-import android.util.Log;
-
-import com.sonycsl.Kadecot.utils.FileUtils;
 
 /**
  * Kadecot My Page用のJSインターフェース

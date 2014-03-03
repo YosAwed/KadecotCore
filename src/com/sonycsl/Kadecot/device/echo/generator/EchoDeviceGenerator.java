@@ -1,10 +1,9 @@
 
 package com.sonycsl.Kadecot.device.echo.generator;
 
-import java.util.List;
-import java.util.Set;
-
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
+
+import java.util.List;
 
 public interface EchoDeviceGenerator {
 

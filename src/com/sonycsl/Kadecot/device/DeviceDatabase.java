@@ -1,17 +1,17 @@
 
 package com.sonycsl.Kadecot.device;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.sonycsl.Kadecot.utils.DatabaseOpenHelper;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.sonycsl.Kadecot.utils.DatabaseOpenHelper;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * デバイス全体のデータベース protocol_name : デバイスのプロトコル(どのクラス由来のデバイスか調べるために使う) nickname :

@@ -1,6 +1,9 @@
 
 package com.sonycsl.Kadecot.call;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.log.Logger;
@@ -9,9 +12,6 @@ import com.sonycsl.Kadecot.server.ServerSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
-import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,6 +1,8 @@
 
 package com.sonycsl.Kadecot.device.echo;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.AccessException;
@@ -26,8 +28,6 @@ import com.sonycsl.echo.node.EchoNode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 import java.io.IOException;
 import java.net.InetAddress;

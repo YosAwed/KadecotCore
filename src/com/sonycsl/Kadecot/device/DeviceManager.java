@@ -1,6 +1,9 @@
 
 package com.sonycsl.Kadecot.device;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
@@ -12,9 +15,6 @@ import com.sonycsl.echo.eoj.device.DeviceObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,14 +1,10 @@
 
 package com.sonycsl.Kadecot.device.echo.generator;
 
-import android.util.Log;
-
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
-import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.EchoProperty;
 import com.sonycsl.echo.eoj.device.DeviceObject;
-import com.sonycsl.echo.node.EchoNode;
 
 public class EchoDeviceAgent extends DeviceObject {
     @SuppressWarnings("unused")

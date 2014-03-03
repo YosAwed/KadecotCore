@@ -1,12 +1,12 @@
 
 package com.sonycsl.Kadecot.call;
 
+import android.content.Context;
+
 import com.sonycsl.Kadecot.server.ServerSettings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
 
 public class LocalRequestProcessor extends RequestProcessor {
 
