@@ -17,6 +17,8 @@ public class PropertyPollingTimerTask extends TimerTask {
     private static final String TAG = PropertyPollingTimerTask.class.getSimpleName();
     private DeviceProtocol mDeviceProtocol;
     private long mDeviceId;
+
+    // List needed to call get method
     private List<DeviceProperty> mTargetDP;
     private Object mCurPropValue;
 
