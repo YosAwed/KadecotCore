@@ -33,7 +33,7 @@ public interface DeviceProtocol {
     public List<DeviceProperty> get(long deviceId, List<DeviceProperty> propertyList)
             throws AccessException;
 
-    public int pollProperty(UUID client, long deviceId, DeviceProperty dp, int intervalSec);
+    public int requestPollingProperty(UUID client, long deviceId, DeviceProperty dp, int intervalSec);
 
     // デバイスのアクセスを許可するレベルを取得する(1ならどこからでも可，0ならWebViewのみ可)
     public int getAllowedPermissionLevel();

@@ -657,7 +657,7 @@ public class EchoManager implements DeviceProtocol {
      * @return polling interval time(sec)
      */
     @Override
-    public int pollProperty(UUID client, long deviceId, DeviceProperty dp, int intervalSec) {
+    public int requestPollingProperty(UUID client, long deviceId, DeviceProperty dp, int intervalSec) {
         PropertyPollingInfo ppi = findTargetPropertyPollingInfo(deviceId, dp);
 
         return ppi.addPollingElement(client, dp, intervalSec);

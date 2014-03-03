@@ -300,7 +300,8 @@ public class DeviceManager {
         }
     }
 
-    public Response pollProperty(UUID clientId, String nickname, DeviceProperty deviceProperty,
+    public Response requestPollingProperty(UUID clientId, String nickname,
+            DeviceProperty deviceProperty,
             int pollingIntervalSec, int permissionLevel) {
         if (isStarted() == false) {
             return new ErrorResponse(ErrorResponse.INTERNAL_ERROR_CODE, "Cannot access device");
@@ -314,7 +315,8 @@ public class DeviceManager {
         DeviceProtocol protocol = mDeviceProtocols.get(data.protocolName);
 
         if (isAllowedPermission(permissionLevel, protocol.getAllowedPermissionLevel())) {
-            int actualIntervalSec = protocol.pollProperty(clientId, data.deviceId, deviceProperty,
+            int actualIntervalSec = protocol.requestPollingProperty(clientId, data.deviceId,
+                    deviceProperty,
                     pollingIntervalSec);
             return toPollingAPIResponse(nickname, actualIntervalSec);
         } else {

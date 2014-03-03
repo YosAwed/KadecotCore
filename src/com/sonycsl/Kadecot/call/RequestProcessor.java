@@ -26,7 +26,7 @@ public class RequestProcessor {
     @SuppressWarnings("unused")
     private static final String TAG = RequestProcessor.class.getSimpleName();
 
-    private static final String POLLING_METHOD_NAME = "pollProperty";
+    private static final String POLLING_METHOD_NAME = "requestPollingProperty";
 
     protected final Context mContext;
 
@@ -145,7 +145,7 @@ public class RequestProcessor {
         }
     }
 
-    public Response pollProperty(JSONObject params) {
+    public Response requestPollingProperty(JSONObject params) {
         if (params == null || params.length() <= 0) {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
         }
@@ -156,7 +156,8 @@ public class RequestProcessor {
             DeviceProperty dp = new DeviceProperty(prop.getString("proprtyName"),
                     prop.getJSONObject("propertyValue"));
             int pollingIntervalSec = params.getInt("pollingIntervalSec");
-            return mDeviceManager.pollProperty(clientId, nickname, dp, pollingIntervalSec,
+            return mDeviceManager.requestPollingProperty(clientId, nickname, dp,
+                    pollingIntervalSec,
                     mPermissionLevel);
         } catch (JSONException e) {
             e.printStackTrace();
