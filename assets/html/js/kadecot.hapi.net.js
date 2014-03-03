@@ -211,12 +211,12 @@ kHAPI.net.ServerPredefinedReplies = {
   onDeviceFound: function(args) {
     var newDevices = args.params.device;
     if (kHAPI.dev.addDevice(args.params.device)) {// Truly new device
-      for (var devi = 0; devi < newDevices; devi++) {
-        kHAPI.devListHandlers.onDeviceFound(newDevices[i], kHAPI.dev.devices);
+      for (var devi = 0; devi < newDevices.length; devi++) {
+        kHAPI.devListHandlers.onDeviceFound(newDevices[devi], kHAPI.dev.devices);
       }
     } else {
-      for (var devi = 0; devi < newDevices; devi++) {
-        kHAPI.devListHandlers.onDeviceActivated(newDevices[i], kHAPI.dev.devices);
+      for (var devi = 0; devi < newDevices.length; devi++) {
+        kHAPI.devListHandlers.onDeviceActivated(newDevices[devi], kHAPI.dev.devices);
       }
     }
   },
