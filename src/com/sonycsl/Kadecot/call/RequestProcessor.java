@@ -153,7 +153,7 @@ public class RequestProcessor {
             UUID clientId = (UUID) params.get("clientId");
             String nickname = params.getString("nickname");
             JSONObject prop = params.getJSONObject("property");
-            DeviceProperty dp = new DeviceProperty(prop.getString("proprtyName"),
+            DeviceProperty dp = new DeviceProperty(prop.getString("propertyName"),
                     prop.getJSONObject("propertyValue"));
             int pollingIntervalSec = params.getInt("pollingIntervalSec");
             return mDeviceManager.requestPollingProperty(clientId, nickname, dp,
