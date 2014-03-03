@@ -1,10 +1,10 @@
 
 package com.sonycsl.Kadecot.core;
 
+import com.sonycsl.Kadecot.call.KadecotCall;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.call.KadecotCall;
 
 /**
  * Kadecot My Page用のJSインターフェース

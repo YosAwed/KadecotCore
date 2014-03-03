@@ -2,15 +2,10 @@
 package com.sonycsl.Kadecot.log;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.LinkedHashMap;
-import java.util.Map;
-
-import android.util.Log;
 
 public class LTSVWriter {
     @SuppressWarnings("unused")

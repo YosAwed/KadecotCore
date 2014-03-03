@@ -718,24 +718,24 @@ public class EchoManager implements DeviceProtocol {
         if (data == null) {
             return null;
         }
-        boolean active = mEchoDiscovery.isActiveDevice(data.address,
-                data.echoClassCode, data.instanceCode);
-        JSONObject option = new JSONObject();
+        boolean active =
+                mEchoDiscovery.isActiveDevice(data.address, data.echoClassCode, data.instanceCode);
+        String parent = "";
         if (data.parentId != null) {
             JSONObject obj = getDeviceManager().getDeviceInfo(data.parentId, 0);
 
             if (obj != null) {
                 try {
-                    option.put("parent", obj);
+                    parent = obj.getString("parent");
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         }
-        DeviceInfo info = new DeviceInfo(active,
-                EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
-                        + EchoUtils.toHexString(data.echoClassCode), option);
+        DeviceInfo info =
+                new DeviceInfo(active, EchoDeviceUtils.getClassName(data.echoClassCode), "0x"
+                        + EchoUtils.toHexString(data.echoClassCode), parent);
         Dbg.print("(echo device info)nickname:" + data.nickname + ",address:" + data.address
                 + ",instanceCode:" + data.instanceCode + ",active:" + active);
         return info;

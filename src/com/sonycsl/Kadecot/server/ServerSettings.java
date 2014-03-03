@@ -1,24 +1,15 @@
 
 package com.sonycsl.Kadecot.server;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.util.Log;
 
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.device.DeviceManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ServerSettings {
     @SuppressWarnings("unused")
@@ -41,6 +32,10 @@ public class ServerSettings {
     private static String KEY_PERSISTENT_MODE = "persistent_mode";
 
     private static String KEY_SNAP_SERVER = "snap_server";
+
+    private static final String KEY_LATITUDE = "latitude";
+
+    private static final String KEY_LONGITUDE = "longitude";
 
     public enum ExecutionMode {
         APPLICATION, APPLICATION_BACKGROUND, WEBSOCKET_SERVER, WEBSOCKET_HTTP_SERVER,
@@ -103,13 +98,11 @@ public class ServerSettings {
     public JSONObject getLocationJSONObject() {
         JSONObject ret = new JSONObject();
 
-        JSONArray location = new JSONArray();
         double[] dLocation = getLocationDouble();
 
         try {
-            location.put(dLocation[0]);
-            location.put(dLocation[1]);
-            ret.put("LatLng", location);
+            ret.put(KEY_LATITUDE, dLocation[0]);
+            ret.put(KEY_LONGITUDE, dLocation[1]);
         } catch (JSONException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

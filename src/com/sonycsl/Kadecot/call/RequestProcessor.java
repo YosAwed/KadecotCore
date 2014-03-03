@@ -27,7 +27,6 @@ public class RequestProcessor {
     private static final String TAG = RequestProcessor.class.getSimpleName();
 
     private static final String POLLING_METHOD_NAME = "pollProperty";
-    private final RequestProcessor self = this;
 
     protected final Context mContext;
 
@@ -56,10 +55,10 @@ public class RequestProcessor {
      * @param clientId This is used to identify client in pollProperty API
      * @return
      */
-    public Response process(final String methodName, JSONArray params, UUID clientId) {
+    public Response process(final String methodName, JSONObject params, UUID clientId) {
         if (methodName.equals(POLLING_METHOD_NAME)) {
             try {
-                params.put(0, clientId);
+                params.put("clientId", clientId);
             } catch (JSONException e) {
                 Log.e(TAG, "JSONException for pollProperty.");
                 e.printStackTrace();
@@ -68,12 +67,12 @@ public class RequestProcessor {
         return process(methodName, params);
     }
 
-    public Response process(final String methodName, final JSONArray params) {
+    public Response process(final String methodName, final JSONObject params) {
         Log.v(TAG, methodName);
         Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
-                    JSONArray.class
+                    JSONObject.class
             });
 
             try {
@@ -146,17 +145,17 @@ public class RequestProcessor {
         }
     }
 
-    public Response pollProperty(JSONArray params) {
+    public Response pollProperty(JSONObject params) {
         if (params == null || params.length() <= 0) {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
         }
         try {
-            UUID clientId = (UUID) params.get(0);
-            String nickname = params.getString(1);
-            JSONObject prop = params.getJSONObject(2);
+            UUID clientId = (UUID) params.get("clientId");
+            String nickname = params.getString("nickname");
+            JSONObject prop = params.getJSONObject("property");
             DeviceProperty dp = new DeviceProperty(prop.getString("proprtyName"),
                     prop.getJSONObject("propertyValue"));
-            int pollingIntervalSec = params.getInt(3);
+            int pollingIntervalSec = params.getInt("pollingIntervalSec");
             return mDeviceManager.pollProperty(clientId, nickname, dp, pollingIntervalSec,
                     mPermissionLevel);
         } catch (JSONException e) {
@@ -234,130 +233,25 @@ public class RequestProcessor {
         return new Response(logList);
     }
 
-    public Response refreshList(JSONArray params) {
-        mDeviceManager.refreshList(mPermissionLevel);
-        return new Response(null);
+    public Response refreshDeviceList(JSONObject params) {
+        mDeviceManager.refreshDeviceList(mPermissionLevel);
+        return new Response(new JSONObject());
     }
 
-    public Response list(JSONArray params) {
-        return new Response(mDeviceManager.list(mPermissionLevel));
+    public Response getDeviceList(JSONObject params) {
+        return new Response(mDeviceManager.getDeviceList(mPermissionLevel));
     }
 
-    public Response changeNickname(JSONArray params) {
+    public Response changeNickname(JSONObject params) {
         return mDeviceManager.changeNickname(params);
     }
 
-    public Response deleteDevice(JSONArray params) {
+    public Response deleteDevice(JSONObject params) {
         return mDeviceManager.deleteDeviceData(params);
     }
 
-    public Response deleteInactiveDevices(JSONArray params) {
+    public Response deleteInactiveDevices(JSONObject params) {
         return mDeviceManager.deleteInactiveDevices(mPermissionLevel);
-    }
-
-    // server settings
-    public Response fullInitialize(JSONArray params) {
-        mServerSettings.fullInitialize();
-        return new Response(null);
-    }
-
-    public Response setServerLocation(JSONArray params) {
-        if (params == null || params.length() < 2) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            String lat = params.getString(0);
-            String lng = params.getString(1);
-            mServerSettings.setLocation(lat, lng);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return new Response(null);
-    }
-
-    public Response enableServerNetwork(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            if (enabled) {
-                return mServerSettings.registerNetwork();
-            } else {
-                return mServerSettings.unregisterNetwork();
-            }
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-
-    }
-
-    public Response enableWebSocketServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableWebSocketServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enableJSONPServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableJSONPServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enableSnapServer(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enableSnapServer(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
-    }
-
-    public Response enablePersistentMode(JSONArray params) {
-        if (params == null || params.length() < 1) {
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
-        }
-        try {
-            boolean enabled = params.getBoolean(0);
-            mServerSettings.enablePersistentMode(enabled);
-            return new Response(true);
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE, e);
-        }
     }
 
 }

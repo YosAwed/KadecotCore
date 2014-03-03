@@ -1,6 +1,14 @@
 
 package com.sonycsl.Kadecot.server;
 
+import android.content.Context;
+
+import com.sonycsl.Kadecot.call.RequestProcessor;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,16 +31,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-
-import com.sonycsl.Kadecot.call.RequestProcessor;
-import com.sonycsl.Kadecot.call.Response;
-import com.sonycsl.Kadecot.device.DeviceManager;
 
 // JSONPで返せるように
 public class KadecotJSONPServer {
@@ -98,7 +96,11 @@ public class KadecotJSONPServer {
                 if (method != null && params != null) {
                     for (String m : ACCESSIBLE_METHODS) {
                         if (m.equals(method)) {
-                            response = (new RequestProcessor(mContext, 1)).process(method, params);
+                            // TODO: fix Dummy json
+                            // response = (new RequestProcessor(mContext,
+                            // 1)).process(method, params);
+                            response = (new RequestProcessor(mContext, 1)).process(method,
+                                    new JSONObject());
                         }
                     }
                 }

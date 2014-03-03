@@ -1,15 +1,15 @@
 
 package com.sonycsl.Kadecot.call;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.json.JSONArray;
-
 import android.content.Context;
 import android.util.Log;
 
 import com.sonycsl.Kadecot.device.DeviceManager;
+
+import org.json.JSONArray;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class NotificationProcessor {
     @SuppressWarnings("unused")
@@ -55,7 +55,7 @@ public class NotificationProcessor {
     }
 
     public void refreshList(JSONArray params) {
-        mDeviceManager.refreshList(mPermissionLevel);
+        mDeviceManager.refreshDeviceList(mPermissionLevel);
     }
 
 }

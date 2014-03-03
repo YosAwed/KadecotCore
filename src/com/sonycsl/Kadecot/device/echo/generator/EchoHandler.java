@@ -1,7 +1,7 @@
 
 package com.sonycsl.Kadecot.device.echo.generator;
 
-import org.json.JSONObject;
+import android.content.Context;
 
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.device.DeviceDatabase;
@@ -11,7 +11,7 @@ import com.sonycsl.Kadecot.device.echo.EchoDeviceDatabase;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.echo.EchoUtils;
 
-import android.content.Context;
+import org.json.JSONObject;
 
 public class EchoHandler {
     @SuppressWarnings("unused")

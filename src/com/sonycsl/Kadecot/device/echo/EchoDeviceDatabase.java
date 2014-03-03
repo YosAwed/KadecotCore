@@ -1,29 +1,21 @@
 
 package com.sonycsl.Kadecot.device.echo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.device.DeviceData;
-import com.sonycsl.Kadecot.device.DeviceDatabase;
-import com.sonycsl.Kadecot.device.DeviceManager;
-import com.sonycsl.Kadecot.device.echo.generator.EchoDeviceGenerator;
-import com.sonycsl.Kadecot.utils.DatabaseOpenHelper;
-import com.sonycsl.echo.EchoUtils;
-import com.sonycsl.echo.eoj.EchoObject;
-import com.sonycsl.echo.eoj.device.DeviceObject;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.sonycsl.Kadecot.device.DeviceData;
+import com.sonycsl.Kadecot.device.DeviceDatabase;
+import com.sonycsl.Kadecot.utils.DatabaseOpenHelper;
+import com.sonycsl.echo.eoj.EchoObject;
+import com.sonycsl.echo.eoj.device.DeviceObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EchoDeviceDatabase {
     @SuppressWarnings("unused")

@@ -490,7 +490,7 @@ kHAPI.app = {
   getKadecotIPAddr: function() {
     var netinfo = kHAPI.getNetInfo();
     if (netinfo.network === undefined) return "";
-    var ip = netinfo.network.ip;
+    var ip = netinfo.network.ipv4;
     if (ip === undefined || ip === null) return "";
     return ip;
   },

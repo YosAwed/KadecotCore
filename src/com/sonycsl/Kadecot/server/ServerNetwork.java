@@ -1,18 +1,6 @@
 
 package com.sonycsl.Kadecot.server;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.sonycsl.Kadecot.core.Dbg;
-import com.sonycsl.echo.EchoUtils;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,7 +9,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 public class ServerNetwork {
     @SuppressWarnings("unused")
@@ -163,7 +159,7 @@ public class ServerNetwork {
                         value.put("SSID", wInfo.getSSID());
                     }
                 }
-                value.put("ip", getIPAddress());
+                value.put("ipv4", getIPAddress());
 
                 value.put("isDeviceAccessible", (isConnectedHomeNetwork() == CONNECTED));
             }

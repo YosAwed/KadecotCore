@@ -1,131 +1,134 @@
 
 package com.sonycsl.Kadecot.call;
 
-import java.util.HashSet;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.server.ServerNetwork;
 import com.sonycsl.Kadecot.server.ServerSettings;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashSet;
+
 public class Notification {
     @SuppressWarnings("unused")
     private static final String TAG = Notification.class.getSimpleName();
-
-    private final Notification self = this;
 
     public static final String ON_DEVICE_FOUND = "onDeviceFound";
 
     public static final String ON_PROPERTY_CHANGED = "onPropertyChanged";
 
-    public static final String ON_NOTIFY_SERVER_SETTINGS = "onNotifyServerSettings";
+    public static final String ON_SERVER_STATUS_UPDATED = "onServerStatusUpdated";
 
     public static final String ON_NICKNAME_CHANGED = "onNicknameChanged";
 
     public static final String ON_DEVICE_DELETED = "onDeviceDeleted";
 
-    public static final String ON_UPDATE_LIST = "onUpdateList";
+    public static final String ON_DEVICE_LIST_UPDATED = "onDeviceListUpdated";
 
     private Notification() {
     }
 
     public static void informAllOnDeviceFound(JSONObject device, int protocolPermissionLevel) {
-        JSONArray params = new JSONArray();
-        params.put(device);
+        JSONObject params = new JSONObject();
+        JSONArray deviceArray = new JSONArray();
+        deviceArray.put(device);
+        try {
+            params.put("device", deviceArray);
+        } catch (JSONException e) {
+            // Never happens
+            e.printStackTrace();
+        }
         KadecotCall.informAll(ON_DEVICE_FOUND, params, protocolPermissionLevel);
     }
 
-    public static JSONArray getParamsOnUpdateList(Context context, int clientPermissionLevel) {
-        return DeviceManager.getInstance(context).list(clientPermissionLevel);
+    public static JSONObject getParamsOnUpdateList(Context context, int clientPermissionLevel) {
+        return DeviceManager.getInstance(context).getDeviceList(clientPermissionLevel);
     }
 
     public static void informAllOnUpdateList(Context context) {
-        JSONArray params0 = getParamsOnUpdateList(context, 0);
-        JSONArray params1 = getParamsOnUpdateList(context, 1);
+        JSONObject params0 = getParamsOnUpdateList(context, Permission.ALL);
+        JSONObject params1 = getParamsOnUpdateList(context, Permission.LIMITED);
         HashSet<KadecotCall> calls = KadecotCall.getKadecotCalls();
         for (KadecotCall kc : calls) {
-            if (kc.getPermissionLevel() == 0) {
-                kc.sendNotification(ON_UPDATE_LIST, params0);
+            if (kc.getPermissionLevel() == Permission.ALL) {
+                kc.sendNotification(ON_DEVICE_LIST_UPDATED, params0);
             } else {
-                kc.sendNotification(ON_UPDATE_LIST, params1);
+                kc.sendNotification(ON_DEVICE_LIST_UPDATED, params1);
             }
         }
     }
 
     public static void informAllInactiveDeviceList(Context context) {
-        JSONArray params0 = getParamsOnUpdateList(context, 0);
-        JSONArray params1 = getParamsOnUpdateList(context, 1);
+        JSONObject params0 = getParamsOnUpdateList(context, 0);
+        JSONObject params1 = getParamsOnUpdateList(context, 1);
+        try {
+            params0.put("active", false);
+            params1.put("active", false);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         HashSet<KadecotCall> calls = KadecotCall.getKadecotCalls();
-        for (int i = 0; i < params0.length(); i++) {
-            try {
-                JSONObject obj = params0.getJSONObject(i);
-                obj.put("active", false);
-                params0.put(i, obj);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        for (int i = 0; i < params1.length(); i++) {
-            try {
-                JSONObject obj = params1.getJSONObject(i);
-                obj.put("active", false);
-                params1.put(i, obj);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
         for (KadecotCall kc : calls) {
-            if (kc.getPermissionLevel() == 0) {
-                kc.sendNotification(ON_UPDATE_LIST, params0);
+            if (kc.getPermissionLevel() == Permission.ALL) {
+                kc.sendNotification(ON_DEVICE_LIST_UPDATED, params0);
             } else {
-                kc.sendNotification(ON_UPDATE_LIST, params1);
+                kc.sendNotification(ON_DEVICE_LIST_UPDATED, params1);
             }
         }
     }
 
-    public static void informAllOnPropertyChanged(JSONObject obj, int protocolPermissionLevel) {
-        JSONArray params = new JSONArray();
-        params.put(obj);
+    public static void informAllOnPropertyChanged(JSONObject params, int protocolPermissionLevel) {
         KadecotCall.informAll(ON_PROPERTY_CHANGED, params, protocolPermissionLevel);
     }
 
-    public static JSONArray getParamsOnNotifyServerSettings(Context context) {
-        JSONArray ret = new JSONArray();
-        ret.put(ServerNetwork.getInstance(context).getNetworkInfoAsJSON());
-        ServerSettings settings = ServerSettings.getInstance(context);
-        ret.put(settings.getLocationJSONObject());
-        ret.put(settings.isEnabledPersistentMode());
-        ret.put(settings.isEnabledJSONPServer());
-        ret.put(settings.isEnabledWebSocketServer());
-        ret.put(settings.isEnabledSnapServer());
+    public static JSONObject getParamsOnNotifyServerSettings(Context context) {
+        JSONObject ret = new JSONObject();
+        try {
+            ret.put("networkInfo", ServerNetwork.getInstance(context).getNetworkInfoAsJSON());
+            ServerSettings settings = ServerSettings.getInstance(context);
+            ret.put("location", settings.getLocationJSONObject());
+            JSONObject serverMode = new JSONObject();
+            serverMode.put("persistent", settings.isEnabledPersistentMode());
+            serverMode.put("jsonpServer", settings.isEnabledJSONPServer());
+            serverMode.put("websocketServer", settings.isEnabledWebSocketServer());
+            serverMode.put("snapServer", settings.isEnabledSnapServer());
+            ret.put("serverMode", serverMode);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return ret;
     }
 
     public static void informAllOnNotifyServerSettings(Context context) {
-        JSONArray params = getParamsOnNotifyServerSettings(context);
-        KadecotCall.informAll(ON_NOTIFY_SERVER_SETTINGS, params);
+        JSONObject params = getParamsOnNotifyServerSettings(context);
+        KadecotCall.informAll(ON_SERVER_STATUS_UPDATED, params);
     }
 
-    public static void informAllOnNicknameChanged(String oldNickname, String newNickname,
+    public static void informAllOnNicknameChanged(String currentName, String newName,
             int protocolPermissionLevel) {
-        JSONArray params = new JSONArray();
-        params.put(oldNickname);
-        params.put(newNickname);
+        JSONObject notificationParam = new JSONObject();
+        try {
+            notificationParam.put("oldName", currentName);
+            notificationParam.put("currentName", newName);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        KadecotCall.informAll(ON_NICKNAME_CHANGED, params, protocolPermissionLevel);
+        KadecotCall.informAll(ON_NICKNAME_CHANGED, notificationParam, protocolPermissionLevel);
     }
 
     public static void informAllOnDeviceDeleted(String nickname, int protocolPermissionLevel) {
-        JSONArray params = new JSONArray();
-        params.put(nickname);
-
-        KadecotCall.informAll(ON_DEVICE_DELETED, params, protocolPermissionLevel);
+        JSONObject notificationParam = new JSONObject();
+        try {
+            notificationParam.put("targetName", nickname);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        KadecotCall.informAll(ON_DEVICE_DELETED, notificationParam, protocolPermissionLevel);
 
     }
 

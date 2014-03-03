@@ -1,19 +1,17 @@
 
 package com.sonycsl.Kadecot.device;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import com.sonycsl.Kadecot.core.R;
-import com.sonycsl.Kadecot.server.ServerManager;
-import com.sonycsl.Kadecot.server.ServerNetwork;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
+import com.sonycsl.Kadecot.core.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class DeviceNotification {
     @SuppressWarnings("unused")
