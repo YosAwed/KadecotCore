@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.sonycsl.Kadecot.device.DeviceManager;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,11 +30,11 @@ public class NotificationProcessor {
         mDeviceManager = DeviceManager.getInstance(mContext);
     }
 
-    public void process(final String methodName, final JSONArray params) {
+    public void process(final String methodName, final JSONObject params) {
         Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
-                    JSONArray.class
+                    JSONObject.class
             });
             method.invoke(this, new Object[] {
                     params
@@ -54,7 +54,7 @@ public class NotificationProcessor {
         }
     }
 
-    public void refreshList(JSONArray params) {
+    public void refreshList(JSONObject params) {
         mDeviceManager.refreshDeviceList(mPermissionLevel);
     }
 

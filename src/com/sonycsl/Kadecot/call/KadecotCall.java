@@ -150,7 +150,7 @@ public abstract class KadecotCall {
             // notification
             try {
                 String method = obj.getString("method");
-                JSONArray params = obj.getJSONArray("params");
+                JSONObject params = obj.getJSONObject("params");
 
                 receiveNotification(method, params);
             } catch (Exception e) {
@@ -194,7 +194,7 @@ public abstract class KadecotCall {
         });
     }
 
-    public void receiveNotification(final String method, final JSONArray params) {
+    public void receiveNotification(final String method, final JSONObject params) {
 
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
