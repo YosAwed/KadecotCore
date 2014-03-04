@@ -876,7 +876,10 @@ var onClickChangeNickname = function(from, to) {
 };
 
 var onClickRemoveDevice = function(nickname) {
-  kHAPI.deleteDevice(nickname);
+  var args = {
+    targetName:nickname,
+  }
+  kHAPI.deleteDevice(args);
   kHAPI.reqDevListHandlers_onUpdateList();
 };
 
