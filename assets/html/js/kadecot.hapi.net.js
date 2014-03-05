@@ -234,12 +234,10 @@ kHAPI.net.ServerPredefinedReplies = {
             kHAPI.dev.devices);
   },
   onPropertyChanged: function(d) {
-    for (var i = 0; i < d.params.length; i++) {
-      if (typeof kHAPI.app.running.onPropertyChanged === 'function') {
-        kHAPI.app.running.onPropertyChanged.call(kHAPI.app, d.params[i]);
-      }
-      kHAPI.onPropertyChanged(d.params[i]);
+    if (typeof kHAPI.app.running.onPropertyChanged === 'function') {
+      kHAPI.app.running.onPropertyChanged.call(kHAPI.app, d.params);
     }
+    kHAPI.onPropertyChanged(d.params);
   }
   // this is call by WS.close, or server wifi disconnection(WebView).
   ,
