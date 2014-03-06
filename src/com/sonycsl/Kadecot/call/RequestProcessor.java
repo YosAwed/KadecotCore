@@ -45,8 +45,6 @@ public class RequestProcessor {
     }
 
     public Response process(final String methodName, final JSONObject params) {
-        Log.v(TAG, methodName);
-        Log.v(TAG, params.toString());
         try {
             Method method = getClass().getMethod(methodName, new Class[] {
                     JSONObject.class
