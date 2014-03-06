@@ -253,11 +253,22 @@ public class KadecotCoreActivity extends FragmentActivity {
 	
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
-	    if(e.getKeyCode() == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
-	    	callJsOnKadecotMyPage("kHAPI.onBackBtn()") ;
-	    	return true ;
-	    }
-	    return super.dispatchKeyEvent(e);
+		Log.d(TAG,e.getKeyCode()+"");
+		final String COLOR_BUTTON_FUNCTION = "onColorKeyDown";
+		if (e.getKeyCode() == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
+			callJsOnKadecotMyPage("kHAPI.onBackBtn()");
+			return true;
+		} else if(e.getAction() == KeyEvent.ACTION_DOWN &&
+				(e.getKeyCode() == KeyEvent.KEYCODE_PROG_BLUE  || 
+				 e.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN || 
+				 e.getKeyCode() == KeyEvent.KEYCODE_PROG_RED   || 
+				 e.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW)){
+			// catch here because webkit has following bug.
+			// http://stackoverflow.com/questions/8942678/keyboardevent-in-chrome-keycode-is-0
+			callJsOnKadecotMyPage("if("+COLOR_BUTTON_FUNCTION+") " + COLOR_BUTTON_FUNCTION + "(" + e.getKeyCode() + ")");
+			return true;
+		}
+		return super.dispatchKeyEvent(e);
 	}
 	
 	protected void startKadecot() {
