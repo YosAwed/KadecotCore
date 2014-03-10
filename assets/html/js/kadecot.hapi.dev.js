@@ -110,7 +110,7 @@ kHAPI.dev = {
       "0x80": [0x31] // 0x30:Power on, 0x31: off
       ,
       "0xb0": [0x42] // 0x41:Auto, 0x42:Cool, 0x43:Heat, 0x44:Dry, 0x45:Wind,
-                      // 0x46:Others
+      // 0x46:Others
       ,
       "0xb3": [21]
     // 21 degree
@@ -150,9 +150,9 @@ kHAPI.dev = {
       "0xc6": [0, 0, 0, 205] // MeasuredInstantaneoUsAmountOfElectricEnergy
       ,
       "0xc2": [3] // UnitForCumulativeAmountsOfElectricEnergy (0x00: 1kWh 0x01:
-                  // 0.1kWh 0x02: 0.01kWh 0x03: 0.001kWh�iInitial value�j 0x04:
-                  // 0.0001kWh 0x0A: 10kWh 0x0B: 100kWh 0x0C: 1000kWh 0x0D:
-                  // 10000kWh)
+      // 0.1kWh 0x02: 0.01kWh 0x03: 0.001kWh�iInitial value�j 0x04:
+      // 0.0001kWh 0x0A: 10kWh 0x0B: 100kWh 0x0C: 1000kWh 0x0D:
+      // 10000kWh)
       ,
       "0xd0": [0, 8, 159, 212, 0, 16, 0, 0] // ch1
       ,

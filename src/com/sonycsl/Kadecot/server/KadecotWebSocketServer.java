@@ -96,8 +96,8 @@ public class KadecotWebSocketServer {
 
             // origin
             String origin = handshake.getFieldValue("origin");
-            KadecotCoreApplication app = (KadecotCoreApplication)mContext.getApplicationContext();
-            if(app.getModifiableObject().acceptWebSocketOrigin(origin)) {
+            KadecotCoreApplication app = (KadecotCoreApplication) mContext.getApplicationContext();
+            if (app.getModifiableObject().acceptWebSocketOrigin(origin)) {
                 KadecotCall kc = new WebSocketCall(mContext, conn);
                 mKadecotCalls.put(conn, kc);
                 kc.start();

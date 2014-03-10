@@ -128,8 +128,7 @@ $(document)
                                       prop_change.property.value);
                             };
 
-                            kHAPI.onServerStatusUpdated = function(
-                                    network_info) {
+                            kHAPI.onServerStatusUpdated = function(network_info) {
                               // toast("Network settings was changed.");
                               if (kHAPI.isOnAndroid) {
                                 onServerStatusUpdatedOnAndroid(network_info);
@@ -300,7 +299,9 @@ var onClickRegisterButton = function(isFirstConfirm) {
     areYouSure("Join " + SSID + "?",
             "This allows access to home appliances and sensors on " + SSID
                     + ".", "OK", "Cancel", function() {
-              kHAPI.enableServerNetwork({enable:true});
+              kHAPI.enableServerNetwork({
+                enable: true
+              });
               if (!isFirstConfirm) {
                 $("#register_android_button").val("Withdraw from " + SSID)
                         .button("refresh");
@@ -309,7 +310,9 @@ var onClickRegisterButton = function(isFirstConfirm) {
             });
 
   } else {
-    kHAPI.enableServerNetwork({enable:false});
+    kHAPI.enableServerNetwork({
+      enable: false
+    });
     if (!isFirstConfirm) {
       $("#register_android_button").val("Join current network").button(
               "refresh");
@@ -347,30 +350,46 @@ var onSettingsPageAndroidOpen = function() {
   }
   initializeCheckBox($("#enable_websocket_checkbox"), netInfo.websocket,
           function() {
-            kHAPI.enableWebSocketServer({enable:true});
+            kHAPI.enableWebSocketServer({
+              enable: true
+            });
           }, function() {
-            kHAPI.enableWebSocketServer({enable:false});
+            kHAPI.enableWebSocketServer({
+              enable: false
+            });
           });
 
   initializeCheckBox($("#enable_persistent_android_checkbox"),
           netInfo.persistence, function() {
-            kHAPI.enablePersistentMode({enable:true});
+            kHAPI.enablePersistentMode({
+              enable: true
+            });
           }, function() {
-            kHAPI.enablePersistentMode({enable:false});
+            kHAPI.enablePersistentMode({
+              enable: false
+            });
           });
 
   initializeCheckBox($("#enable_jsonp_android_checkbox"), netInfo.jsonp,
           function() {
-            kHAPI.enableJSONPServer({enable:true});
+            kHAPI.enableJSONPServer({
+              enable: true
+            });
           }, function() {
-            kHAPI.enableJSONPServer({enable:false});
+            kHAPI.enableJSONPServer({
+              enable: false
+            });
           });
 
   initializeCheckBox($("#enable_snap_android_checkbox"), netInfo.snap,
           function() {
-            kHAPI.enableSnapServer({enable:true});
+            kHAPI.enableSnapServer({
+              enable: true
+            });
           }, function() {
-            kHAPI.enableSnapServer({enable:false});
+            kHAPI.enableSnapServer({
+              enable: false
+            });
           });
 };
 
@@ -379,23 +398,35 @@ var onSettingsPageBrowserOpen = function() {
   var netInfo = kHAPI.getNetInfo();
   initializeCheckBox($("#enable_persistent_browser_checkbox"),
           netInfo.persistence, function() {
-            kHAPI.enablePersistentMode({enable:true});
+            kHAPI.enablePersistentMode({
+              enable: true
+            });
           }, function() {
-            kHAPI.enablePersistentMode({enable:false});
+            kHAPI.enablePersistentMode({
+              enable: false
+            });
           });
 
   initializeCheckBox($("#enable_snap_browser_checkbox"), netInfo.snap,
           function() {
-            kHAPI.enableSnapServer({enable:true});
+            kHAPI.enableSnapServer({
+              enable: true
+            });
           }, function() {
-            kHAPI.enableSnapServer({enable:false});
+            kHAPI.enableSnapServer({
+              enable: false
+            });
           });
 
   initializeCheckBox($("#enable_jsonp_browser_checkbox"), netInfo.jsonp,
           function() {
-            kHAPI.enableJSONPServer({enable:true});
+            kHAPI.enableJSONPServer({
+              enable: true
+            });
           }, function() {
-            kHAPI.enableJSONPServer({enable:false});
+            kHAPI.enableJSONPServer({
+              enable: false
+            });
           });
 };
 
@@ -868,8 +899,8 @@ var onAppSettingPageOpen = function(index) {
 
 var onClickChangeNickname = function(from, to) {
   var args = {
-    currentName:from,
-    newName:to
+    currentName: from,
+    newName: to
   }
   kHAPI.changeNickname(args);
   $.mobile.changePage("#devlist_page");
@@ -877,7 +908,7 @@ var onClickChangeNickname = function(from, to) {
 
 var onClickRemoveDevice = function(nickname) {
   var args = {
-    targetName:nickname,
+    targetName: nickname,
   }
   kHAPI.deleteDevice(args);
   kHAPI.reqDevListHandlers_onUpdateList();
@@ -1151,7 +1182,7 @@ var update_map = function(nickname) {
     } else if (dtNum == 0x0012) { // Humidity
       return update_humidity_sensor();
     } else if ((0 < dtNum && dtNum <= 0x000b) // Gas sensor to Air polution
-                                              // sensor
+            // sensor
             || (0x000e <= dtNum && dtNum <= 0x0010) // Sound, Posting, Weight
             || (0x0013 <= dtNum && dtNum <= 0x001a) // Rain to Smoke
             || (0x001c <= dtNum && dtNum <= 0x001d) // Gas, VOC
@@ -1165,7 +1196,7 @@ var update_map = function(nickname) {
     } else if (dtNum == 0x000d) { // Illuminance sensor
       return update_illuminance_sensor();
     } else if (dtNum == 0x0262 || dtNum == 0x0260) { // Curtain or
-                                                      // ElectricallyOperatedShade
+      // ElectricallyOperatedShade
       return update_curtain();
     } else if (dtNum == 0x0290) { // Light
       return update_light();

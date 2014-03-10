@@ -10,8 +10,7 @@ kHAPI.net = {
   }
   // Internal object to achieve invoke-oninvoke match
   ,
-  callServerFunc_invokeMatch: {}
-  ,
+  callServerFunc_invokeMatch: {},
   id: -1
   // Home panel -> Server
   ,
@@ -24,11 +23,11 @@ kHAPI.net = {
     }
 
     // change to JSON String.
-    if (argObject === undefined)
-      argObject = {};
-//    arg = JSON.stringify(argObject);
+    if (argObject === undefined) argObject = {};
+    // arg = JSON.stringify(argObject);
 
-    var r = this.ServerCall[method].call(this.ServerCall, argObject, callbackfunc);
+    var r = this.ServerCall[method].call(this.ServerCall, argObject,
+            callbackfunc);
     if (r === undefined) return;
 
     var id = this.genId();
@@ -91,7 +90,8 @@ kHAPI.net = {
       if (typeof kHAPI[d.method] === 'function') {
         kHAPI[d.method](d.params);
       } else {
-        console.log('Undefined method call from the server:' + d.method + ', ' + d.params);
+        console.log('Undefined method call from the server:' + d.method + ', '
+                + d.params);
       }
     }
   }
@@ -100,14 +100,15 @@ kHAPI.net = {
   // Internal variables / utility funcs
   // ///////////////////////////////
 
-  , genId : function(){
+  ,
+  genId: function() {
     if (this.id >= Number.MAX_VALUE - 1) {
       this.id = -1;
     }
 
     return ++this.id;
   },
-  
+
   info: {
     isConnected: false
   }
@@ -210,12 +211,14 @@ kHAPI.net.ServerPredefinedReplies = {
   },
   onDeviceFound: function(args) {
     var newDevices = args.params.device;
-    
+
     for (var devi = 0; devi < newDevices.length; devi++) {
       if (kHAPI.dev.addDevice(newDevices[devi])) {// Truly new device
-        kHAPI.devListHandlers.onDeviceFound(newDevices[devi], kHAPI.dev.devices);
+        kHAPI.devListHandlers
+                .onDeviceFound(newDevices[devi], kHAPI.dev.devices);
       } else {
-        kHAPI.devListHandlers.onDeviceActivated(newDevices[devi], kHAPI.dev.devices);
+        kHAPI.devListHandlers.onDeviceActivated(newDevices[devi],
+                kHAPI.dev.devices);
       }
     }
   },
@@ -225,7 +228,8 @@ kHAPI.net.ServerPredefinedReplies = {
   },
   onDeviceDeleted: function(args) {
     kHAPI.dev.removeDevice(args.params.targetName);
-    kHAPI.devListHandlers.onDeviceDeleted(args.params.targetName, kHAPI.dev.devices);
+    kHAPI.devListHandlers.onDeviceDeleted(args.params.targetName,
+            kHAPI.dev.devices);
   },
   onNicknameChanged: function(args) {
     var oldnickname = args.params.oldName, newnickname = args.params.currentName;

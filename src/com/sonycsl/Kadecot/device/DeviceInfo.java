@@ -1,7 +1,6 @@
 
 package com.sonycsl.Kadecot.device;
 
-
 /**
  * Deviceの情報・状態 主にDatabaseに登録されていない情報
  */

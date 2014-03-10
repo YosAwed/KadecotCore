@@ -69,11 +69,11 @@ public class DeviceManager {
     private static final String KEY_PROPERTY_VALUE = "propertyValue";
 
     private static final String KEY_PROPERTY = "property";
-    
+
     private KadecotCoreApplication mApp;
 
     private DeviceManager(Context context) {
-        mApp = (KadecotCoreApplication)context.getApplicationContext();
+        mApp = (KadecotCoreApplication) context.getApplicationContext();
         mContext = mApp;
         mDeviceProtocols = new HashMap<String, DeviceProtocol>();
         registerDeviceProtocol(EchoManager.getInstance(mContext));
