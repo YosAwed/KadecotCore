@@ -1,16 +1,16 @@
 
 package com.sonycsl.Kadecot.call;
 
-class Permission {
+public class Permission {
 
     /**
      * Allow to access all devices
      */
-    static final int ALL = 0;
+    public static final int ALL = 0;
 
     /**
      * Limit to access some device by protocol
      */
-    static final int LIMITED = 1;
+    public static final int LIMITED = 1;
 
 }

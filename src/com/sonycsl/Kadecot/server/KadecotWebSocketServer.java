@@ -7,6 +7,7 @@ import com.sonycsl.Kadecot.call.KadecotCall;
 import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
+import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -95,10 +96,14 @@ public class KadecotWebSocketServer {
 
             // origin
             String origin = handshake.getFieldValue("origin");
-            KadecotCall kc = new WebSocketCall(mContext, conn);
-
-            mKadecotCalls.put(conn, kc);
-            kc.start();
+            KadecotCoreApplication app = (KadecotCoreApplication)mContext.getApplicationContext();
+            if(app.getModifiableObject().acceptWebSocketOrigin(origin)) {
+                KadecotCall kc = new WebSocketCall(mContext, conn);
+                mKadecotCalls.put(conn, kc);
+                kc.start();
+            } else {
+                conn.close();
+            }
 
         }
 

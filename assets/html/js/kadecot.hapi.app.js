@@ -27,9 +27,12 @@
  * 
  */
 
-var myPageURL = (location.href.indexOf('?') != -1 ? location.href.substring(0,
-        location.href.indexOf('?')) : location.href);
-myPageURL = myPageURL.substring(0, myPageURL.lastIndexOf('/') + 1);
+if( myPageURL == undefined ){
+  myPageURL = (location.href.indexOf('?')!=-1
+  ? location.href.substring(0,location.href.indexOf('?'))
+  : location.href) ;
+  myPageURL = myPageURL.substring(0,myPageURL.lastIndexOf('/')+1) ;
+}
 
 // (unsigned) byte array to int
 function echoByteArrayToInt(b) {

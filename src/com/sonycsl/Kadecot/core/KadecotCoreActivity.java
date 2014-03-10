@@ -197,7 +197,7 @@ public class KadecotCoreActivity extends FragmentActivity {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void setupWebView(WebView webView) {
+    protected void setupWebView(WebView webView) {
         webView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
         WebSettings wsets = webView.getSettings();
         wsets.setJavaScriptEnabled(true);

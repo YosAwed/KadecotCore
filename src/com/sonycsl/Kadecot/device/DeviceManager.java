@@ -8,6 +8,7 @@ import com.sonycsl.Kadecot.call.CannotProcessRequestException;
 import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.call.Response;
+import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
 import com.sonycsl.echo.eoj.device.DeviceObject;
@@ -41,8 +42,6 @@ public class DeviceManager {
 
     private Logger mLogger;
 
-    public static final int ALL_ACCESS_CLIENT_PERMISSION_LEVEL = 0;
-
     private static final String KEY_DEVICE = "device";
 
     private static final String KEY_NICKNAME = "nickname";
@@ -70,9 +69,12 @@ public class DeviceManager {
     private static final String KEY_PROPERTY_VALUE = "propertyValue";
 
     private static final String KEY_PROPERTY = "property";
+    
+    private KadecotCoreApplication mApp;
 
     private DeviceManager(Context context) {
-        mContext = context.getApplicationContext();
+        mApp = (KadecotCoreApplication)context.getApplicationContext();
+        mContext = mApp;
         mDeviceProtocols = new HashMap<String, DeviceProtocol>();
         registerDeviceProtocol(EchoManager.getInstance(mContext));
 
@@ -480,33 +482,6 @@ public class DeviceManager {
     private void completeAccessDeviceProperty(final DeviceData data, DeviceInfo info,
             String accessType, DeviceProperty property) {
         getLogger().insertLog(data, info, accessType, property);
-        if (data.protocolName.equals(EchoManager.PROTOCOL_TYPE_ECHO)
-                && accessType.equals(Logger.ACCESS_TYPE_GET) && property.success) {
-            JSONArray propertyValue = (JSONArray) property.value;
-            try {
-                if (property.name.equals(EchoManager.toPropertyName(DeviceObject.EPC_FAULT_STATUS))
-                        && propertyValue.getInt(0) == 0x41) {
-
-                    final ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
-                    propertyList.add(new DeviceProperty(EchoManager
-                            .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION)));
-                    (new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                get(data.nickname, propertyList, ALL_ACCESS_CLIENT_PERMISSION_LEVEL);
-                            } catch (Exception e) {
-                            }
-                        }
-                    })).start();
-                } else if (property.name.equals(EchoManager
-                        .toPropertyName(DeviceObject.EPC_FAULT_DESCRIPTION))) {
-                    (new DeviceNotification(mContext)).buildEchoErrorNotification(data.nickname,
-                            propertyValue).show();
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+        mApp.getModifiableObject().onControlProperty(data, info, accessType, property);
     }
 }
