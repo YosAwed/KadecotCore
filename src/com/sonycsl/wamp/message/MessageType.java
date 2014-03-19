@@ -39,16 +39,6 @@ public class MessageType {
 
     private static final int MESSAGETYPE_IDX = 0;
 
-    private static final int REQUESTID_IDX = 1;
-
-    private static final int OPTION_IDX = 2;
-
-    private static final int TOPIC_IDX = 3;
-
-    private static final int ARGUMENTS_IDX = 4;
-
-    private static final int ARGUMENTKW_IDX = 5;
-
     public static int getMessageType(JSONArray message) {
         try {
             return message.getInt(MESSAGETYPE_IDX);

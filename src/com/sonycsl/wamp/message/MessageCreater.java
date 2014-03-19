@@ -18,6 +18,10 @@ public class MessageCreater {
         throw new NullPointerException();
     }
 
+    public static JSONArray createUnsubscribedMessage(int unsubscribeRequestId) {
+        throw new NullPointerException();
+    }
+
     public static JSONArray createPublishedMessage(int requestId, int publicationId) {
         throw new NullPointerException();
     }
