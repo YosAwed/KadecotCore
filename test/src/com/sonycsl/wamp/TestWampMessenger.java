@@ -4,8 +4,6 @@
 
 package com.sonycsl.wamp;
 
-import com.sonycsl.wamp.WampMessenger;
-
 import org.json.JSONArray;
 
 import java.util.concurrent.CountDownLatch;
@@ -19,7 +17,9 @@ public class TestWampMessenger implements WampMessenger {
 
     @Override
     public void send(JSONArray msg) {
-        mLatch.countDown();
+        if (mLatch != null) {
+            mLatch.countDown();
+        }
         mMsg = msg;
     }
 
