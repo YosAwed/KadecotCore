@@ -72,6 +72,15 @@ public class WampMessageFactory {
                 .addId(subscriptionId).build();
     }
 
+    public static WampMessage createUnsubscribe(int requestId, int subscriptionId) {
+        return new WampMessage.Builder(WampMessage.UNSUBSCRIBE).addId(requestId)
+                .addId(subscriptionId).build();
+    }
+
+    public static WampMessage createUnsubscribed(int requestId) {
+        return new WampMessage.Builder(WampMessage.UNSUBSCRIBED).addId(requestId).build();
+    }
+
     public static WampMessage createEvent(int subscriptionId, int publicationId, JSONObject details) {
         return new WampMessage.Builder(WampMessage.EVENT).addId(subscriptionId)
                 .addId(publicationId).addDict(details).build();
