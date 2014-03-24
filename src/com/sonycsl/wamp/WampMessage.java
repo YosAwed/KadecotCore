@@ -105,6 +105,15 @@ public class WampMessage {
         return mMsg;
     }
 
+    public static int extractMessageType(JSONArray msg) {
+        try {
+            return msg.getInt(0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Invalid message.");
+        }
+    }
+
     public boolean isAdvanced() {
         int messageType;
         try {
