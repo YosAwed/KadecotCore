@@ -52,7 +52,7 @@ public abstract class WampBroker extends WampRouter {
                 case WampMessage.SUBSCRIBE:
                     handleSubscribeMessage(friend, msg);
                     return true;
-                case WampMessage.UNSUBSCRIBED:
+                case WampMessage.UNSUBSCRIBE:
                     handleUnsubscribeMessage(friend, msg);
                     return true;
             }
