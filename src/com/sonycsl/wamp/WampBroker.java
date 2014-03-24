@@ -90,11 +90,13 @@ public abstract class WampBroker extends WampRouter {
         synchronized (mTopicSubscriptionMap) {
             Map<WampMessenger, Set<Integer>> subscriberSubscriptionIdsMap = mTopicSubscriptionMap
                     .get(topic);
-            for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
-                for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
-                    subscriber.send(WampMessageFactory.createEvent(subscriptionId,
-                            publicationId, createEventDetails(options, arguments, argumentKw),
-                            arguments, argumentKw).toJSONArray());
+            if (subscriberSubscriptionIdsMap != null) {
+                for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
+                    for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
+                        subscriber.send(WampMessageFactory.createEvent(subscriptionId,
+                                publicationId, createEventDetails(options, arguments, argumentKw),
+                                arguments, argumentKw).toJSONArray());
+                    }
                 }
             }
         }
