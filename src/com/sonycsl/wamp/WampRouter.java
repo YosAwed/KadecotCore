@@ -21,8 +21,8 @@ public abstract class WampRouter extends WampPeer {
     }
 
     private boolean consumeMyMessage(WampMessenger friend, JSONArray msg) {
-        int messageType = WampMessage.extractMessageType(msg);
-        switch (messageType) {
+        int messegeType = WampMessage.extractMessageType(msg);
+        switch (messegeType) {
             case WampMessage.HELLO:
                 int sessionId = ++mSessionId;
                 mSessionMap.put(friend, sessionId);
@@ -38,7 +38,9 @@ public abstract class WampRouter extends WampPeer {
 
         // If WAMP is not established, discard message
         if (mSessionMap.get(friend) == null) {
-            throw new IllegalAccessError("Illegal client access");
+            // TODO: Send Error Messege
+            friend.send(WampMessageFactory.createError(messegeType, -1, null, "wamp.error")
+                    .toJSONArray());
         }
 
         return false;
