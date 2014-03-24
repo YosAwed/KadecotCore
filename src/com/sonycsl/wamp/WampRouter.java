@@ -1,9 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import com.sonycsl.wamp.message.MessageCreater;
-import com.sonycsl.wamp.message.MessageType;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -24,17 +21,18 @@ public abstract class WampRouter extends WampPeer {
     }
 
     private boolean consumeMyMessage(WampMessenger friend, JSONArray msg) {
-        int messageType = MessageType.getMessageType(msg);
+        int messageType = WampMessage.extractMessageType(msg);
         switch (messageType) {
-            case MessageType.HELLO:
+            case WampMessage.HELLO:
                 int sessionId = ++mSessionId;
                 mSessionMap.put(friend, sessionId);
-                friend.send(MessageCreater.createWelcomeMessage(sessionId, new JSONObject()));
+                friend.send(WampMessageFactory.createWelcome(sessionId, new JSONObject())
+                        .toJSONArray());
                 return true;
-            case MessageType.GOODBYE:
+            case WampMessage.GOODBYE:
                 mSessionMap.remove(friend);
-                friend.send(MessageCreater.createGoodbyeMessage(new JSONObject(),
-                        "wamp.error"));
+                friend.send(WampMessageFactory.createGoodbye(new JSONObject(), "wamp.error")
+                        .toJSONArray());
                 return true;
         }
 

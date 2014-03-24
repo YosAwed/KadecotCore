@@ -1,9 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import com.sonycsl.wamp.message.MessageCreater;
-import com.sonycsl.wamp.message.MessageType;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,15 +44,15 @@ public abstract class WampBroker extends WampRouter {
     @Override
     protected final boolean consumeRoleMessage(WampMessenger friend, JSONArray msg) {
         try {
-            int messageType = MessageType.getMessageType(msg);
+            int messageType = WampMessage.extractMessageType(msg);
             switch (messageType) {
-                case MessageType.PUBLISH:
+                case WampMessage.PUBLISH:
                     handlePublishMessage(friend, msg);
                     return true;
-                case MessageType.SUBSCRIBE:
+                case WampMessage.SUBSCRIBE:
                     handleSubscribeMessage(friend, msg);
                     return true;
-                case MessageType.UNSUBSCRIBED:
+                case WampMessage.UNSUBSCRIBED:
                     handleUnsubscribeMessage(friend, msg);
                     return true;
             }
@@ -95,13 +92,13 @@ public abstract class WampBroker extends WampRouter {
                     .get(topic);
             for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
                 for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
-                    subscriber.send(MessageCreater.createEventMessage(subscriptionId,
+                    subscriber.send(WampMessageFactory.createEvent(subscriptionId,
                             publicationId, createEventDetails(options, arguments, argumentKw),
-                            arguments, argumentKw));
+                            arguments, argumentKw).toJSONArray());
                 }
             }
         }
-        publisher.send(MessageCreater.createPublishedMessage(requestId, publicationId));
+        publisher.send(WampMessageFactory.createPublished(requestId, publicationId).toJSONArray());
     }
 
     private void handleSubscribeMessage(WampMessenger subscriber, JSONArray message)
@@ -140,7 +137,7 @@ public abstract class WampBroker extends WampRouter {
             subscriptionIds.add(subscriptionId);
         }
 
-        friend.send(MessageCreater.createSubscribedMessage(subscriptionId));
+        friend.send(WampMessageFactory.createSubscribed(requestId, subscriptionId).toJSONArray());
     }
 
     private void handleUnsubscribeMessage(WampMessenger unsubscriber, JSONArray message)
@@ -161,18 +158,18 @@ public abstract class WampBroker extends WampRouter {
                     .values()) {
                 Set<Integer> subscriptionIds = subscriberSubscriptionIdsMap.get(unsubscriber);
                 if (subscriptionIds == null) {
-                    unsubscriber.send(MessageCreater.createErrorMessage(MessageType.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTER));
+                    unsubscriber.send(WampMessageFactory.createError(WampMessage.UNSUBSCRIBE,
+                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTER).toJSONArray());
                     return;
                 }
 
                 if (!subscriptionIds.remove(Integer.valueOf(subscriptionId))) {
-                    unsubscriber.send(MessageCreater.createErrorMessage(MessageType.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTION));
+                    unsubscriber.send(WampMessageFactory.createError(WampMessage.UNSUBSCRIBE,
+                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTION).toJSONArray());
                     return;
                 }
 
-                unsubscriber.send(MessageCreater.createUnsubscribedMessage(requestId));
+                unsubscriber.send(WampMessageFactory.createUnsubscribed(requestId).toJSONArray());
             }
         }
     }
