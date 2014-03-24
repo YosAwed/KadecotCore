@@ -17,17 +17,17 @@ public class TestWampMessenger implements WampMessenger {
 
     @Override
     public void send(JSONArray msg) {
+        mMsg = msg;
         if (mLatch != null) {
             mLatch.countDown();
         }
-        mMsg = msg;
     }
 
     public void setCountDownLatch(CountDownLatch latch) {
         mLatch = latch;
     }
 
-    public JSONArray getRecievedMessage() {
+    public JSONArray getReceivedMessage() {
         return mMsg;
     }
 }
