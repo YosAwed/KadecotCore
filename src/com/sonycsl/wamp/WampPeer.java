@@ -1,12 +1,14 @@
 
 package com.sonycsl.wamp;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class WampPeer {
 
     private WampPeer mNext;
 
-    private WampMessenger mNextMessenger;
+    private Map<WampPeer, WampMessenger> mAdapterList = new ConcurrentHashMap<WampPeer, WampMessenger>();
 
     public WampPeer() {
     }
@@ -15,14 +17,20 @@ public abstract class WampPeer {
         mNext = next;
     }
 
-    public WampMessenger connect(WampMessenger friend) {
-        if (mNext != null) {
-            mNextMessenger = mNext.connect(friend);
+    public void connect(WampPeer friend) {
+        if (mAdapterList.get(friend) == null) {
+            mAdapterList.put(friend, new IdentifiedWampMessenger(friend, this));
+            friend.connect(this);
         }
-        return new WampPeerAdapter(this, friend);
     }
 
-    synchronized private void onMessage(WampMessenger friend, WampMessage msg) {
+    public void broadcast(WampMessage msg) {
+        for (WampMessenger messenger : mAdapterList.values()) {
+            messenger.send(msg);
+        }
+    }
+
+    synchronized protected final void onMessage(WampMessenger friend, WampMessage msg) {
         if (msg == null) {
             throw new IllegalArgumentException("message should not be null");
         }
@@ -33,24 +41,28 @@ public abstract class WampPeer {
         }
 
         // Chain of Responsibility
-        if (mNextMessenger != null) {
-            mNextMessenger.send(msg);
+        if (mNext != null) {
+            mNext.onMessage(friend, msg);
             return;
         }
 
         throw new IllegalArgumentException("Illegal Message, message: " + msg);
     }
 
+    private Map<WampPeer, WampMessenger> getIdentifierList() {
+        return mAdapterList;
+    }
+
     protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
 
-    private static class WampPeerAdapter implements WampMessenger {
+    private static class IdentifiedWampMessenger implements WampMessenger {
 
-        private final WampMessenger mFriend;
         private final WampPeer mPeer;
+        private final WampPeer mIdentifiedPeer;
 
-        public WampPeerAdapter(WampPeer peer, WampMessenger friend) {
+        public IdentifiedWampMessenger(WampPeer peer, WampPeer identifier) {
             mPeer = peer;
-            mFriend = friend;
+            mIdentifiedPeer = identifier;
         }
 
         @Override
@@ -59,7 +71,8 @@ public abstract class WampPeer {
 
                 @Override
                 public void run() {
-                    mPeer.onMessage(mFriend, msg);
+                    WampMessenger friend = mPeer.getIdentifierList().get(mIdentifiedPeer);
+                    mPeer.onMessage(friend, msg);
                 }
 
             }).start();

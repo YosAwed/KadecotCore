@@ -18,14 +18,13 @@ public class WampRouterTestCase extends TestCase {
     }
 
     private TestWampRouter mRouter;
-    private WampTestMessenger mFriendMessenger;
-    private WampMessenger mRouterMessenger;
+    private TestWampPeer mFriendMessenger;
 
     @Override
     protected void setUp() {
         mRouter = new TestWampRouter();
-        mFriendMessenger = new WampTestMessenger();
-        mRouterMessenger = mRouter.connect(mFriendMessenger);
+        mFriendMessenger = new TestWampPeer();
+        mRouter.connect(mFriendMessenger);
     }
 
     public void testCtor() {
@@ -33,12 +32,8 @@ public class WampRouterTestCase extends TestCase {
         assertNotNull(mFriendMessenger);
     }
 
-    public void testConnect() {
-        assertNotNull(mRouterMessenger);
-    }
-
     public void testSendHello() {
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-        mRouterMessenger.send(msg);
+        mFriendMessenger.broadcast(msg);
     }
 }
