@@ -6,8 +6,6 @@ package com.sonycsl.wamp;
 
 import junit.framework.TestCase;
 
-import org.json.JSONArray;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +15,7 @@ public class WampPeerTestCase extends TestCase {
 
         private CountDownLatch mLatch;
         private WampMessenger mFriendMessenger;
-        private JSONArray mMsg;
+        private WampMessage mMsg;
         private boolean mIsConsumed = true;
 
         public TestWampPeer() {
@@ -29,7 +27,7 @@ public class WampPeerTestCase extends TestCase {
         }
 
         @Override
-        protected boolean consumeMessage(WampMessenger friend, JSONArray msg) {
+        protected boolean consumeMessage(WampMessenger friend, WampMessage msg) {
             if (!mIsConsumed) {
                 return false;
             }
@@ -53,7 +51,7 @@ public class WampPeerTestCase extends TestCase {
             return mFriendMessenger;
         }
 
-        public JSONArray getMessage() {
+        public WampMessage getMessage() {
             return mMsg;
         }
 
@@ -62,13 +60,13 @@ public class WampPeerTestCase extends TestCase {
     private TestWampPeer mPeer;
     private TestWampPeer mNext;
     private WampMessenger mPeerMessenger;
-    private TestWampMessenger mFriendMessenger;
+    private WampTestMessenger mFriendMessenger;
 
     @Override
     protected void setUp() throws Exception {
         mNext = new TestWampPeer();
         mPeer = new TestWampPeer(mNext);
-        mFriendMessenger = new TestWampMessenger();
+        mFriendMessenger = new WampTestMessenger();
         mPeerMessenger = mPeer.connect(mFriendMessenger);
     }
 
@@ -85,7 +83,7 @@ public class WampPeerTestCase extends TestCase {
     public void testSend() {
         final CountDownLatch peerLatch = new CountDownLatch(1);
         final CountDownLatch friendLatch = new CountDownLatch(1);
-        final JSONArray msg = new JSONArray();
+        final WampMessage msg = new WampTestMessage();
 
         mPeer.setCountDownLatch(peerLatch);
         mFriendMessenger.setCountDownLatch(friendLatch);
@@ -106,14 +104,14 @@ public class WampPeerTestCase extends TestCase {
             fail();
         }
 
-        assertEquals(msg, mFriendMessenger.getReceivedMessage());
+        assertEquals(msg, mFriendMessenger.getRecievedMessage());
     }
 
     public void testChainOfResponsibility() {
         final CountDownLatch peerLatch = new CountDownLatch(1);
         final CountDownLatch nextLatch = new CountDownLatch(1);
         final CountDownLatch friendLatch = new CountDownLatch(1);
-        final JSONArray msg = new JSONArray();
+        final WampMessage msg = new WampTestMessage();
 
         mPeer.setConsumed(false);
         mPeer.setCountDownLatch(peerLatch);
@@ -142,6 +140,6 @@ public class WampPeerTestCase extends TestCase {
             fail();
         }
 
-        assertEquals(msg, mFriendMessenger.getReceivedMessage());
+        assertEquals(msg, mFriendMessenger.getRecievedMessage());
     }
 }

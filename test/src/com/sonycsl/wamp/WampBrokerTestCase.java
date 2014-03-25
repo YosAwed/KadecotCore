@@ -34,9 +34,9 @@ public class WampBrokerTestCase extends TestCase {
     }
 
     private TestWampBroker mBroker;
-    private TestWampMessenger mFriendMessenger1;
-    private TestWampMessenger mFriendMessenger2;
-    private TestWampMessenger mFriendMessenger3;
+    private WampTestMessenger mFriendMessenger1;
+    private WampTestMessenger mFriendMessenger2;
+    private WampTestMessenger mFriendMessenger3;
     private WampMessenger mBrokerMessenger1;
     private WampMessenger mBrokerMessenger2;
     private WampMessenger mBrokerMessenger3;
@@ -46,9 +46,9 @@ public class WampBrokerTestCase extends TestCase {
     @Override
     protected void setUp() {
         mBroker = new TestWampBroker();
-        mFriendMessenger1 = new TestWampMessenger();
-        mFriendMessenger2 = new TestWampMessenger();
-        mFriendMessenger3 = new TestWampMessenger();
+        mFriendMessenger1 = new WampTestMessenger();
+        mFriendMessenger2 = new WampTestMessenger();
+        mFriendMessenger3 = new WampTestMessenger();
         mBrokerMessenger1 = mBroker.connect(mFriendMessenger1);
         mBrokerMessenger2 = mBroker.connect(mFriendMessenger2);
         mBrokerMessenger3 = mBroker.connect(mFriendMessenger3);
@@ -67,11 +67,11 @@ public class WampBrokerTestCase extends TestCase {
         assertNotNull(mBrokerMessenger3);
     }
 
-    private void sendHello(TestWampMessenger messanger, WampMessenger brokerMessenger) {
+    private void sendHello(WampTestMessenger messanger, WampMessenger brokerMessenger) {
         CountDownLatch helloLatch = new CountDownLatch(1);
         messanger.setCountDownLatch(helloLatch);
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-        brokerMessenger.send(msg.toJSONArray());
+        brokerMessenger.send(msg);
 
         try {
             assertTrue(helloLatch.await(1, TimeUnit.SECONDS));
@@ -79,21 +79,18 @@ public class WampBrokerTestCase extends TestCase {
             fail();
         }
 
-        JSONArray received = messanger.getReceivedMessage();
-        assertEquals(WampMessage.WELCOME, WampMessage.extractMessageType(received));
+        assertTrue(messanger.getRecievedMessage().isWelcomeMessage());
     }
 
     public void testSendSubscribeWithoutHello() {
         sendSubscribe(mFriendMessenger1, mBrokerMessenger1, "some_topic");
-        assertEquals(WampMessage.ERROR,
-                WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
+        assertTrue(mFriendMessenger1.getRecievedMessage().isErrorMessage());
     }
 
     public void testSendSubscribe() {
         sendHello(mFriendMessenger1, mBrokerMessenger1);
         sendSubscribe(mFriendMessenger1, mBrokerMessenger1, "some_topic");
-        assertEquals(WampMessage.SUBSCRIBED,
-                WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
+        assertTrue(mFriendMessenger1.getRecievedMessage().isSubscribedMessage());
     }
 
     public void testSendSubscribeWithTwoClient() {
@@ -101,18 +98,16 @@ public class WampBrokerTestCase extends TestCase {
         sendHello(mFriendMessenger2, mBrokerMessenger2);
         sendSubscribe(mFriendMessenger1, mBrokerMessenger1, "some_topic");
         sendSubscribe(mFriendMessenger2, mBrokerMessenger2, "some_topic");
-        assertEquals(WampMessage.SUBSCRIBED,
-                WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
-        assertEquals(WampMessage.SUBSCRIBED,
-                WampMessage.extractMessageType(mFriendMessenger2.getReceivedMessage()));
+        assertTrue(mFriendMessenger1.getRecievedMessage().isSubscribedMessage());
+        assertTrue(mFriendMessenger2.getRecievedMessage().isSubscribedMessage());
     }
 
-    private void sendSubscribe(TestWampMessenger testMessenger, WampMessenger brokerMessenger,
+    private void sendSubscribe(WampTestMessenger testMessenger, WampMessenger brokerMessenger,
             String topic) {
         CountDownLatch subscribeLatch = new CountDownLatch(1);
         testMessenger.setCountDownLatch(subscribeLatch);
         WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), topic);
-        brokerMessenger.send(msg.toJSONArray());
+        brokerMessenger.send(msg);
 
         try {
             assertTrue(subscribeLatch.await(1, TimeUnit.SECONDS));
@@ -124,7 +119,7 @@ public class WampBrokerTestCase extends TestCase {
     public void testSendPublishWithoutHello() {
         try {
             sendPublish(mFriendMessenger1, mBrokerMessenger1, "some_topic");
-            assertNotNull(mFriendMessenger1.getReceivedMessage());
+            assertNotNull(mFriendMessenger1.getRecievedMessage());
         } catch (IllegalAccessError e) {
             fail();
         }
@@ -133,8 +128,7 @@ public class WampBrokerTestCase extends TestCase {
     public void testSendPublish() {
         testSendSubscribe();
         sendPublish(mFriendMessenger1, "some_topic");
-        assertEquals(WampMessage.EVENT,
-                WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
+        assertTrue(mFriendMessenger1.getRecievedMessage().isEventMessage());
     }
 
     public void testSendPublishToUnknownTopic() {
@@ -148,23 +142,21 @@ public class WampBrokerTestCase extends TestCase {
     public void testSendPublishUnderMultiSubscribers() {
         testSendSubscribeWithTwoClient();
         sendPublish(mFriendMessenger1, mFriendMessenger2, "some_topic");
-        assertEquals(WampMessage.EVENT,
-                WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
-        assertEquals(WampMessage.EVENT,
-                WampMessage.extractMessageType(mFriendMessenger2.getReceivedMessage()));
+        assertTrue(mFriendMessenger1.getRecievedMessage().isEventMessage());
+        assertTrue(mFriendMessenger2.getRecievedMessage().isEventMessage());
     }
 
-    private void sendPublish(TestWampMessenger testMessenger, String topic) {
+    private void sendPublish(WampTestMessenger testMessenger, String topic) {
         sendPublish(testMessenger, mBrokerMessenger3, topic);
     }
 
-    private void sendPublish(TestWampMessenger testMessenger, WampMessenger brokerMessenger,
+    private void sendPublish(WampTestMessenger testMessenger, WampMessenger brokerMessenger,
             String topic) {
         CountDownLatch publishLatch = new CountDownLatch(1);
         testMessenger.setCountDownLatch(publishLatch);
         WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
                 new JSONArray(), new JSONObject());
-        brokerMessenger.send(msg.toJSONArray());
+        brokerMessenger.send(msg);
 
         try {
             assertTrue(publishLatch.await(1, TimeUnit.SECONDS));
@@ -173,7 +165,7 @@ public class WampBrokerTestCase extends TestCase {
         }
     }
 
-    private void sendPublish(TestWampMessenger testMessenger1, TestWampMessenger testMessenger2,
+    private void sendPublish(WampTestMessenger testMessenger1, WampTestMessenger testMessenger2,
             String topic) {
         CountDownLatch publishLatch1 = new CountDownLatch(1);
         testMessenger1.setCountDownLatch(publishLatch1);
@@ -182,7 +174,7 @@ public class WampBrokerTestCase extends TestCase {
 
         WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
                 new JSONArray(), new JSONObject());
-        mBrokerMessenger3.send(msg.toJSONArray());
+        mBrokerMessenger3.send(msg);
 
         try {
             assertTrue(publishLatch1.await(1, TimeUnit.SECONDS));
@@ -199,29 +191,26 @@ public class WampBrokerTestCase extends TestCase {
 
     public void testSendUnsubscribe() {
         testSendSubscribe();
-        JSONArray subscribedMessege = mFriendMessenger1.getReceivedMessage();
+        WampMessage msg = mFriendMessenger1.getRecievedMessage();
+        assertTrue(msg.isSubscribedMessage());
+        WampSubscribedMessage subscribedMessege = msg.asSubscribedMessage();
+        int subscriptionId = subscribedMessege.getSubscriptionId();
+        sendUnsubscribe(mFriendMessenger1, mBrokerMessenger1, subscriptionId);
+        assertTrue(mFriendMessenger1.getRecievedMessage().isUnsubscribedMessage());
         try {
-            int subscriptionId = subscribedMessege.getInt(SUBSCRIPTIONID_IDX);
-            sendUnsubscribe(mFriendMessenger1, mBrokerMessenger1, subscriptionId);
-            assertEquals(WampMessage.UNSUBSCRIBED,
-                    WampMessage.extractMessageType(mFriendMessenger1.getReceivedMessage()));
-            try {
-                sendPublish(mFriendMessenger1, "some_topic");
-            } catch (AssertionFailedError e) {
-            }
-
-        } catch (JSONException e) {
+            sendPublish(mFriendMessenger1, "some_topic");
             fail();
+        } catch (AssertionFailedError e) {
         }
 
     }
 
-    private void sendUnsubscribe(TestWampMessenger testMessenger, WampMessenger brokerMessenger,
+    private void sendUnsubscribe(WampTestMessenger testMessenger, WampMessenger brokerMessenger,
             int subscriptionId) {
         CountDownLatch unsubscribeLatch = new CountDownLatch(1);
         testMessenger.setCountDownLatch(unsubscribeLatch);
         WampMessage msg = WampMessageFactory.createUnsubscribe(1, subscriptionId);
-        brokerMessenger.send(msg.toJSONArray());
+        brokerMessenger.send(msg);
 
         try {
             assertTrue(unsubscribeLatch.await(1, TimeUnit.SECONDS));

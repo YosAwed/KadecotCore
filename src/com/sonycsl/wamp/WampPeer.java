@@ -1,7 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import org.json.JSONArray;
 
 public abstract class WampPeer {
 
@@ -23,7 +22,7 @@ public abstract class WampPeer {
         return new WampPeerAdapter(this, friend);
     }
 
-    synchronized private void onMessage(WampMessenger friend, JSONArray msg) {
+    synchronized private void onMessage(WampMessenger friend, WampMessage msg) {
         if (msg == null) {
             throw new IllegalArgumentException("message should not be null");
         }
@@ -42,7 +41,7 @@ public abstract class WampPeer {
         throw new IllegalArgumentException("Illegal Message, message: " + msg);
     }
 
-    protected abstract boolean consumeMessage(WampMessenger friend, JSONArray msg);
+    protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
 
     private static class WampPeerAdapter implements WampMessenger {
 
@@ -55,7 +54,7 @@ public abstract class WampPeer {
         }
 
         @Override
-        public void send(final JSONArray msg) {
+        public void send(final WampMessage msg) {
             new Thread(new Runnable() {
 
                 @Override

@@ -1,7 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -20,34 +19,33 @@ public abstract class WampRouter extends WampPeer {
         super(next);
     }
 
-    private boolean consumeMyMessage(WampMessenger friend, JSONArray msg) {
-        int messegeType = WampMessage.extractMessageType(msg);
-        switch (messegeType) {
-            case WampMessage.HELLO:
-                int sessionId = ++mSessionId;
-                mSessionMap.put(friend, sessionId);
-                friend.send(WampMessageFactory.createWelcome(sessionId, new JSONObject())
-                        .toJSONArray());
-                return true;
-            case WampMessage.GOODBYE:
-                mSessionMap.remove(friend);
-                friend.send(WampMessageFactory.createGoodbye(new JSONObject(), "wamp.error")
-                        .toJSONArray());
-                return true;
+    private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
+
+        if (msg.isHelloMessage()) {
+            int sessionId = ++mSessionId;
+            mSessionMap.put(friend, sessionId);
+            friend.send(WampMessageFactory.createWelcome(sessionId, new JSONObject()));
+            return true;
+        }
+
+        if (msg.isGoodbyeMessage()) {
+            mSessionMap.remove(friend);
+            friend.send(WampMessageFactory.createGoodbye(new JSONObject(), "wamp.error"));
+            return true;
         }
 
         // If WAMP is not established, discard message
         if (mSessionMap.get(friend) == null) {
             // TODO: Send Error Messege
-            friend.send(WampMessageFactory.createError(messegeType, -1, null, "wamp.error")
-                    .toJSONArray());
+            friend.send(WampMessageFactory
+                    .createError(msg.getMessageType(), -1, null, "wamp.error"));
         }
 
         return false;
     }
 
     @Override
-    protected final boolean consumeMessage(WampMessenger friend, JSONArray msg) {
+    protected final boolean consumeMessage(WampMessenger friend, WampMessage msg) {
         // Handle Router message
         if (consumeMyMessage(friend, msg)) {
             return true;
@@ -57,6 +55,6 @@ public abstract class WampRouter extends WampPeer {
 
     }
 
-    protected abstract boolean consumeRoleMessage(WampMessenger friend, JSONArray msg);
+    protected abstract boolean consumeRoleMessage(WampMessenger friend, WampMessage msg);
 
 }

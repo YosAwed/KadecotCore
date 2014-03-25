@@ -2,7 +2,6 @@
 package com.sonycsl.wamp;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
@@ -18,18 +17,6 @@ public abstract class WampBroker extends WampRouter {
 
     private int mSubscriptionId = 0;
 
-    private static final int REQUESTID_IDX = 1;
-
-    private static final int OPTION_IDX = 2;
-
-    private static final int SUBSCRIPTIONID_IDX = 2;
-
-    private static final int TOPIC_IDX = 3;
-
-    private static final int ARGUMENTS_IDX = 4;
-
-    private static final int ARGUMENTKW_IDX = 5;
-
     private static final String NO_SUCH_SUBSCRIPTION = "wamp.error.no_such_subscription";
 
     private static final String NO_SUCH_SUBSCRIPTER = "wamp.error.no_such_subscripter";
@@ -42,39 +29,31 @@ public abstract class WampBroker extends WampRouter {
     }
 
     @Override
-    protected final boolean consumeRoleMessage(WampMessenger friend, JSONArray msg) {
-        try {
-            int messageType = WampMessage.extractMessageType(msg);
-            switch (messageType) {
-                case WampMessage.PUBLISH:
-                    handlePublishMessage(friend, msg);
-                    return true;
-                case WampMessage.SUBSCRIBE:
-                    handleSubscribeMessage(friend, msg);
-                    return true;
-                case WampMessage.UNSUBSCRIBE:
-                    handleUnsubscribeMessage(friend, msg);
-                    return true;
-            }
-        } catch (JSONException e) {
-            throw new IllegalArgumentException("Illegal Message, message: " + msg + ", from: "
-                    + friend);
+    protected final boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
+        if (msg.isPublishMessage()) {
+            handlePublishMessage(friend, msg.asPublishMessage());
+            return true;
+        }
+
+        if (msg.isSubscribeMessage()) {
+            handleSubscribeMessage(friend, msg.asSubscribeMessage());
+            return true;
+        }
+
+        if (msg.isUnsubscribeMessage()) {
+            handleUnsubscribeMessage(friend, msg.asUnsubscribeMessage());
+            return true;
         }
 
         return false;
     }
 
-    private void handlePublishMessage(WampMessenger friend, JSONArray message) throws JSONException {
-        if (message.length() > 6) {
-            throw new IllegalArgumentException("PUBLISH message is Illegal, message: "
-                    + message);
-        }
-
-        int requestId = message.getInt(REQUESTID_IDX);
-        JSONObject options = message.getJSONObject(OPTION_IDX);
-        String topic = message.getString(TOPIC_IDX);
-        JSONArray arguments = message.optJSONArray(ARGUMENTS_IDX);
-        JSONObject argumentKw = message.optJSONObject(ARGUMENTKW_IDX);
+    private void handlePublishMessage(WampMessenger friend, WampPublishMessage message) {
+        int requestId = message.getRequestId();
+        JSONObject options = message.getOptions();
+        String topic = message.getTopic();
+        JSONArray arguments = message.getArguments();
+        JSONObject argumentKw = message.getArgumentsKw();
 
         publish(friend, requestId, options, topic, arguments, argumentKw);
     }
@@ -90,28 +69,25 @@ public abstract class WampBroker extends WampRouter {
         synchronized (mTopicSubscriptionMap) {
             Map<WampMessenger, Set<Integer>> subscriberSubscriptionIdsMap = mTopicSubscriptionMap
                     .get(topic);
+
             if (subscriberSubscriptionIdsMap != null) {
                 for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
                     for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
                         subscriber.send(WampMessageFactory.createEvent(subscriptionId,
                                 publicationId, createEventDetails(options, arguments, argumentKw),
-                                arguments, argumentKw).toJSONArray());
+                                arguments, argumentKw));
                     }
                 }
             }
         }
-        publisher.send(WampMessageFactory.createPublished(requestId, publicationId).toJSONArray());
+        publisher.send(WampMessageFactory.createPublished(requestId, publicationId));
     }
 
-    private void handleSubscribeMessage(WampMessenger subscriber, JSONArray message)
-            throws JSONException {
-        if (message.length() != 4) {
-            throw new IllegalArgumentException("SUBSCRIBE message is Illegal, message: " + message);
-        }
+    private void handleSubscribeMessage(WampMessenger subscriber, WampSubscribeMessage message) {
 
-        int requestId = message.getInt(REQUESTID_IDX);
-        JSONObject options = message.getJSONObject(OPTION_IDX);
-        String topic = message.getString(TOPIC_IDX);
+        int requestId = message.getRequestId();
+        JSONObject options = message.getOptions();
+        String topic = message.getTopic();
 
         subscribe(subscriber, requestId, options, topic);
     }
@@ -139,17 +115,13 @@ public abstract class WampBroker extends WampRouter {
             subscriptionIds.add(subscriptionId);
         }
 
-        friend.send(WampMessageFactory.createSubscribed(requestId, subscriptionId).toJSONArray());
+        friend.send(WampMessageFactory.createSubscribed(requestId, subscriptionId));
     }
 
-    private void handleUnsubscribeMessage(WampMessenger unsubscriber, JSONArray message)
-            throws JSONException {
-        if (message.length() != 3) {
-            throw new IllegalArgumentException("SUBSCRIBE message is Illegal, message: " + message);
-        }
+    private void handleUnsubscribeMessage(WampMessenger unsubscriber, WampUnsubscribeMessage message) {
 
-        int requestId = message.getInt(REQUESTID_IDX);
-        int subscriptionId = message.getInt(SUBSCRIPTIONID_IDX);
+        int requestId = message.getRequestId();
+        int subscriptionId = message.getSubscriptionId();
 
         unsubscribe(unsubscriber, requestId, subscriptionId);
     }
@@ -160,18 +132,18 @@ public abstract class WampBroker extends WampRouter {
                     .values()) {
                 Set<Integer> subscriptionIds = subscriberSubscriptionIdsMap.get(unsubscriber);
                 if (subscriptionIds == null) {
-                    unsubscriber.send(WampMessageFactory.createError(WampMessage.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTER).toJSONArray());
+                    unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
+                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTER));
                     return;
                 }
 
                 if (!subscriptionIds.remove(Integer.valueOf(subscriptionId))) {
-                    unsubscriber.send(WampMessageFactory.createError(WampMessage.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTION).toJSONArray());
+                    unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
+                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTION));
                     return;
                 }
 
-                unsubscriber.send(WampMessageFactory.createUnsubscribed(requestId).toJSONArray());
+                unsubscriber.send(WampMessageFactory.createUnsubscribed(requestId));
             }
         }
     }

@@ -1,137 +1,97 @@
-/*
- * Copyright (C) Sony Corporation. All Rights Reserved.
- */
 
 package com.sonycsl.wamp;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+public interface WampMessage {
 
-public class WampMessage {
+    public int getMessageType();
 
-    public static final int HELLO = 1;
-    public static final int WELCOME = 2;
-    public static final int ABORT = 3;
-    public static final int CHALLENGE = 4;
-    public static final int AUTHENTICATE = 5;
-    public static final int GOODBYE = 6;
-    public static final int HEATBEAT = 7;
-    public static final int ERROR = 8;
+    public boolean isHelloMessage();
 
-    public static final int PUBLISH = 16;
-    public static final int PUBLISHED = 17;
+    public boolean isWelcomeMessage();
 
-    public static final int SUBSCRIBE = 32;
-    public static final int SUBSCRIBED = 33;
-    public static final int UNSUBSCRIBE = 34;
-    public static final int UNSUBSCRIBED = 35;
-    public static final int EVENT = 36;
+    public boolean isAbortMessage();
 
-    public static final int CALL = 48;
-    public static final int CANCEL = 49;
-    public static final int RESULT = 50;
+    public boolean isChallengeMessage();
 
-    public static final int REGISTER = 64;
-    public static final int REGISTERED = 65;
-    public static final int UNREGISTER = 66;
-    public static final int UNREGISTERED = 67;
-    public static final int INVOCATION = 68;
-    public static final int INTERRUPT = 69;
-    public static final int YIELD = 70;
+    public boolean isAuthenticateMessage();
 
-    public static class Builder {
+    public boolean isGoodbyeMessage();
 
-        private final JSONArray mMsg;
+    public boolean isHeartbeatMessage();
 
-        public Builder(int messageType) {
-            mMsg = new JSONArray();
-            mMsg.put(messageType);
-        }
+    public boolean isErrorMessage();
 
-        public Builder addInteger(int integer) {
-            mMsg.put(integer);
-            return this;
-        }
+    public boolean isPublishMessage();
 
-        public Builder addString(String str) {
-            mMsg.put(str);
-            return this;
-        }
+    public boolean isPublishedMessage();
 
-        public Builder addBool(boolean bool) {
-            mMsg.put(bool);
-            return this;
-        }
+    public boolean isSubscribeMessage();
 
-        public Builder addId(int id) {
-            mMsg.put(id);
-            return this;
-        }
+    public boolean isSubscribedMessage();
 
-        public Builder addUri(String uri) {
-            mMsg.put(uri);
-            return this;
-        }
+    public boolean isUnsubscribeMessage();
 
-        public Builder addDict(JSONObject dict) {
-            mMsg.put(dict);
-            return this;
-        }
+    public boolean isUnsubscribedMessage();
 
-        public Builder addList(JSONArray list) {
-            mMsg.put(list);
-            return this;
-        }
+    public boolean isEventMessage();
 
-        public WampMessage build() {
-            return new WampMessage(mMsg);
-        }
+    public boolean isCallMessage();
 
-    }
+    public boolean isCancelMessage();
 
-    private final JSONArray mMsg;
+    public boolean isResuleMessage();
 
-    protected WampMessage(JSONArray msg) {
-        mMsg = msg;
-    }
+    public boolean isRegisterMessage();
 
-    @Override
-    public String toString() {
-        return mMsg.toString();
-    }
+    public boolean isRegisteredMessage();
 
-    public JSONArray toJSONArray() {
-        return mMsg;
-    }
+    public boolean isUnregisterMessage();
 
-    public static int extractMessageType(JSONArray msg) {
-        try {
-            return msg.getInt(0);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Invalid message.");
-        }
-    }
+    public boolean isUnregisteredMessage();
 
-    public boolean isAdvanced() {
-        int messageType;
-        try {
-            messageType = mMsg.getInt(0);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Invalid message.");
-        }
+    public boolean isInvocationMessage();
 
-        switch (messageType) {
-            case CHALLENGE:
-            case AUTHENTICATE:
-            case HEATBEAT:
-            case CANCEL:
-            case INTERRUPT:
-                return true;
-            default:
-                return false;
-        }
-    }
+    public boolean isInterruptMessage();
+
+    public boolean isYieldMessage();
+
+    public WampHelloMessage asHelloMessage();
+
+    public WampWelcomeMessage asWelcomeMessage();
+
+    public WampAbortMessage asAbortMessage();
+
+    public WampGoodbyeMessage asGoodbyeMessage();
+
+    public WampErrorMessage asErrorMessage();
+
+    public WampPublishMessage asPublishMessage();
+
+    public WampPublishedMessage asPublishedMessage();
+
+    public WampSubscribeMessage asSubscribeMessage();
+
+    public WampSubscribedMessage asSubscribedMessage();
+
+    public WampUnsubscribeMessage asUnsubscribeMessage();
+
+    public WampUnsubscribedMessage asUnsubscribedMessage();
+
+    public WampEventMessage asEventMessage();
+
+    public WampCallMessage asCallMessage();
+
+    public WampResultMessage asResultMessage();
+
+    public WampRegisterMessage asRegisterMessage();
+
+    public WampRegisteredMessage asRegisteredMessage();
+
+    public WampUnregisterMessage asUnregisterMessage();
+
+    public WampUnregisteredMessage asUnregisteredMessage();
+
+    public WampInvocationMessage asInvocationMessage();
+
+    public WampYieldMessage asYieldMessage();
 }
