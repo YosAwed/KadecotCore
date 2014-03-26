@@ -12,14 +12,13 @@ import java.util.concurrent.TimeUnit;
 public final class WampTestUtil {
 
     public static WampMessage broadcastHello(WampTest client) {
-        CountDownLatch latch = new CountDownLatch(1);
-        client.setCountDownLatch(latch);
+        client.setCountDownLatch(new CountDownLatch(1));
 
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
         client.broadcast(msg);
 
         try {
-            TestCase.assertTrue(latch.await(1, TimeUnit.SECONDS));
+            TestCase.assertTrue(client.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             TestCase.fail();
         }
@@ -79,15 +78,14 @@ public final class WampTestUtil {
     }
 
     public static WampMessage broadcastPublish(WampTest publisher, String topic) {
-        CountDownLatch latch = new CountDownLatch(1);
-        publisher.setCountDownLatch(latch);
+        publisher.setCountDownLatch(new CountDownLatch(1));
 
         WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
                 new JSONArray(), new JSONObject());
         publisher.broadcast(msg);
 
         try {
-            TestCase.assertTrue(latch.await(1, TimeUnit.SECONDS));
+            TestCase.assertTrue(publisher.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             TestCase.fail();
         }
@@ -103,8 +101,7 @@ public final class WampTestUtil {
             WampTest[] subscribers) {
 
         for (WampTest subscriber : subscribers) {
-            final CountDownLatch latch = new CountDownLatch(1);
-            subscriber.setCountDownLatch(latch);
+            subscriber.setCountDownLatch(new CountDownLatch(1));
         }
 
         TestCase.assertTrue(broadcastPublish(publisher, topic).isPublishedMessage());

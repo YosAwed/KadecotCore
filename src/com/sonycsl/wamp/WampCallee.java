@@ -72,7 +72,7 @@ abstract public class WampCallee extends WampClient {
     }
 
     @Override
-    protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
+    protected final boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
 
         if (consumeMyMessage(friend, msg)) {
             onConsumed(msg);
