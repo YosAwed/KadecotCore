@@ -13,10 +13,12 @@ public abstract class WampRouter extends WampPeer {
     private Map<WampMessenger, Integer> mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
 
     public WampRouter() {
+        mSessionMap.clear();
     }
 
     public WampRouter(WampRouter next) {
         super(next);
+        mSessionMap.clear();
     }
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {

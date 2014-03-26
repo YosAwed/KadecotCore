@@ -5,14 +5,12 @@ import com.sonycsl.wamp.mock.WampMockRouter;
 
 import junit.framework.TestCase;
 
-import org.json.JSONObject;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class WampClientTestCase extends TestCase {
 
-    private static class WampTestClient extends WampClient {
+    private static class WampTestClient extends WampClient implements WampTest {
 
         private CountDownLatch mLatch;
         private WampMessenger mFriendMessenger;
@@ -21,7 +19,7 @@ public class WampClientTestCase extends TestCase {
 
         @Override
         protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
-            return false;
+            return mIsConsumed;
         }
 
         @Override
@@ -51,69 +49,33 @@ public class WampClientTestCase extends TestCase {
         public WampMessage getMessage() {
             return mMsg;
         }
+
+        @Override
+        protected void onBroadcast(WampMessage msg) {
+        }
     }
 
     private WampTestClient mClient;
-    private WampMockRouter mFriend;
+    private WampMockRouter mRouter;
 
     @Override
     protected void setUp() {
         mClient = new WampTestClient();
-        mFriend = new WampMockRouter();
-        mClient.connect(mFriend);
+        mRouter = new WampMockRouter();
+        mClient.connect(mRouter);
     }
 
     public void testCtor() {
         assertNotNull(mClient);
-        assertNotNull(mFriend);
+        assertNotNull(mRouter);
     }
 
     public void testHello() {
-        WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-
-        mFriend.setCountDownLatch(new CountDownLatch(1));
-        mClient.setCountDownLatch(new CountDownLatch(1));
-        mClient.broadcast(msg);
-
-        try {
-            assertTrue(mFriend.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertTrue(mFriend.getMessage().isHelloMessage());
-
-        try {
-            assertTrue(mClient.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertTrue(mClient.getMessage().isWelcomeMessage());
+        WampTestUtil.broadcastHelloSuccess(mClient);
     }
 
     public void testGoodbye() {
-        testHello();
-
-        WampMessage msg = WampMessageFactory.createGoodbye(new JSONObject(), WampError.CLOSE_REALM);
-
-        mFriend.setCountDownLatch(new CountDownLatch(1));
-        mClient.setCountDownLatch(new CountDownLatch(1));
-
-        mFriend.broadcast(msg);
-
-        try {
-            assertTrue(mClient.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertTrue(mClient.getMessage().isGoodbyeMessage());
-        assertEquals(WampError.CLOSE_REALM, mClient.getMessage().asGoodbyeMessage().getReason());
-
-        try {
-            assertTrue(mFriend.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertTrue(mFriend.getMessage().isGoodbyeMessage());
-        assertEquals(WampError.GOODBYE_AND_OUT, mFriend.getMessage().asGoodbyeMessage().getReason());
+        WampTestUtil.broadcastHelloSuccess(mClient);
+        WampTestUtil.broadcastGoodbyeSuccess(mRouter, mClient);
     }
 }

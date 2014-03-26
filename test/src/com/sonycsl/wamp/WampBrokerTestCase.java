@@ -32,6 +32,10 @@ public class WampBrokerTestCase extends TestCase {
                 return null;
             }
         }
+
+        @Override
+        protected void onBroadcast(WampMessage msg) {
+        }
     }
 
     private TestWampBroker mBroker;
@@ -63,7 +67,7 @@ public class WampBrokerTestCase extends TestCase {
     }
 
     public void testSubscribeWithoutHello() {
-        assertTrue(WampTestUtil.sendSubscribe(mFriendPeer1, "some_topic").isErrorMessage());
+        assertTrue(WampTestUtil.broadcastSubscribe(mFriendPeer1, "some_topic").isErrorMessage());
     }
 
     public void testSubscribeWithTwoClient() {
@@ -116,7 +120,7 @@ public class WampBrokerTestCase extends TestCase {
         WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
         WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
 
-        WampMessage msg = WampTestUtil.sendSubscribe(mFriendPeer1, "some_topic");
+        WampMessage msg = WampTestUtil.broadcastSubscribe(mFriendPeer1, "some_topic");
         assertTrue(msg.isSubscribedMessage());
 
         WampSubscribedMessage subscribedMessege = msg.asSubscribedMessage();

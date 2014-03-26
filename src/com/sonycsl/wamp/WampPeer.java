@@ -17,17 +17,18 @@ public abstract class WampPeer {
         mNext = next;
     }
 
-    public void connect(WampPeer friend) {
+    public final void connect(WampPeer friend) {
         if (mAdapterList.get(friend) == null) {
             mAdapterList.put(friend, new IdentifiedWampMessenger(friend, this));
             friend.connect(this);
         }
     }
 
-    public void broadcast(WampMessage msg) {
+    public final void broadcast(WampMessage msg) {
         for (WampMessenger messenger : mAdapterList.values()) {
             messenger.send(msg);
         }
+        onBroadcast(msg);
     }
 
     synchronized protected final void onMessage(WampMessenger friend, WampMessage msg) {
@@ -54,6 +55,8 @@ public abstract class WampPeer {
     }
 
     protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
+
+    protected abstract void onBroadcast(WampMessage msg);
 
     private static class IdentifiedWampMessenger implements WampMessenger {
 

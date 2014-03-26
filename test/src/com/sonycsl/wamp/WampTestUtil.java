@@ -1,8 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import com.sonycsl.wamp.mock.WampMockPeer;
-
 import junit.framework.TestCase;
 
 import org.json.JSONArray;
@@ -13,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class WampTestUtil {
 
-    public static WampMessage broadcastHello(WampMockPeer client) {
+    public static WampMessage broadcastHello(WampTest client) {
         CountDownLatch latch = new CountDownLatch(1);
         client.setCountDownLatch(latch);
 
@@ -29,11 +27,38 @@ public final class WampTestUtil {
         return client.getMessage();
     }
 
-    public static void broadcastHelloSuccess(WampMockPeer client) {
+    public static void broadcastHelloSuccess(WampTest client) {
         TestCase.assertTrue(broadcastHello(client).isWelcomeMessage());
     }
 
-    public static WampMessage sendSubscribe(WampMockPeer subscriber, String topic) {
+    public static void broadcastGoodbyeSuccess(WampTest from, WampTest to) {
+
+        WampMessage msg = WampMessageFactory.createGoodbye(new JSONObject(), WampError.CLOSE_REALM);
+
+        from.setCountDownLatch(new CountDownLatch(1));
+        to.setCountDownLatch(new CountDownLatch(1));
+
+        from.broadcast(msg);
+
+        try {
+            TestCase.assertTrue(to.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(to.getMessage().isGoodbyeMessage());
+        TestCase.assertEquals(WampError.CLOSE_REALM, to.getMessage().asGoodbyeMessage().getReason());
+
+        try {
+            TestCase.assertTrue(from.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(from.getMessage().isGoodbyeMessage());
+        TestCase.assertEquals(WampError.GOODBYE_AND_OUT, from.getMessage().asGoodbyeMessage()
+                .getReason());
+    }
+
+    public static WampMessage broadcastSubscribe(WampTest subscriber, String topic) {
         CountDownLatch latch = new CountDownLatch(1);
         subscriber.setCountDownLatch(latch);
 
@@ -49,11 +74,11 @@ public final class WampTestUtil {
         return subscriber.getMessage();
     }
 
-    public static void broadcastSubscribeSuccess(WampMockPeer subscriber, String topic) {
-        TestCase.assertTrue(sendSubscribe(subscriber, topic).isSubscribedMessage());
+    public static void broadcastSubscribeSuccess(WampTest subscriber, String topic) {
+        TestCase.assertTrue(broadcastSubscribe(subscriber, topic).isSubscribedMessage());
     }
 
-    public static WampMessage broadcastPublish(WampMockPeer publisher, String topic) {
+    public static WampMessage broadcastPublish(WampTest publisher, String topic) {
         CountDownLatch latch = new CountDownLatch(1);
         publisher.setCountDownLatch(latch);
 
@@ -70,21 +95,21 @@ public final class WampTestUtil {
         return publisher.getMessage();
     }
 
-    public static void broadcastPublishSuccess(WampMockPeer publisher, String topic) {
+    public static void broadcastPublishSuccess(WampTest publisher, String topic) {
         TestCase.assertTrue(broadcastPublish(publisher, topic).isPublishedMessage());
     }
 
-    public static void broadcastPublishSuccess(WampMockPeer publisher, String topic,
-            WampMockPeer[] subscribers) {
+    public static void broadcastPublishSuccess(WampTest publisher, String topic,
+            WampTest[] subscribers) {
 
-        for (WampMockPeer subscriber : subscribers) {
+        for (WampTest subscriber : subscribers) {
             final CountDownLatch latch = new CountDownLatch(1);
             subscriber.setCountDownLatch(latch);
         }
 
         TestCase.assertTrue(broadcastPublish(publisher, topic).isPublishedMessage());
 
-        for (WampMockPeer subscriber : subscribers) {
+        for (WampTest subscriber : subscribers) {
             try {
                 TestCase.assertTrue(subscriber.await(1, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
@@ -94,7 +119,7 @@ public final class WampTestUtil {
         }
     }
 
-    public static WampMessage broadcastUnsubscribe(WampMockPeer subscriber, int subscriptionId) {
+    public static WampMessage broadcastUnsubscribe(WampTest subscriber, int subscriptionId) {
         subscriber.setCountDownLatch(new CountDownLatch(1));
         WampMessage msg = WampMessageFactory.createUnsubscribe(1, subscriptionId);
         subscriber.broadcast(msg);
@@ -108,7 +133,92 @@ public final class WampTestUtil {
         return subscriber.getMessage();
     }
 
-    public static void broadcastUnsubscribeSuccess(WampMockPeer subscriber, int subscriptionId) {
-        TestCase.assertTrue(broadcastUnsubscribe(subscriber, subscriptionId).isUnsubscribedMessage());
+    public static void broadcastUnsubscribeSuccess(WampTest subscriber, int subscriptionId) {
+        TestCase.assertTrue(broadcastUnsubscribe(subscriber, subscriptionId)
+                .isUnsubscribedMessage());
+    }
+
+    public static WampMessage broadcastRegister(WampTest callee, String procedure, WampTest router) {
+
+        callee.setCountDownLatch(new CountDownLatch(1));
+        router.setCountDownLatch(new CountDownLatch(1));
+
+        callee.broadcast(WampMessageFactory.createRegister(1, new JSONObject(), procedure));
+
+        try {
+            router.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(router.getMessage().isRegisterMessage());
+
+        try {
+            callee.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        return callee.getMessage();
+    }
+
+    public static void broadcastRegisterSuccess(WampTest callee, String procedure, WampTest router) {
+        TestCase.assertTrue(broadcastRegister(callee, procedure, router).isRegisteredMessage());
+    }
+
+    public static WampMessage broadcastUnregister(WampTest callee, WampRegisteredMessage msg,
+            WampTest router) {
+
+        callee.setCountDownLatch(new CountDownLatch(1));
+        router.setCountDownLatch(new CountDownLatch(1));
+
+        callee.broadcast(WampMessageFactory.createUnregister(msg.getRequestId(),
+                msg.getRegistrationId()));
+
+        try {
+            router.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(router.getMessage().isUnregisterMessage());
+
+        try {
+            callee.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        return callee.getMessage();
+    }
+
+    public static void broadcastUnregisterSuccess(WampTest callee, WampRegisteredMessage msg,
+            WampTest router) {
+        TestCase.assertTrue(broadcastUnregister(callee, msg, router).isUnregisteredMessage());
+    }
+
+    public static WampMessage broadcastInvocation(WampTest callee, int registrationId,
+            WampTest router) {
+
+        callee.setCountDownLatch(new CountDownLatch(1));
+        router.setCountDownLatch(new CountDownLatch(1));
+
+        router.broadcast(WampMessageFactory.createInvocation(1, registrationId,
+                new JSONObject()));
+
+        try {
+            callee.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(callee.getMessage().isInvocationMessage());
+
+        try {
+            router.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        return router.getMessage();
+    }
+
+    public static void broadcastInvocationSuccess(WampTest callee, int registrationId,
+            WampTest router) {
+        TestCase.assertTrue(broadcastInvocation(callee, registrationId, router).isYieldMessage());
     }
 }

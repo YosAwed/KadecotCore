@@ -8,14 +8,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class WampClient extends WampPeer {
 
-    private final Map<WampMessenger, Integer> mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
+    private final Map<WampMessenger, Integer> mSessionMap;
 
     public WampClient() {
         super();
+        mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
     }
 
     public WampClient(WampClient next) {
         super(next);
+        mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
     }
 
     @Override

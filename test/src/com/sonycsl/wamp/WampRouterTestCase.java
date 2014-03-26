@@ -17,6 +17,10 @@ public class WampRouterTestCase extends TestCase {
         protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
             return false;
         }
+
+        @Override
+        protected void onBroadcast(WampMessage msg) {
+        }
     }
 
     private TestWampRouter mRouter;

@@ -4,11 +4,12 @@ package com.sonycsl.wamp.mock;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessenger;
 import com.sonycsl.wamp.WampPeer;
+import com.sonycsl.wamp.WampTest;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class WampMockPeer extends WampPeer {
+public class WampMockPeer extends WampPeer implements WampTest {
 
     private CountDownLatch mLatch;
     private WampMessenger mFriendMessenger;
@@ -57,4 +58,7 @@ public class WampMockPeer extends WampPeer {
         return mMsg;
     }
 
+    @Override
+    protected void onBroadcast(WampMessage msg) {
+    }
 }
