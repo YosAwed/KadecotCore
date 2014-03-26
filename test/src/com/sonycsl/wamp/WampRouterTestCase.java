@@ -32,7 +32,7 @@ public class WampRouterTestCase extends TestCase {
         assertNotNull(mFriendMessenger);
     }
 
-    public void testSendHello() {
+    public void testHello() {
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
         mFriendMessenger.broadcast(msg);
     }

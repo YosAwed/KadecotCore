@@ -2,6 +2,7 @@
 package com.sonycsl.wamp;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class TestWampPeer extends WampPeer {
 
@@ -26,7 +27,9 @@ public class TestWampPeer extends WampPeer {
 
         mFriendMessenger = friend;
         mMsg = msg;
-        mLatch.countDown();
+        if (mLatch != null) {
+            mLatch.countDown();
+        }
         return true;
     }
 
@@ -36,6 +39,10 @@ public class TestWampPeer extends WampPeer {
 
     public void setCountDownLatch(CountDownLatch latch) {
         mLatch = latch;
+    }
+
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+        return mLatch.await(timeout, unit);
     }
 
     public WampMessenger getFriendMessenger() {

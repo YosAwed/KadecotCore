@@ -4,9 +4,6 @@
 
 package com.sonycsl.wamp;
 
-import android.util.Log;
-
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.json.JSONArray;
@@ -23,7 +20,6 @@ public class WampBrokerTestCase extends TestCase {
         @Override
         protected JSONObject createEventDetails(JSONObject options, JSONArray arguments,
                 JSONObject argumentKw) {
-            Log.e("WampBrokerTest", "WampBrokerTest");
             JSONObject eventDetails = new JSONObject();
             try {
                 return eventDetails.put("detail", "test");
@@ -40,8 +36,6 @@ public class WampBrokerTestCase extends TestCase {
     private TestWampPeer mFriendPeer1;
     private TestWampPeer mFriendPeer2;
     private TestWampPeer mFriendPeer3;
-
-    private static final int SUBSCRIPTIONID_IDX = 2;
 
     @Override
     protected void setUp() {
@@ -61,150 +55,80 @@ public class WampBrokerTestCase extends TestCase {
         assertNotNull(mFriendPeer3);
     }
 
-    private void sendHello(TestWampPeer messanger) {
-        CountDownLatch helloLatch = new CountDownLatch(1);
-        messanger.setCountDownLatch(helloLatch);
-        WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-        messanger.broadcast(msg);
+    public void testSubscribe() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
+    }
+
+    public void testSubscribeWithoutHello() {
+        assertTrue(WampTestUtil.sendSubscribe(mFriendPeer1, "some_topic").isErrorMessage());
+    }
+
+    public void testSubscribeWithTwoClient() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer2, "some_topic");
+    }
+
+    public void testPublishWithoutHello() {
+        assertTrue(WampTestUtil.broadcastPublish(mFriendPeer1, "some_topic").isErrorMessage());
+    }
+
+    public void testPublish() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
+        WampTestUtil.broadcastPublishSuccess(mFriendPeer2, "some_topic", new TestWampPeer[] {
+                mFriendPeer1
+        });
+    }
+
+    public void testPublishToUnknownTopic() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
+
+        mFriendPeer2.setCountDownLatch(new CountDownLatch(1));
+        assertTrue(WampTestUtil.broadcastPublish(mFriendPeer1, "unknown_topic")
+                .isPublishedMessage());
 
         try {
-            assertTrue(helloLatch.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-
-        assertTrue(messanger.getMessage().isWelcomeMessage());
-    }
-
-    public void testSendSubscribeWithoutHello() {
-        sendSubscribe(mFriendPeer1, "some_topic");
-        assertTrue(mFriendPeer1.getMessage().isErrorMessage());
-    }
-
-    public void testSendSubscribe() {
-        sendHello(mFriendPeer1);
-        sendSubscribe(mFriendPeer1, "some_topic");
-        assertTrue(mFriendPeer1.getMessage().isSubscribedMessage());
-    }
-
-    public void testSendSubscribeWithTwoClient() {
-        sendHello(mFriendPeer1);
-        sendHello(mFriendPeer2);
-        sendSubscribe(mFriendPeer1, "some_topic");
-        sendSubscribe(mFriendPeer2, "some_topic");
-        assertTrue(mFriendPeer1.getMessage().isSubscribedMessage());
-        assertTrue(mFriendPeer2.getMessage().isSubscribedMessage());
-    }
-
-    private void sendSubscribe(TestWampPeer testMessenger, String topic) {
-        CountDownLatch subscribeLatch = new CountDownLatch(1);
-        testMessenger.setCountDownLatch(subscribeLatch);
-        WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), topic);
-        testMessenger.broadcast(msg);
-
-        try {
-            assertTrue(subscribeLatch.await(1, TimeUnit.SECONDS));
+            assertFalse(mFriendPeer2.await(1, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             fail();
         }
     }
 
-    public void testSendPublishWithoutHello() {
-        try {
-            sendPublish(mFriendPeer1, "some_topic");
-            assertNotNull(mFriendPeer1.getMessage());
-        } catch (IllegalAccessError e) {
-            fail();
-        }
+    public void testPublishUnderMultiSubscribers() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer3);
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer2, "some_topic");
+        WampTestUtil.broadcastPublishSuccess(mFriendPeer3, "some_topic", new TestWampPeer[] {
+                mFriendPeer1, mFriendPeer2
+        });
     }
 
-    public void testSendPublish() {
-        testSendSubscribe();
-        sendPublish(mFriendPeer1, "some_topic");
-        assertTrue(mFriendPeer1.getMessage().isEventMessage());
-    }
+    public void testUnsubscribe() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
 
-    public void testSendPublishToUnknownTopic() {
-        testSendSubscribe();
-        try {
-            sendPublish(mFriendPeer1, "unknown_topic");
-        } catch (AssertionFailedError e) {
-        }
-    }
-
-    public void testSendPublishUnderMultiSubscribers() {
-        testSendSubscribeWithTwoClient();
-        sendHello(mFriendPeer3);
-        sendPublish(mFriendPeer1, mFriendPeer2, mFriendPeer3, "some_topic");
-        assertTrue(mFriendPeer1.getMessage().isEventMessage());
-        assertTrue(mFriendPeer2.getMessage().isEventMessage());
-    }
-
-    private void sendPublish(TestWampPeer testMessenger, String topic) {
-        CountDownLatch publishLatch = new CountDownLatch(1);
-        testMessenger.setCountDownLatch(publishLatch);
-        WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
-                new JSONArray(), new JSONObject());
-        testMessenger.broadcast(msg);
-
-        try {
-            assertTrue(publishLatch.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-    }
-
-    private void sendPublish(TestWampPeer testMessenger1, TestWampPeer testMessenger2,
-            TestWampPeer testMessenger3,
-            String topic) {
-        CountDownLatch publishLatch1 = new CountDownLatch(1);
-        testMessenger1.setCountDownLatch(publishLatch1);
-        CountDownLatch publishLatch2 = new CountDownLatch(1);
-        testMessenger2.setCountDownLatch(publishLatch2);
-
-        WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
-                new JSONArray(), new JSONObject());
-        testMessenger3.broadcast(msg);
-
-        try {
-            assertTrue(publishLatch1.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-
-        try {
-            assertTrue(publishLatch2.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-    }
-
-    public void testSendUnsubscribe() {
-        testSendSubscribe();
-        WampMessage msg = mFriendPeer1.getMessage();
+        WampMessage msg = WampTestUtil.sendSubscribe(mFriendPeer1, "some_topic");
         assertTrue(msg.isSubscribedMessage());
+
         WampSubscribedMessage subscribedMessege = msg.asSubscribedMessage();
         int subscriptionId = subscribedMessege.getSubscriptionId();
-        sendUnsubscribe(mFriendPeer1, subscriptionId);
-        assertTrue(mFriendPeer1.getMessage().isUnsubscribedMessage());
-        try {
-            sendPublish(mFriendPeer1, "some_topic");
-            fail();
-        } catch (AssertionFailedError e) {
-        }
+        WampTestUtil.broadcastUnsubscribeSuccess(mFriendPeer1, subscriptionId);
 
-    }
-
-    private void sendUnsubscribe(TestWampPeer testMessenger, int subscriptionId) {
-        CountDownLatch unsubscribeLatch = new CountDownLatch(1);
-        testMessenger.setCountDownLatch(unsubscribeLatch);
-        WampMessage msg = WampMessageFactory.createUnsubscribe(1, subscriptionId);
-        testMessenger.broadcast(msg);
+        mFriendPeer1.setCountDownLatch(new CountDownLatch(1));
+        WampTestUtil.broadcastPublishSuccess(mFriendPeer2, "some_topic");
 
         try {
-            assertTrue(unsubscribeLatch.await(1, TimeUnit.SECONDS));
+            assertFalse(mFriendPeer1.await(1, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             fail();
         }
+
     }
 }

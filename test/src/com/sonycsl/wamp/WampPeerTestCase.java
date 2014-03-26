@@ -29,7 +29,7 @@ public class WampPeerTestCase extends TestCase {
         assertNotNull(mFriendPeer);
     }
 
-    public void testSend() {
+    public void testEcho() {
         final CountDownLatch peerLatch = new CountDownLatch(1);
         final CountDownLatch friendLatch = new CountDownLatch(1);
         final WampMessage msg = new WampTestMessage();
@@ -39,7 +39,7 @@ public class WampPeerTestCase extends TestCase {
 
         mFriendPeer.broadcast(msg);
         try {
-            assertTrue(peerLatch.await(1, TimeUnit.SECONDS));
+            assertTrue(mPeer.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
@@ -47,7 +47,7 @@ public class WampPeerTestCase extends TestCase {
         assertEquals(msg, mPeer.getMessage());
 
         try {
-            assertTrue(friendLatch.await(1, TimeUnit.SECONDS));
+            assertTrue(mFriendPeer.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
@@ -56,25 +56,22 @@ public class WampPeerTestCase extends TestCase {
     }
 
     public void testChainOfResponsibility() {
-        final CountDownLatch peerLatch = new CountDownLatch(1);
-        final CountDownLatch nextLatch = new CountDownLatch(1);
-        final CountDownLatch friendLatch = new CountDownLatch(1);
         final WampMessage msg = new WampTestMessage();
 
         mPeer.setConsumed(false);
-        mPeer.setCountDownLatch(peerLatch);
-        mNext.setCountDownLatch(nextLatch);
-        mFriendPeer.setCountDownLatch(friendLatch);
+        mPeer.setCountDownLatch(new CountDownLatch(1));
+        mNext.setCountDownLatch(new CountDownLatch(1));
+        mFriendPeer.setCountDownLatch(new CountDownLatch(1));
 
         mFriendPeer.broadcast(msg);
         try {
-            assertFalse(peerLatch.await(1, TimeUnit.MILLISECONDS));
+            assertFalse(mPeer.await(1, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e1) {
             fail();
         }
 
         try {
-            assertTrue(nextLatch.await(1, TimeUnit.SECONDS));
+            assertTrue(mNext.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
@@ -82,7 +79,7 @@ public class WampPeerTestCase extends TestCase {
         assertEquals(msg, mNext.getMessage());
 
         try {
-            assertTrue(friendLatch.await(1, TimeUnit.SECONDS));
+            assertTrue(mFriendPeer.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
