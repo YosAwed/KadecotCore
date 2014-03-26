@@ -1,6 +1,8 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.mock.WampMockPeer;
+
 import junit.framework.TestCase;
 
 import org.json.JSONArray;
@@ -11,12 +13,12 @@ import java.util.concurrent.TimeUnit;
 
 public final class WampTestUtil {
 
-    public static WampMessage broadcastHello(TestWampPeer from) {
+    public static WampMessage broadcastHello(WampMockPeer client) {
         CountDownLatch latch = new CountDownLatch(1);
-        from.setCountDownLatch(latch);
+        client.setCountDownLatch(latch);
 
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-        from.broadcast(msg);
+        client.broadcast(msg);
 
         try {
             TestCase.assertTrue(latch.await(1, TimeUnit.SECONDS));
@@ -24,19 +26,19 @@ public final class WampTestUtil {
             TestCase.fail();
         }
 
-        return from.getMessage();
+        return client.getMessage();
     }
 
-    public static void broadcastHelloSuccess(TestWampPeer from) {
-        TestCase.assertTrue(broadcastHello(from).isWelcomeMessage());
+    public static void broadcastHelloSuccess(WampMockPeer client) {
+        TestCase.assertTrue(broadcastHello(client).isWelcomeMessage());
     }
 
-    public static WampMessage sendSubscribe(TestWampPeer from, String topic) {
+    public static WampMessage sendSubscribe(WampMockPeer subscriber, String topic) {
         CountDownLatch latch = new CountDownLatch(1);
-        from.setCountDownLatch(latch);
+        subscriber.setCountDownLatch(latch);
 
         WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), topic);
-        from.broadcast(msg);
+        subscriber.broadcast(msg);
 
         try {
             TestCase.assertTrue(latch.await(1, TimeUnit.SECONDS));
@@ -44,20 +46,20 @@ public final class WampTestUtil {
             TestCase.fail();
         }
 
-        return from.getMessage();
+        return subscriber.getMessage();
     }
 
-    public static void broadcastSubscribeSuccess(TestWampPeer from, String topic) {
-        TestCase.assertTrue(sendSubscribe(from, topic).isSubscribedMessage());
+    public static void broadcastSubscribeSuccess(WampMockPeer subscriber, String topic) {
+        TestCase.assertTrue(sendSubscribe(subscriber, topic).isSubscribedMessage());
     }
 
-    public static WampMessage broadcastPublish(TestWampPeer from, String topic) {
+    public static WampMessage broadcastPublish(WampMockPeer publisher, String topic) {
         CountDownLatch latch = new CountDownLatch(1);
-        from.setCountDownLatch(latch);
+        publisher.setCountDownLatch(latch);
 
         WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
                 new JSONArray(), new JSONObject());
-        from.broadcast(msg);
+        publisher.broadcast(msg);
 
         try {
             TestCase.assertTrue(latch.await(1, TimeUnit.SECONDS));
@@ -65,24 +67,24 @@ public final class WampTestUtil {
             TestCase.fail();
         }
 
-        return from.getMessage();
+        return publisher.getMessage();
     }
 
-    public static void broadcastPublishSuccess(TestWampPeer from, String topic) {
-        TestCase.assertTrue(broadcastPublish(from, topic).isPublishedMessage());
+    public static void broadcastPublishSuccess(WampMockPeer publisher, String topic) {
+        TestCase.assertTrue(broadcastPublish(publisher, topic).isPublishedMessage());
     }
 
-    public static void broadcastPublishSuccess(TestWampPeer publisher, String topic,
-            TestWampPeer[] subscribers) {
+    public static void broadcastPublishSuccess(WampMockPeer publisher, String topic,
+            WampMockPeer[] subscribers) {
 
-        for (TestWampPeer subscriber : subscribers) {
+        for (WampMockPeer subscriber : subscribers) {
             final CountDownLatch latch = new CountDownLatch(1);
             subscriber.setCountDownLatch(latch);
         }
 
         TestCase.assertTrue(broadcastPublish(publisher, topic).isPublishedMessage());
 
-        for (TestWampPeer subscriber : subscribers) {
+        for (WampMockPeer subscriber : subscribers) {
             try {
                 TestCase.assertTrue(subscriber.await(1, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
@@ -92,21 +94,21 @@ public final class WampTestUtil {
         }
     }
 
-    public static WampMessage broadcastUnsubscribe(TestWampPeer from, int subscriptionId) {
-        from.setCountDownLatch(new CountDownLatch(1));
+    public static WampMessage broadcastUnsubscribe(WampMockPeer subscriber, int subscriptionId) {
+        subscriber.setCountDownLatch(new CountDownLatch(1));
         WampMessage msg = WampMessageFactory.createUnsubscribe(1, subscriptionId);
-        from.broadcast(msg);
+        subscriber.broadcast(msg);
 
         try {
-            TestCase.assertTrue(from.await(1, TimeUnit.SECONDS));
+            TestCase.assertTrue(subscriber.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             TestCase.fail();
         }
 
-        return from.getMessage();
+        return subscriber.getMessage();
     }
 
-    public static void broadcastUnsubscribeSuccess(TestWampPeer from, int subscriptionId) {
-        TestCase.assertTrue(broadcastUnsubscribe(from, subscriptionId).isUnsubscribedMessage());
+    public static void broadcastUnsubscribeSuccess(WampMockPeer subscriber, int subscriptionId) {
+        TestCase.assertTrue(broadcastUnsubscribe(subscriber, subscriptionId).isUnsubscribedMessage());
     }
 }

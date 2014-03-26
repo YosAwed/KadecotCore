@@ -1,21 +1,25 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.wamp.mock;
+
+import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampMessenger;
+import com.sonycsl.wamp.WampPeer;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class TestWampPeer extends WampPeer {
+public class WampMockPeer extends WampPeer {
 
     private CountDownLatch mLatch;
     private WampMessenger mFriendMessenger;
     private WampMessage mMsg;
     private boolean mIsConsumed = true;
 
-    public TestWampPeer() {
+    public WampMockPeer() {
         super();
     }
 
-    public TestWampPeer(WampPeer next) {
+    public WampMockPeer(WampPeer next) {
         super(next);
     }
 

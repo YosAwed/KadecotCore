@@ -4,6 +4,9 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.mock.WampEchoMockPeer;
+import com.sonycsl.wamp.mock.WampMockMessage;
+
 import junit.framework.TestCase;
 
 import java.util.concurrent.CountDownLatch;
@@ -11,15 +14,15 @@ import java.util.concurrent.TimeUnit;
 
 public class WampPeerTestCase extends TestCase {
 
-    private TestEchoWampPeer mPeer;
-    private TestEchoWampPeer mNext;
-    private TestEchoWampPeer mFriendPeer;
+    private WampEchoMockPeer mPeer;
+    private WampEchoMockPeer mNext;
+    private WampEchoMockPeer mFriendPeer;
 
     @Override
     protected void setUp() throws Exception {
-        mNext = new TestEchoWampPeer();
-        mPeer = new TestEchoWampPeer(mNext);
-        mFriendPeer = new TestEchoWampPeer();
+        mNext = new WampEchoMockPeer();
+        mPeer = new WampEchoMockPeer(mNext);
+        mFriendPeer = new WampEchoMockPeer();
         mPeer.connect(mFriendPeer);
     }
 
@@ -32,7 +35,7 @@ public class WampPeerTestCase extends TestCase {
     public void testEcho() {
         final CountDownLatch peerLatch = new CountDownLatch(1);
         final CountDownLatch friendLatch = new CountDownLatch(1);
-        final WampMessage msg = new WampTestMessage();
+        final WampMessage msg = new WampMockMessage();
 
         mPeer.setCountDownLatch(peerLatch);
         mFriendPeer.setCountDownLatch(friendLatch);
@@ -56,7 +59,7 @@ public class WampPeerTestCase extends TestCase {
     }
 
     public void testChainOfResponsibility() {
-        final WampMessage msg = new WampTestMessage();
+        final WampMessage msg = new WampMockMessage();
 
         mPeer.setConsumed(false);
         mPeer.setCountDownLatch(new CountDownLatch(1));

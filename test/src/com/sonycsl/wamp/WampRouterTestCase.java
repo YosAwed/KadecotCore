@@ -4,6 +4,8 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.mock.WampMockPeer;
+
 import junit.framework.TestCase;
 
 import org.json.JSONObject;
@@ -18,22 +20,22 @@ public class WampRouterTestCase extends TestCase {
     }
 
     private TestWampRouter mRouter;
-    private TestWampPeer mFriendMessenger;
+    private WampMockPeer mFriend;
 
     @Override
     protected void setUp() {
         mRouter = new TestWampRouter();
-        mFriendMessenger = new TestWampPeer();
-        mRouter.connect(mFriendMessenger);
+        mFriend = new WampMockPeer();
+        mRouter.connect(mFriend);
     }
 
     public void testCtor() {
         assertNotNull(mRouter);
-        assertNotNull(mFriendMessenger);
+        assertNotNull(mFriend);
     }
 
     public void testHello() {
         WampMessage msg = WampMessageFactory.createHello("realm", new JSONObject());
-        mFriendMessenger.broadcast(msg);
+        mFriend.broadcast(msg);
     }
 }

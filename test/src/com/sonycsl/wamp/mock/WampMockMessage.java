@@ -1,7 +1,29 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.wamp.mock;
 
-public class WampTestMessage implements WampMessage {
+import com.sonycsl.wamp.WampAbortMessage;
+import com.sonycsl.wamp.WampCallMessage;
+import com.sonycsl.wamp.WampErrorMessage;
+import com.sonycsl.wamp.WampEventMessage;
+import com.sonycsl.wamp.WampGoodbyeMessage;
+import com.sonycsl.wamp.WampHelloMessage;
+import com.sonycsl.wamp.WampInvocationMessage;
+import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampPublishMessage;
+import com.sonycsl.wamp.WampPublishedMessage;
+import com.sonycsl.wamp.WampRegisterMessage;
+import com.sonycsl.wamp.WampRegisteredMessage;
+import com.sonycsl.wamp.WampResultMessage;
+import com.sonycsl.wamp.WampSubscribeMessage;
+import com.sonycsl.wamp.WampSubscribedMessage;
+import com.sonycsl.wamp.WampUnregisterMessage;
+import com.sonycsl.wamp.WampUnregisteredMessage;
+import com.sonycsl.wamp.WampUnsubscribeMessage;
+import com.sonycsl.wamp.WampUnsubscribedMessage;
+import com.sonycsl.wamp.WampWelcomeMessage;
+import com.sonycsl.wamp.WampYieldMessage;
+
+public class WampMockMessage implements WampMessage {
 
     @Override
     public int getMessageType() {

@@ -4,6 +4,8 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.mock.WampMockPeer;
+
 import junit.framework.TestCase;
 
 import org.json.JSONArray;
@@ -33,16 +35,16 @@ public class WampBrokerTestCase extends TestCase {
     }
 
     private TestWampBroker mBroker;
-    private TestWampPeer mFriendPeer1;
-    private TestWampPeer mFriendPeer2;
-    private TestWampPeer mFriendPeer3;
+    private WampMockPeer mFriendPeer1;
+    private WampMockPeer mFriendPeer2;
+    private WampMockPeer mFriendPeer3;
 
     @Override
     protected void setUp() {
         mBroker = new TestWampBroker();
-        mFriendPeer1 = new TestWampPeer();
-        mFriendPeer2 = new TestWampPeer();
-        mFriendPeer3 = new TestWampPeer();
+        mFriendPeer1 = new WampMockPeer();
+        mFriendPeer2 = new WampMockPeer();
+        mFriendPeer3 = new WampMockPeer();
         mBroker.connect(mFriendPeer1);
         mBroker.connect(mFriendPeer2);
         mBroker.connect(mFriendPeer3);
@@ -79,7 +81,7 @@ public class WampBrokerTestCase extends TestCase {
         WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
         WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
         WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
-        WampTestUtil.broadcastPublishSuccess(mFriendPeer2, "some_topic", new TestWampPeer[] {
+        WampTestUtil.broadcastPublishSuccess(mFriendPeer2, "some_topic", new WampMockPeer[] {
                 mFriendPeer1
         });
     }
@@ -105,7 +107,7 @@ public class WampBrokerTestCase extends TestCase {
         WampTestUtil.broadcastHelloSuccess(mFriendPeer3);
         WampTestUtil.broadcastSubscribeSuccess(mFriendPeer1, "some_topic");
         WampTestUtil.broadcastSubscribeSuccess(mFriendPeer2, "some_topic");
-        WampTestUtil.broadcastPublishSuccess(mFriendPeer3, "some_topic", new TestWampPeer[] {
+        WampTestUtil.broadcastPublishSuccess(mFriendPeer3, "some_topic", new WampMockPeer[] {
                 mFriendPeer1, mFriendPeer2
         });
     }
