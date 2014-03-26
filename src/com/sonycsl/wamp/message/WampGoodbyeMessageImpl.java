@@ -16,7 +16,7 @@ public class WampGoodbyeMessageImpl extends WampAbstractMessage implements WampG
     private static final int REASON_INDEX = 2;
 
     public static WampMessage create(JSONObject details, String reason) {
-        return new WampAbortMessageImpl(new JSONArray().put(WampMessageType.ABORT).put(details)
+        return new WampGoodbyeMessageImpl(new JSONArray().put(WampMessageType.GOODBYE).put(details)
                 .put(reason));
     }
 
