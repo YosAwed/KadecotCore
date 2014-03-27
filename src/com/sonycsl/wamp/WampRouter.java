@@ -41,6 +41,7 @@ public abstract class WampRouter extends WampPeer {
             // TODO: Send Error Messege
             friend.send(WampMessageFactory
                     .createError(msg.getMessageType(), -1, null, "wamp.error"));
+            return true;
         }
 
         return false;
