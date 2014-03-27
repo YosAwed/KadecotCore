@@ -42,10 +42,6 @@ public class WampClientTestCase extends TestCase {
             return mLatch.await(timeout, unit);
         }
 
-        public WampMessenger getFriendMessenger() {
-            return mFriendMessenger;
-        }
-
         public WampMessage getMessage() {
             return mMsg;
         }

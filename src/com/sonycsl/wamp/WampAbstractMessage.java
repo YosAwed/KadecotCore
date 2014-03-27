@@ -18,6 +18,11 @@ abstract public class WampAbstractMessage implements WampMessage {
     }
 
     @Override
+    public String toString() {
+        return toJSON().toString();
+    }
+
+    @Override
     public int getMessageType() {
         try {
             return mMsg.getInt(MESSAGE_TYPE_INDEX);

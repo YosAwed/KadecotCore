@@ -2,7 +2,6 @@
 package com.sonycsl.wamp.mock;
 
 import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessenger;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampTest;
 
@@ -48,10 +47,6 @@ public class WampMockPeer extends WampPeer implements WampTest {
 
     public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
         return mLatch.await(timeout, unit);
-    }
-
-    public WampMessenger getFriendMessenger() {
-        return mFriendMessenger;
     }
 
     public WampMessage getMessage() {

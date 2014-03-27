@@ -6,9 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class WampPeer {
 
+    protected interface WampMessenger {
+        public void send(WampMessage msg);
+    }
+
     private WampPeer mNext;
 
-    private Map<WampPeer, WampMessenger> mAdapterList = new ConcurrentHashMap<WampPeer, WampMessenger>();
+    private Map<WampPeer, WampMessenger> mMessengers = new ConcurrentHashMap<WampPeer, WampMessenger>();
 
     public WampPeer() {
     }
@@ -17,15 +21,34 @@ public abstract class WampPeer {
         mNext = next;
     }
 
-    public final void connect(WampPeer friend) {
-        if (mAdapterList.get(friend) == null) {
-            mAdapterList.put(friend, new IdentifiedWampMessenger(friend, this));
-            friend.connect(this);
+    private Map<WampPeer, WampMessenger> getMessengers() {
+        return mMessengers;
+    }
+
+    public final void connect(final WampPeer friend) {
+        if (mMessengers.get(friend) != null) {
+            return;
         }
+
+        final WampMessenger messenger = new WampMessenger() {
+
+            @Override
+            public void send(final WampMessage msg) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        friend.onMessage(friend.getMessengers().get(WampPeer.this), msg);
+                    }
+                }).start();
+            }
+        };
+
+        mMessengers.put(friend, messenger);
+        friend.connect(this);
     }
 
     public final void broadcast(WampMessage msg) {
-        for (WampMessenger messenger : mAdapterList.values()) {
+        for (WampMessenger messenger : mMessengers.values()) {
             messenger.send(msg);
         }
         onBroadcast(msg);
@@ -50,35 +73,8 @@ public abstract class WampPeer {
         throw new IllegalArgumentException("Illegal Message, message: " + msg);
     }
 
-    private Map<WampPeer, WampMessenger> getIdentifierList() {
-        return mAdapterList;
-    }
-
     protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
 
     protected abstract void onBroadcast(WampMessage msg);
 
-    private static class IdentifiedWampMessenger implements WampMessenger {
-
-        private final WampPeer mPeer;
-        private final WampPeer mIdentifiedPeer;
-
-        public IdentifiedWampMessenger(WampPeer peer, WampPeer identifier) {
-            mPeer = peer;
-            mIdentifiedPeer = identifier;
-        }
-
-        @Override
-        public void send(final WampMessage msg) {
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    WampMessenger friend = mPeer.getIdentifierList().get(mIdentifiedPeer);
-                    mPeer.onMessage(friend, msg);
-                }
-
-            }).start();
-        }
-    }
 }

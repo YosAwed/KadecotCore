@@ -14,7 +14,5 @@ public interface WampTest {
 
     public boolean await(long timeout, TimeUnit unit) throws InterruptedException;
 
-    public WampMessenger getFriendMessenger();
-
     public WampMessage getMessage();
 }

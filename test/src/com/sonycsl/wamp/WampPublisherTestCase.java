@@ -30,11 +30,6 @@ public class WampPublisherTestCase extends TestCase {
         }
 
         @Override
-        public WampMessenger getFriendMessenger() {
-            return null;
-        }
-
-        @Override
         public WampMessage getMessage() {
             return mMsg;
         }

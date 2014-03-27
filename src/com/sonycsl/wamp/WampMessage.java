@@ -3,6 +3,8 @@ package com.sonycsl.wamp;
 
 public interface WampMessage {
 
+    public String toString();
+
     public int getMessageType();
 
     public boolean isHelloMessage();

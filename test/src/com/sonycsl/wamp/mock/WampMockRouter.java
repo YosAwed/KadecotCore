@@ -3,7 +3,6 @@ package com.sonycsl.wamp.mock;
 
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
-import com.sonycsl.wamp.WampMessenger;
 
 import org.json.JSONObject;
 
