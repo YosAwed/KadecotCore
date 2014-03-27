@@ -66,12 +66,22 @@ public class WampYieldMessageImpl extends WampAbstractMessage implements WampYie
     }
 
     @Override
+    public boolean hasArguments() {
+        return toJSON().length() + 1 > ARGUMENTS_INDEX;
+    }
+
+    @Override
     public JSONArray getArguments() {
         try {
             return toJSON().getJSONArray(ARGUMENTS_INDEX);
         } catch (JSONException e) {
             throw new IllegalArgumentException("there is no argument");
         }
+    }
+
+    @Override
+    public boolean hasArgumentsKw() {
+        return toJSON().length() + 1 > ARGUMENTS_KW_INDEX;
     }
 
     @Override

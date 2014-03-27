@@ -9,7 +9,11 @@ public interface WampYieldMessage {
 
     public JSONObject getOptions();
 
+    public boolean hasArguments();
+
     public JSONArray getArguments();
+
+    public boolean hasArgumentsKw();
 
     public JSONObject getArgumentsKw();
 }

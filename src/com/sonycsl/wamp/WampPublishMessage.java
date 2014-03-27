@@ -11,7 +11,11 @@ public interface WampPublishMessage {
 
     public String getTopic();
 
+    public boolean hasArguments();
+
     public JSONArray getArguments();
+
+    public boolean hasArgumentsKw();
 
     public JSONObject getArgumentsKw();
 }

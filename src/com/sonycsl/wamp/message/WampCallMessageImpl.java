@@ -77,12 +77,22 @@ public class WampCallMessageImpl extends WampAbstractMessage implements WampCall
     }
 
     @Override
+    public boolean hasArguments() {
+        return toJSON().length() + 1 > ARGUMENTS_INDEX;
+    }
+
+    @Override
     public JSONArray getArguments() {
         try {
             return toJSON().getJSONArray(ARGUMENTS_INDEX);
         } catch (JSONException e) {
             throw new IllegalArgumentException("there is no arguments");
         }
+    }
+
+    @Override
+    public boolean hasArgumentsKw() {
+        return toJSON().length() + 1 > ARGUMENTS_KW_INDEX;
     }
 
     @Override
