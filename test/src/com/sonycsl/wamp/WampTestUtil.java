@@ -219,4 +219,41 @@ public final class WampTestUtil {
             WampTest router) {
         TestCase.assertTrue(broadcastInvocation(callee, registrationId, router).isYieldMessage());
     }
+
+    public static WampMessage broadcastCall(WampTest caller, String procedure, WampTest router,
+            WampTest callee) {
+
+        caller.setCountDownLatch(new CountDownLatch(1));
+        router.setCountDownLatch(new CountDownLatch(2));
+        callee.setCountDownLatch(new CountDownLatch(1));
+
+        caller.broadcast(WampMessageFactory.createCall(1, new JSONObject(), procedure));
+
+        try {
+            router.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertEquals(WampMessageType.CALL, router.getMessage().getMessageType());
+        TestCase.assertEquals(WampMessageType.YIELD, router.getMessage().getMessageType());
+
+        try {
+            callee.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        TestCase.assertTrue(callee.getMessage().isInvocationMessage());
+
+        try {
+            caller.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+        return caller.getMessage();
+    }
+
+    public static void broadcastCallSuccess(WampTest caller, String procedure, WampTest router,
+            WampTest callee) {
+        TestCase.assertTrue(broadcastCall(caller, procedure, router, callee).isResultMessage());
+    }
 }
