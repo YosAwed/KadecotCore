@@ -134,7 +134,7 @@ public class WampMockMessage implements WampMessage {
     }
 
     @Override
-    public boolean isResuleMessage() {
+    public boolean isResultMessage() {
         // TODO Auto-generated method stub
         return false;
     }

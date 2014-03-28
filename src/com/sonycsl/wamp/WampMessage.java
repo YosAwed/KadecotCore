@@ -41,7 +41,7 @@ public interface WampMessage {
 
     public boolean isCancelMessage();
 
-    public boolean isResuleMessage();
+    public boolean isResultMessage();
 
     public boolean isRegisterMessage();
 

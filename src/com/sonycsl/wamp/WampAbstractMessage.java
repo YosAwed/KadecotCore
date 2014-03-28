@@ -117,7 +117,7 @@ abstract public class WampAbstractMessage implements WampMessage {
     }
 
     @Override
-    public boolean isResuleMessage() {
+    public boolean isResultMessage() {
         return false;
     }
 

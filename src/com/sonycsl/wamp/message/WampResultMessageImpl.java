@@ -38,7 +38,7 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     }
 
     @Override
-    public boolean isResuleMessage() {
+    public boolean isResultMessage() {
         return true;
     }
 
