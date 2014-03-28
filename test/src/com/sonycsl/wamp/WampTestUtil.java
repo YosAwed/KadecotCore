@@ -147,7 +147,7 @@ public final class WampTestUtil {
         } catch (InterruptedException e) {
             TestCase.fail();
         }
-        TestCase.assertTrue(router.getMessage().isRegisterMessage());
+        TestCase.assertEquals(WampMessageType.REGISTER, router.getMessage().getMessageType());
 
         try {
             callee.await(1, TimeUnit.SECONDS);
@@ -158,7 +158,8 @@ public final class WampTestUtil {
     }
 
     public static void broadcastRegisterSuccess(WampTest callee, String procedure, WampTest router) {
-        TestCase.assertTrue(broadcastRegister(callee, procedure, router).isRegisteredMessage());
+        TestCase.assertEquals(WampMessageType.REGISTERED,
+                broadcastRegister(callee, procedure, router).getMessageType());
     }
 
     public static WampMessage broadcastUnregister(WampTest callee, WampRegisteredMessage msg,
@@ -204,7 +205,7 @@ public final class WampTestUtil {
         } catch (InterruptedException e) {
             TestCase.fail();
         }
-        TestCase.assertTrue(callee.getMessage().isInvocationMessage());
+        TestCase.assertEquals(WampMessageType.INVOCATION, callee.getMessage().getMessageType());
 
         try {
             router.await(1, TimeUnit.SECONDS);
