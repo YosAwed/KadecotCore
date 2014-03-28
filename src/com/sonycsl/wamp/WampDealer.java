@@ -33,6 +33,15 @@ public abstract class WampDealer extends WampRouter {
 
     @Override
     protected final boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
+        if (consumeMyRoleMessage(friend, msg)) {
+            onConsumed(msg);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean consumeMyRoleMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isRegisterMessage()) {
             register(friend, msg.asRegisterMessage());
             return true;

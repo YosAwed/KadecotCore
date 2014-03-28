@@ -21,6 +21,10 @@ public class WampRouterTestCase extends TestCase {
         @Override
         protected void onBroadcast(WampMessage msg) {
         }
+
+        @Override
+        protected void onConsumed(WampMessage msg) {
+        }
     }
 
     private TestWampRouter mRouter;

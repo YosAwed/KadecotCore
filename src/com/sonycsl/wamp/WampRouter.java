@@ -51,13 +51,14 @@ public abstract class WampRouter extends WampPeer {
     protected final boolean consumeMessage(WampMessenger friend, WampMessage msg) {
         // Handle Router message
         if (consumeMyMessage(friend, msg)) {
+            onConsumed(msg);
             return true;
         }
 
         return consumeRoleMessage(friend, msg);
-
     }
 
     protected abstract boolean consumeRoleMessage(WampMessenger friend, WampMessage msg);
 
+    abstract protected void onConsumed(WampMessage msg);
 }

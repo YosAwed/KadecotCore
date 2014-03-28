@@ -36,6 +36,10 @@ public class WampBrokerTestCase extends TestCase {
         @Override
         protected void onBroadcast(WampMessage msg) {
         }
+
+        @Override
+        protected void onConsumed(WampMessage msg) {
+        }
     }
 
     private TestWampBroker mBroker;
@@ -125,6 +129,7 @@ public class WampBrokerTestCase extends TestCase {
 
         WampSubscribedMessage subscribedMessege = msg.asSubscribedMessage();
         int subscriptionId = subscribedMessege.getSubscriptionId();
+        assertTrue(WampTestUtil.broadcastUnsubscribe(mFriendPeer2, subscriptionId).isErrorMessage());
         WampTestUtil.broadcastUnsubscribeSuccess(mFriendPeer1, subscriptionId);
 
         mFriendPeer1.setCountDownLatch(new CountDownLatch(1));
