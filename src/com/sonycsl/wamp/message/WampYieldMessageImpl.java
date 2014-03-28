@@ -67,7 +67,7 @@ public class WampYieldMessageImpl extends WampAbstractMessage implements WampYie
 
     @Override
     public boolean hasArguments() {
-        return toJSON().length() + 1 > ARGUMENTS_INDEX;
+        return toJSON().length() > ARGUMENTS_INDEX;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class WampYieldMessageImpl extends WampAbstractMessage implements WampYie
 
     @Override
     public boolean hasArgumentsKw() {
-        return toJSON().length() + 1 > ARGUMENTS_KW_INDEX;
+        return toJSON().length() > ARGUMENTS_KW_INDEX;
     }
 
     @Override
