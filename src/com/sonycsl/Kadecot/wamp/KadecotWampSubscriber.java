@@ -1,14 +1,14 @@
 
-package com.sonycsl.kadecotwamp;
+package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampMessage;
 
-public class KadecotWampCaller extends KadecotWampClient {
+public class KadecotWampSubscriber extends KadecotWampClient {
 
-    public KadecotWampCaller() {
+    public KadecotWampSubscriber() {
     }
 
-    public KadecotWampCaller(KadecotWampClient next) {
+    public KadecotWampSubscriber(KadecotWampClient next) {
         super(next);
     }
 

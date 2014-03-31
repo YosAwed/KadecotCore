@@ -1,5 +1,5 @@
 
-package com.sonycsl.kadecotwamp;
+package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
 
