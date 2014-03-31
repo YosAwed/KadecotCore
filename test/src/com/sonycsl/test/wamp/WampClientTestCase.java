@@ -1,7 +1,9 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.test.wamp;
 
-import com.sonycsl.wamp.mock.WampMockRouter;
+import com.sonycsl.test.wamp.mock.WampMockRouter;
+import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampMessage;
 
 import junit.framework.TestCase;
 
@@ -13,7 +15,6 @@ public class WampClientTestCase extends TestCase {
     private static class WampTestClient extends WampClient implements WampTest {
 
         private CountDownLatch mLatch;
-        private WampMessenger mFriendMessenger;
         private WampMessage mMsg;
         private boolean mIsConsumed = true;
 

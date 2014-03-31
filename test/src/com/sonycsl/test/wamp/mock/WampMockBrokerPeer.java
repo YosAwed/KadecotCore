@@ -1,10 +1,10 @@
 
-package com.sonycsl.wamp.mock;
+package com.sonycsl.test.wamp.mock;
 
+import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampRouter;
-import com.sonycsl.wamp.WampTest;
 
 import org.json.JSONObject;
 
@@ -13,11 +13,9 @@ import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class WampMockDealerPeer extends WampRouter implements WampTest {
+public class WampMockBrokerPeer extends WampRouter implements WampTest {
 
-    private WampMessenger mRegisterer;
-
-    private WampMessenger mCaller;
+    private WampMessenger mSubscriber;
 
     private CountDownLatch mLatch;
 
@@ -33,28 +31,22 @@ public class WampMockDealerPeer extends WampRouter implements WampTest {
     }
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
-        if (msg.isRegisterMessage()) {
-            friend.send(WampMessageFactory.createRegistered(msg.asRegisterMessage().getRequestId(),
-                    0));
-            mRegisterer = friend;
+        if (msg.isSubscribeMessage()) {
+            friend.send(WampMessageFactory.createSubscribed(
+                    msg.asSubscribeMessage().getRequestId(), 0));
+            mSubscriber = friend;
             return true;
         }
 
-        if (msg.isCallMessage()) {
-            mCaller = friend;
-            mRegisterer.send(WampMessageFactory.createInvocation(0, 0, new JSONObject()));
+        if (msg.isPublishMessage()) {
+            friend.send(WampMessageFactory.createPublished(0, 0));
+            mSubscriber.send(WampMessageFactory.createEvent(0, 0, new JSONObject()));
             return true;
         }
 
-        if (msg.isYieldMessage()) {
-            mCaller.send(WampMessageFactory
-                    .createResult(msg.asYieldMessage().getRequestId(), new JSONObject()));
-            return true;
-        }
-
-        if (msg.isUnregisterMessage()) {
+        if (msg.isUnsubscribedMessage()) {
             friend.send(WampMessageFactory
-                    .createUnregistered(msg.asUnregisterMessage().getRequestId()));
+                    .createUnsubscribed(msg.asUnregisterMessage().getRequestId()));
             return true;
         }
         return false;

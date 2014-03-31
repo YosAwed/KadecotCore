@@ -1,5 +1,5 @@
 
-package com.sonycsl.wamp.mock;
+package com.sonycsl.test.wamp.mock;
 
 import com.sonycsl.wamp.WampAbortMessage;
 import com.sonycsl.wamp.WampCallMessage;

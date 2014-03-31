@@ -1,9 +1,9 @@
 
-package com.sonycsl.wamp.mock;
+package com.sonycsl.test.wamp.mock;
 
+import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampPeer;
-import com.sonycsl.wamp.WampTest;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 public class WampMockPeer extends WampPeer implements WampTest {
 
     private CountDownLatch mLatch;
-    private WampMessenger mFriendMessenger;
     private WampMessage mMsg;
     private boolean mIsConsumed = true;
 
@@ -29,7 +28,6 @@ public class WampMockPeer extends WampPeer implements WampTest {
             return false;
         }
 
-        mFriendMessenger = friend;
         mMsg = msg;
         if (mLatch != null) {
             mLatch.countDown();

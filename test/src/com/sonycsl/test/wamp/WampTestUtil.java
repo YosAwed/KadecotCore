@@ -1,5 +1,11 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.test.wamp;
+
+import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.WampMessageType;
+import com.sonycsl.wamp.WampRegisteredMessage;
 
 import junit.framework.TestCase;
 

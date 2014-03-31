@@ -2,10 +2,11 @@
  * Copyright (C) Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.wamp;
+package com.sonycsl.test.wamp;
 
-import com.sonycsl.wamp.mock.WampEchoMockPeer;
-import com.sonycsl.wamp.mock.WampMockMessage;
+import com.sonycsl.test.wamp.mock.WampEchoMockPeer;
+import com.sonycsl.test.wamp.mock.WampMockMessage;
+import com.sonycsl.wamp.WampMessage;
 
 import junit.framework.TestCase;
 

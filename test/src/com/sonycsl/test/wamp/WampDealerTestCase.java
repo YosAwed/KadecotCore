@@ -1,8 +1,11 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.test.wamp;
 
-import com.sonycsl.wamp.mock.WampMockCalleePeer;
-import com.sonycsl.wamp.mock.WampMockPeer;
+import com.sonycsl.test.wamp.mock.WampMockCalleePeer;
+import com.sonycsl.test.wamp.mock.WampMockPeer;
+import com.sonycsl.wamp.WampDealer;
+import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampRegisteredMessage;
 
 import junit.framework.TestCase;
 

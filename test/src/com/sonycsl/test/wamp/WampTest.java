@@ -1,5 +1,7 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.test.wamp;
+
+import com.sonycsl.wamp.WampMessage;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
