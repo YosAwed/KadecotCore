@@ -98,7 +98,7 @@ public final class WampTestUtil {
     }
 
     public static void broadcastPublishSuccess(WampTest publisher, String topic,
-            WampTest[] subscribers) {
+            WampTest... subscribers) {
 
         for (WampTest subscriber : subscribers) {
             subscriber.setCountDownLatch(new CountDownLatch(1));
@@ -242,7 +242,7 @@ public final class WampTestUtil {
         } catch (InterruptedException e) {
             TestCase.fail();
         }
-        TestCase.assertTrue(callee.getMessage().isInvocationMessage());
+        TestCase.assertEquals(WampMessageType.INVOCATION, callee.getMessage().getMessageType());
 
         try {
             caller.await(1, TimeUnit.SECONDS);
