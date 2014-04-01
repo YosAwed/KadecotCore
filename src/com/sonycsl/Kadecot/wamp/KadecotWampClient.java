@@ -9,7 +9,7 @@ abstract public class KadecotWampClient extends WampClient {
         super();
     }
 
-    public KadecotWampClient(KadecotWampClient next) {
+    public KadecotWampClient(WampClient next) {
         super(next);
     }
 }
