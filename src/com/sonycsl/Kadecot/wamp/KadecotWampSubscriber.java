@@ -1,20 +1,32 @@
 
 package com.sonycsl.Kadecot.wamp;
 
+import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampEventMessage;
 import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampSubscribedMessage;
+import com.sonycsl.wamp.WampSubscriber;
+import com.sonycsl.wamp.WampUnsubscribedMessage;
 
-public class KadecotWampSubscriber extends KadecotWampClient {
+public class KadecotWampSubscriber extends WampSubscriber {
 
     public KadecotWampSubscriber() {
     }
 
-    public KadecotWampSubscriber(KadecotWampClient next) {
+    public KadecotWampSubscriber(WampClient next) {
         super(next);
     }
 
     @Override
-    protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
-        return false;
+    protected void subscribed(WampSubscribedMessage asSubscribedMessage) {
+    }
+
+    @Override
+    protected void unsubscribed(WampUnsubscribedMessage asUnsubscribedMessage) {
+    }
+
+    @Override
+    protected void event(WampEventMessage asUnsubscribedMessage) {
     }
 
     @Override
