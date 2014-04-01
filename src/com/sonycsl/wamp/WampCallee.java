@@ -21,12 +21,16 @@ abstract public class WampCallee extends WampClient {
     }
 
     @Override
-    protected final void onBroadcast(WampMessage msg) {
-        if (!msg.isRegisterMessage()) {
-            return;
+    protected final boolean consumeRoleBroadcast(WampMessage msg) {
+        if (msg.isRegisterMessage()) {
+            WampRegisterMessage reg = msg.asRegisterMessage();
+            mRegisteringProcedures.put(Integer.valueOf(reg.getRequestId()), reg.getProcedure());
+            return true;
         }
-        WampRegisterMessage reg = msg.asRegisterMessage();
-        mRegisteringProcedures.put(Integer.valueOf(reg.getRequestId()), reg.getProcedure());
+        if (msg.isUnregisterMessage()) {
+            return true;
+        }
+        return false;
     }
 
     private void registered(WampRegisteredMessage msg) {

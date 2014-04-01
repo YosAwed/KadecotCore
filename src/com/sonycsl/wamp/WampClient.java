@@ -21,6 +21,25 @@ abstract public class WampClient extends WampPeer {
     }
 
     @Override
+    protected final boolean consumeBroadcast(WampMessage msg) {
+        if (consumeMyBroadcast(msg)) {
+            return true;
+        }
+
+        return consumeRoleBroadcast(msg);
+    }
+
+    private boolean consumeMyBroadcast(WampMessage msg) {
+        if (msg.isHelloMessage()) {
+            return true;
+        }
+        if (msg.isGoodbyeMessage()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     protected final boolean consumeMessage(WampMessenger friend, WampMessage msg) {
         if (consumeMyMessage(friend, msg)) {
             onConsumed(msg);
@@ -75,6 +94,8 @@ abstract public class WampClient extends WampPeer {
     }
 
     abstract protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg);
+
+    abstract protected boolean consumeRoleBroadcast(WampMessage msg);
 
     abstract protected void onConsumed(WampMessage msg);
 }

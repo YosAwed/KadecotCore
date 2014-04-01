@@ -22,7 +22,8 @@ public class KadecotWampSubscriber extends KadecotWampClient {
     }
 
     @Override
-    protected void onBroadcast(WampMessage msg) {
+    protected boolean consumeRoleBroadcast(WampMessage msg) {
+        return false;
     }
 
 }

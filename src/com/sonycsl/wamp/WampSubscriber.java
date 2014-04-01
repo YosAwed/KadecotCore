@@ -11,6 +11,17 @@ public abstract class WampSubscriber extends WampClient {
     }
 
     @Override
+    protected boolean consumeRoleBroadcast(WampMessage msg) {
+        if (msg.isSubscribeMessage()) {
+            return true;
+        }
+        if (msg.isUnsubscribeMessage()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
         if (consumeMyMessage(friend, msg)) {
             onConsumed(msg);

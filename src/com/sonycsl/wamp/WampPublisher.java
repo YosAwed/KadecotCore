@@ -10,15 +10,19 @@ abstract public class WampPublisher extends WampClient {
         super(next);
     }
 
-    private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
-        if (msg.isPublishedMessage()) {
+    @Override
+    protected boolean consumeRoleBroadcast(WampMessage msg) {
+        if (msg.isPublishMessage()) {
             return true;
         }
         return false;
     }
 
-    @Override
-    protected final void onBroadcast(WampMessage msg) {
+    private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
+        if (msg.isPublishedMessage()) {
+            return true;
+        }
+        return false;
     }
 
     @Override

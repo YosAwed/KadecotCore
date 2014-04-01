@@ -91,6 +91,7 @@ public class WampMockDealerPeer extends WampRouter implements WampTest {
     }
 
     @Override
-    protected void onBroadcast(WampMessage msg) {
+    protected boolean consumeRoleBroadcast(WampMessage msg) {
+        return true;
     }
 }

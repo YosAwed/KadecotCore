@@ -1,6 +1,7 @@
 
 package com.sonycsl.wamp;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,10 +49,28 @@ public abstract class WampPeer {
     }
 
     public final void broadcast(WampMessage msg) {
-        for (WampMessenger messenger : mMessengers.values()) {
-            messenger.send(msg);
+        broadcast(mMessengers.values(), msg);
+    }
+
+    synchronized protected final void broadcast(Collection<WampMessenger> messengerList,
+            WampMessage msg) {
+        if (msg == null) {
+            throw new IllegalArgumentException("message should not be null");
         }
-        onBroadcast(msg);
+
+        if (consumeBroadcast(msg)) {
+            for (WampMessenger messenger : messengerList) {
+                messenger.send(msg);
+            }
+            return;
+        }
+
+        if (mNext != null) {
+            mNext.broadcast(messengerList, msg);
+            return;
+        }
+
+        throw new IllegalArgumentException("Can not handle broadcast: " + msg);
     }
 
     synchronized protected final void onMessage(WampMessenger friend, WampMessage msg) {
@@ -75,6 +94,6 @@ public abstract class WampPeer {
 
     protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
 
-    protected abstract void onBroadcast(WampMessage msg);
+    protected abstract boolean consumeBroadcast(WampMessage msg);
 
 }

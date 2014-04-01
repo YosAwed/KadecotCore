@@ -41,11 +41,6 @@ public class WampCallerTestCase extends TestCase {
         }
 
         @Override
-        protected void onBroadcast(WampMessage msg) {
-
-        }
-
-        @Override
         public void setConsumed(boolean isConsumed) {
         }
 

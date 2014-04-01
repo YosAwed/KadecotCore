@@ -22,11 +22,12 @@ public class WampRouterTestCase extends TestCase {
         }
 
         @Override
-        protected void onBroadcast(WampMessage msg) {
+        protected void onConsumed(WampMessage msg) {
         }
 
         @Override
-        protected void onConsumed(WampMessage msg) {
+        protected boolean consumeRoleBroadcast(WampMessage msg) {
+            return true;
         }
     }
 

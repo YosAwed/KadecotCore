@@ -22,10 +22,6 @@ public class WampDealerTestCase extends TestCase {
         private Queue<WampMessage> mMessageQueue = new LinkedList<WampMessage>();
 
         @Override
-        protected void onBroadcast(WampMessage msg) {
-        }
-
-        @Override
         public void setConsumed(boolean isConsumed) {
         }
 

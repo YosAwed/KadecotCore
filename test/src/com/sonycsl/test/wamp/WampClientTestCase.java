@@ -48,7 +48,8 @@ public class WampClientTestCase extends TestCase {
         }
 
         @Override
-        protected void onBroadcast(WampMessage msg) {
+        protected boolean consumeRoleBroadcast(WampMessage msg) {
+            return true;
         }
     }
 

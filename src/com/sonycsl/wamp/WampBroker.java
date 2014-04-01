@@ -29,6 +29,11 @@ public abstract class WampBroker extends WampRouter {
     }
 
     @Override
+    protected boolean consumeRoleBroadcast(WampMessage msg) {
+        return false;
+    }
+
+    @Override
     protected final boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isPublishMessage()) {
             handlePublishMessage(friend, msg.asPublishMessage());

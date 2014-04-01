@@ -52,6 +52,7 @@ public class WampMockPeer extends WampPeer implements WampTest {
     }
 
     @Override
-    protected void onBroadcast(WampMessage msg) {
+    protected boolean consumeBroadcast(WampMessage msg) {
+        return true;
     }
 }
