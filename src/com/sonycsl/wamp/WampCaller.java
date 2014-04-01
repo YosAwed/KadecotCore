@@ -3,6 +3,13 @@ package com.sonycsl.wamp;
 
 public abstract class WampCaller extends WampClient {
 
+    public WampCaller() {
+    }
+
+    public WampCaller(WampClient next) {
+        super(next);
+    }
+
     @Override
     protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
         if (consumeMyMessage(friend, msg)) {
