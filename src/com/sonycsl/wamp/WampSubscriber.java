@@ -48,9 +48,9 @@ public abstract class WampSubscriber extends WampClient {
         return false;
     }
 
-    abstract protected void subscribed(WampSubscribedMessage asSubscribedMessage);
+    abstract protected void subscribed(WampSubscribedMessage msg);
 
-    abstract protected void unsubscribed(WampUnsubscribedMessage asUnsubscribedMessage);
+    abstract protected void unsubscribed(WampUnsubscribedMessage msg);
 
-    abstract protected void event(WampEventMessage asUnsubscribedMessage);
+    abstract protected void event(WampEventMessage msg);
 }
