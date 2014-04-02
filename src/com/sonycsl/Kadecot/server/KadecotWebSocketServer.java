@@ -9,13 +9,19 @@ import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
+import com.sonycsl.Kadecot.wamp.KadecotWampCaller;
 import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
+import com.sonycsl.Kadecot.wamp.KadecotWampSubscriber;
+import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampRouter;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -97,6 +103,8 @@ public class KadecotWebSocketServer {
 
         private Map<WebSocket, KadecotCall> mKadecotCalls = new HashMap<WebSocket, KadecotCall>();
 
+        private Map<WebSocket, WampClient> mClientChains = new HashMap<WebSocket, WampClient>();
+
         public WebSocketServerImpl(InetSocketAddress address) {
             super(address);
         }
@@ -108,9 +116,13 @@ public class KadecotWebSocketServer {
             String origin = handshake.getFieldValue("origin");
             KadecotCoreApplication app = (KadecotCoreApplication) mContext.getApplicationContext();
             if (app.getModifiableObject().acceptWebSocketOrigin(origin)) {
-                KadecotCall kc = new WebSocketCall(mContext, conn);
-                mKadecotCalls.put(conn, kc);
-                kc.start();
+                /** KadecotCall **/
+
+                /** WAMP **/
+                WampClient clientChain = new KadecotWampCaller(conn, new KadecotWampSubscriber(conn));
+                clientChain.connect(mRouterChain);
+                mClientChains.put(conn, clientChain);
+
             } else {
                 conn.close();
             }
@@ -119,24 +131,36 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+            /** KadecotCall **/
             if (mKadecotCalls.containsKey(conn)) {
                 KadecotCall kc = mKadecotCalls.get(conn);
                 mKadecotCalls.remove(conn);
                 kc.stop();
             }
 
+            /** WAMP has no method for onClose **/
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
-            // TODO Auto-generated method stub
 
+            /** KadecotCall **/
             Dbg.print(message);
             if (mKadecotCalls.containsKey(conn)) {
                 try {
                     mKadecotCalls.get(conn).receive(new JSONObject(message));
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            /** WAMP **/
+            if (mClientChains.containsKey(conn)) {
+                try {
+                    WampMessage wmsg = WampMessageFactory.create(new JSONArray(message));
+                    mClientChains.get(conn).broadcast(wmsg);
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -155,10 +179,14 @@ public class KadecotWebSocketServer {
         public synchronized void stop(int timeout) throws IOException, InterruptedException {
             super.stop(timeout);
 
+            /** KadecotCalls **/
             for (WebSocket ws : mKadecotCalls.keySet()) {
                 mKadecotCalls.get(ws).stop();
             }
             mKadecotCalls.clear();
+
+            /** WAMP **/
+            mClientChains.clear();
 
             self.mWebSocketServer = null;
 
