@@ -8,25 +8,34 @@ import com.sonycsl.wamp.WampSubscribedMessage;
 import com.sonycsl.wamp.WampSubscriber;
 import com.sonycsl.wamp.WampUnsubscribedMessage;
 
+import org.java_websocket.WebSocket;
+
 public class KadecotWampSubscriber extends WampSubscriber {
 
-    public KadecotWampSubscriber() {
+    private WebSocket mWs;
+
+    public KadecotWampSubscriber(WebSocket ws) {
+        mWs = ws;
     }
 
-    public KadecotWampSubscriber(WampClient next) {
+    public KadecotWampSubscriber(WebSocket ws, WampClient next) {
         super(next);
+        mWs = ws;
     }
 
     @Override
-    protected void subscribed(WampSubscribedMessage asSubscribedMessage) {
+    protected void subscribed(WampSubscribedMessage msg) {
+        mWs.send(msg.toString());
     }
 
     @Override
-    protected void unsubscribed(WampUnsubscribedMessage asUnsubscribedMessage) {
+    protected void unsubscribed(WampUnsubscribedMessage msg) {
+        mWs.send(msg.toString());
     }
 
     @Override
-    protected void event(WampEventMessage asUnsubscribedMessage) {
+    protected void event(WampEventMessage msg) {
+        mWs.send(msg.toString());
     }
 
     @Override

@@ -6,17 +6,24 @@ import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampResultMessage;
 
+import org.java_websocket.WebSocket;
+
 public class KadecotWampCaller extends WampCaller {
 
-    public KadecotWampCaller() {
+    private WebSocket mWs;
+
+    public KadecotWampCaller(WebSocket ws) {
+        mWs = ws;
     }
 
-    public KadecotWampCaller(WampClient next) {
+    public KadecotWampCaller(WebSocket ws, WampClient next) {
         super(next);
+        mWs = ws;
     }
 
     @Override
     protected void result(WampResultMessage msg) {
+        mWs.send(msg.toString());
     }
 
     @Override
