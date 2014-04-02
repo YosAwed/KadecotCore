@@ -20,7 +20,7 @@ public class KadecotWampBroker extends WampBroker {
     @Override
     protected JSONObject createEventDetails(JSONObject options, JSONArray arguments,
             JSONObject argumentKw) {
-        return null;
+        return new JSONObject();
     }
 
     @Override
