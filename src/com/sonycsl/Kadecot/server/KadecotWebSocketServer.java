@@ -8,6 +8,9 @@ import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
+import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
+import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
+import com.sonycsl.wamp.WampRouter;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -37,6 +40,8 @@ public class KadecotWebSocketServer {
 
     private boolean mStarted = false;
 
+    private KadecotWampBroker mRouterChain;
+
     public synchronized static KadecotWebSocketServer getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new KadecotWebSocketServer(context);
@@ -46,8 +51,13 @@ public class KadecotWebSocketServer {
 
     private KadecotWebSocketServer(Context context) {
         mContext = context.getApplicationContext();
+        mRouterChain = new KadecotWampBroker(new KadecotWampDealer());
 
         WebSocketImpl.DEBUG = false;// true;
+    }
+
+    public WampRouter getWampRouter() {
+        return mRouterChain;
     }
 
     public synchronized void start() {
