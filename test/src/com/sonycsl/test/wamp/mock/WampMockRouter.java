@@ -31,6 +31,11 @@ public class WampMockRouter extends WampMockPeer {
                     .createPublished(msg.asPublishMessage().getRequestId(), 1));
         }
 
+        if (msg.isCallMessage()) {
+            friend.send(WampMessageFactory.createResult(msg.asCallMessage().getRequestId(),
+                    new JSONObject()));
+        }
+
         return consumed;
     }
 }

@@ -23,16 +23,10 @@ public class KadecotWampCaller extends WampCaller {
 
     @Override
     protected void result(WampResultMessage msg) {
-        mWs.send(msg.toString());
     }
 
     @Override
     protected void onConsumed(WampMessage msg) {
+        mWs.send(msg.toString());
     }
-
-    @Override
-    protected boolean consumeRoleBroadcast(WampMessage msg) {
-        return false;
-    }
-
 }
