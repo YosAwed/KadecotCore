@@ -25,26 +25,18 @@ public class KadecotWampSubscriber extends WampSubscriber {
 
     @Override
     protected void subscribed(WampSubscribedMessage msg) {
-        mWs.send(msg.toString());
     }
 
     @Override
     protected void unsubscribed(WampUnsubscribedMessage msg) {
-        mWs.send(msg.toString());
     }
 
     @Override
     protected void event(WampEventMessage msg) {
-        mWs.send(msg.toString());
     }
 
     @Override
     protected void onConsumed(WampMessage msg) {
+        mWs.send(msg.toString());
     }
-
-    @Override
-    protected boolean consumeRoleBroadcast(WampMessage msg) {
-        return false;
-    }
-
 }

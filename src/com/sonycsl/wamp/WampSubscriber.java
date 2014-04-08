@@ -11,7 +11,7 @@ public abstract class WampSubscriber extends WampClient {
     }
 
     @Override
-    protected boolean consumeRoleBroadcast(WampMessage msg) {
+    protected final boolean consumeRoleBroadcast(WampMessage msg) {
         if (msg.isSubscribeMessage()) {
             return true;
         }

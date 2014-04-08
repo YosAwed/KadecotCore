@@ -36,6 +36,16 @@ public class WampMockRouter extends WampMockPeer {
                     new JSONObject()));
         }
 
+        if (msg.isSubscribeMessage()) {
+            friend.send(WampMessageFactory.createSubscribed(
+                    msg.asSubscribeMessage().getRequestId(), 1));
+        }
+
+        if (msg.isUnsubscribeMessage()) {
+            friend.send(WampMessageFactory.createUnsubscribed(msg.asUnsubscribeMessage()
+                    .getRequestId()));
+        }
+
         return consumed;
     }
 }
