@@ -6,8 +6,6 @@ import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampRouter;
 
-import org.json.JSONObject;
-
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -34,13 +32,11 @@ public class WampMockBrokerPeer extends WampRouter implements WampTest {
         if (msg.isSubscribeMessage()) {
             friend.send(WampMessageFactory.createSubscribed(
                     msg.asSubscribeMessage().getRequestId(), 0));
-            mSubscriber = friend;
             return true;
         }
 
         if (msg.isPublishMessage()) {
             friend.send(WampMessageFactory.createPublished(0, 0));
-            mSubscriber.send(WampMessageFactory.createEvent(0, 0, new JSONObject()));
             return true;
         }
 

@@ -85,6 +85,5 @@ public class WampSubscriberTestCase extends TestCase {
         WampTestUtil.broadcastHelloSuccess(mSubscriber);
         WampTestUtil.broadcastHelloSuccess(mPublisher);
         WampTestUtil.broadcastSubscribeSuccess(mSubscriber, TEST_TOPIC);
-        WampTestUtil.broadcastPublishSuccess(mPublisher, TEST_TOPIC, mSubscriber);
     }
 }

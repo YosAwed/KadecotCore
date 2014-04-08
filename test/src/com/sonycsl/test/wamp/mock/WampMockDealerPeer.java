@@ -15,10 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 public class WampMockDealerPeer extends WampRouter implements WampTest {
 
-    private WampMessenger mRegisterer;
-
-    private WampMessenger mCaller;
-
     private CountDownLatch mLatch;
 
     private Queue<WampMessage> mMessageQueue = new LinkedList<WampMessage>();
@@ -36,19 +32,16 @@ public class WampMockDealerPeer extends WampRouter implements WampTest {
         if (msg.isRegisterMessage()) {
             friend.send(WampMessageFactory.createRegistered(msg.asRegisterMessage().getRequestId(),
                     0));
-            mRegisterer = friend;
             return true;
         }
 
         if (msg.isCallMessage()) {
-            mCaller = friend;
-            mRegisterer.send(WampMessageFactory.createInvocation(0, 0, new JSONObject()));
+            friend.send(WampMessageFactory.createResult(msg.asCallMessage().getRequestId(),
+                    new JSONObject()));
             return true;
         }
 
         if (msg.isYieldMessage()) {
-            mCaller.send(WampMessageFactory
-                    .createResult(msg.asYieldMessage().getRequestId(), new JSONObject()));
             return true;
         }
 

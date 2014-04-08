@@ -76,6 +76,6 @@ public class WampCallerTestCase extends TestCase {
         WampTestUtil.broadcastHelloSuccess(mCaller);
         WampTestUtil.broadcastHelloSuccess(mCallee);
         WampTestUtil.broadcastRegisterSuccess(mCallee, TEST_PROCEDURE, mRouter);
-        WampTestUtil.broadcastCallSuccess(mCaller, TEST_PROCEDURE, mRouter, mCallee);
+        WampTestUtil.broadcastCallSuccess(mCaller, TEST_PROCEDURE, mRouter);
     }
 }
