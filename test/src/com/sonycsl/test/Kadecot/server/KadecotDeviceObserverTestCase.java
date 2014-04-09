@@ -3,7 +3,7 @@ package com.sonycsl.test.Kadecot.server;
 
 import com.sonycsl.Kadecot.wamp.KadecotDeviceInfo;
 import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
-import com.sonycsl.Kadecot.wamp.WampTopic;
+import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.test.wamp.mock.WampMockBrokerPeer;
 import com.sonycsl.test.wamp.mock.WampMockDealerPeer;
@@ -35,7 +35,7 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     }
 
     public void testBroadcastDevice() {
-        broadcastPublishDevice(mClient, WampTopic.TOPIC_PRIVATE_DEVICE);
+        broadcastPublishDevice(mClient, KadecotWampTopic.TOPIC_PRIVATE_DEVICE);
     }
 
     private static WampMessage broadcastPublishDevice(WampTest publisher, String topic) {
