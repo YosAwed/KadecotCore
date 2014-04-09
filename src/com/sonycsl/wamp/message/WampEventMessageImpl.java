@@ -78,12 +78,22 @@ public class WampEventMessageImpl extends WampAbstractMessage implements WampEve
     }
 
     @Override
+    public boolean hasArguments() {
+        return !toJSON().isNull(ARGUMENTS_INDEX);
+    }
+
+    @Override
     public JSONArray getArguments() {
         try {
             return toJSON().getJSONArray(ARGUMENTS_INDEX);
         } catch (JSONException e) {
             throw new IllegalArgumentException("there is no argument");
         }
+    }
+
+    @Override
+    public boolean hasArgumentsKw() {
+        return !toJSON().isNull(ARGUMENTS_KW_INDEX);
     }
 
     @Override
