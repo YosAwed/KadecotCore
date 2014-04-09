@@ -15,6 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 public class WampMockDealerPeer extends WampRouter implements WampTest {
 
+    public WampMockDealerPeer() {
+    }
+
+    public WampMockDealerPeer(WampRouter router) {
+        super(router);
+    }
+
     private CountDownLatch mLatch;
 
     private Queue<WampMessage> mMessageQueue = new LinkedList<WampMessage>();
