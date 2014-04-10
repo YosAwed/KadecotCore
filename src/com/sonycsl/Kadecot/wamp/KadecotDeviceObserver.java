@@ -29,7 +29,8 @@ public class KadecotDeviceObserver {
 
     private int mRequestId = 0;
 
-    private CountDownLatch mLatch = new CountDownLatch(1);
+    private CountDownLatch mWelcomeLatch = new CountDownLatch(1);
+    private CountDownLatch mSubscribedLatch = new CountDownLatch(1);
 
     private class DeviceObserverWampCallee extends WampCallee {
 
@@ -40,7 +41,7 @@ public class KadecotDeviceObserver {
         @Override
         protected void onConsumed(WampMessage msg) {
             if (msg.isWelcomeMessage()) {
-                mLatch.countDown();
+                mWelcomeLatch.countDown();
             }
         }
 
@@ -66,6 +67,7 @@ public class KadecotDeviceObserver {
 
         @Override
         protected void subscribed(WampSubscribedMessage msg) {
+            mSubscribedLatch.countDown();
         }
 
         @Override
@@ -114,17 +116,28 @@ public class KadecotDeviceObserver {
 
     public KadecotDeviceObserver(WampRouter router) {
         mClientChain = new DeviceObserverWampCallee(new DeviceObserverWampSubscriber());
-        router.connect(mClientChain);
+        mClientChain.connect(router);
         broadcastSyncHello();
-        mClientChain.broadcast(WampMessageFactory.createSubscribe(++mRequestId, new JSONObject(),
-                KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
+        broadcastSyncSubscribe();
     }
 
     private void broadcastSyncHello() {
         mClientChain.broadcast(WampMessageFactory.createHello("relm", new JSONObject()));
         try {
-            if (!mLatch.await(1, TimeUnit.SECONDS)) {
+            if (!mWelcomeLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Welcome message");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastSyncSubscribe() {
+        mClientChain.broadcast(WampMessageFactory.createSubscribe(++mRequestId, new JSONObject(),
+                KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
+        try {
+            if (!mSubscribedLatch.await(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Router returns no Subscribed message");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
