@@ -28,6 +28,8 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     private WampMockPeer mCaller;
     private KadecotWampDealer mRouter;
 
+    KadecotDeviceObserver mDeviceObserver;
+
     @Override
     protected void setUp() {
         mDevicePublisher = new WampMockPeer();
@@ -38,11 +40,11 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         mDevicePublisher.connect(mRouter);
         mCaller.connect(mRouter);
 
-        KadecotDeviceObserver deviceObserver = new KadecotDeviceObserver(mRouter);
-        deviceObserver.start();
+        mDeviceObserver = new KadecotDeviceObserver(mRouter);
     }
 
     public void testBroadcastDevice() {
+        mDeviceObserver.start();
         broadcastPublishDevice(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
                 createDeviceJson());
         WampMessage msg = broadcastCallDeviceList(mCaller,
@@ -54,6 +56,7 @@ public class KadecotDeviceObserverTestCase extends TestCase {
             JSONArray expectedDeviceList = new JSONArray().put(createDeviceJson());
             assertEquals(expectedDeviceList.toString(), resultMsg.getArguments().toString());
         }
+        mDeviceObserver.stop();
     }
 
     private static WampMessage broadcastPublishDevice(WampTest publisher, String topic,
