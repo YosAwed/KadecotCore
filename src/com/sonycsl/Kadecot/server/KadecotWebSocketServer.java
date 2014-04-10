@@ -8,6 +8,7 @@ import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
+import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
 import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
 import com.sonycsl.Kadecot.wamp.KadecotWampCaller;
 import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
@@ -48,6 +49,8 @@ public class KadecotWebSocketServer {
 
     private KadecotWampBroker mRouterChain;
 
+    private KadecotDeviceObserver mDeviceObserver;
+
     public synchronized static KadecotWebSocketServer getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new KadecotWebSocketServer(context);
@@ -58,6 +61,7 @@ public class KadecotWebSocketServer {
     private KadecotWebSocketServer(Context context) {
         mContext = context.getApplicationContext();
         mRouterChain = new KadecotWampBroker(new KadecotWampDealer());
+        mDeviceObserver = new KadecotDeviceObserver(mRouterChain);
 
         WebSocketImpl.DEBUG = false;// true;
     }
@@ -73,6 +77,7 @@ public class KadecotWebSocketServer {
         stop();
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
         mWebSocketServer.start();
+        mDeviceObserver.start();
         mStarted = true;
     }
 
@@ -95,6 +100,8 @@ public class KadecotWebSocketServer {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        mDeviceObserver.stop();
+
         mWebSocketServer = null;
         mStarted = false;
     }
@@ -119,7 +126,8 @@ public class KadecotWebSocketServer {
                 /** KadecotCall **/
 
                 /** WAMP **/
-                WampClient clientChain = new KadecotWampCaller(conn, new KadecotWampSubscriber(conn));
+                WampClient clientChain = new KadecotWampCaller(conn,
+                        new KadecotWampSubscriber(conn));
                 clientChain.connect(mRouterChain);
                 mClientChains.put(conn, clientChain);
 
