@@ -1,6 +1,8 @@
 
 package com.sonycsl.Kadecot.wamp;
 
+import android.util.Log;
+
 import com.sonycsl.wamp.WampCallee;
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampEventMessage;
@@ -23,6 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class KadecotDeviceObserver {
+
+    private static final String TAG = KadecotDeviceObserver.class.getSimpleName();
 
     private Map<String, JSONObject> mDeviceMap = new ConcurrentHashMap<String, JSONObject>();
 
@@ -123,10 +127,11 @@ public class KadecotDeviceObserver {
                 synchronized (mDeviceMap) {
                     JSONObject cashedDevice = mDeviceMap.get(nickName);
                     if (cashedDevice == null) {
+                        Log.d(TAG, "new device found: " + deviceInfo.toString());
                         mDeviceMap.put(nickName, deviceInfo);
                         mClientChain.broadcast(WampMessageFactory.createPublish(++mRequestId,
-                                new JSONObject(),
-                                KadecotWampTopic.TOPIC_DEVICE));
+                                new JSONObject(), KadecotWampTopic.TOPIC_DEVICE, new JSONArray(),
+                                deviceInfo));
                         return;
                     }
 
@@ -134,10 +139,11 @@ public class KadecotDeviceObserver {
                         return;
                     }
 
+                    Log.d(TAG, "device state changed: " + deviceInfo.toString());
                     mDeviceMap.put(nickName, deviceInfo);
                     mClientChain.broadcast(WampMessageFactory.createPublish(++mRequestId,
-                            new JSONObject(),
-                            KadecotWampTopic.TOPIC_DEVICE));
+                            new JSONObject(), KadecotWampTopic.TOPIC_DEVICE, new JSONArray(),
+                            deviceInfo));
                 }
             } catch (JSONException e) {
                 throw new IllegalStateException("Illegal device message");
