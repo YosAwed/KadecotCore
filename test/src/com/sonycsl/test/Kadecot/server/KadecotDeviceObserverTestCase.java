@@ -3,13 +3,15 @@ package com.sonycsl.test.Kadecot.server;
 
 import com.sonycsl.Kadecot.wamp.KadecotDeviceInfo;
 import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
+import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
+import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.test.wamp.WampTest;
-import com.sonycsl.test.wamp.mock.WampMockBrokerPeer;
-import com.sonycsl.test.wamp.mock.WampMockDealerPeer;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.WampMessageType;
+import com.sonycsl.wamp.WampResultMessage;
 
 import junit.framework.TestCase;
 
@@ -22,42 +24,43 @@ import java.util.concurrent.TimeUnit;
 
 public class KadecotDeviceObserverTestCase extends TestCase {
 
-    private WampMockPeer mClient;
-    private WampMockDealerPeer mRouter;
-    private WampMockBrokerPeer mBroker;
+    private WampMockPeer mDevicePublisher;
+    private WampMockPeer mCaller;
+    private KadecotWampDealer mRouter;
     private KadecotDeviceObserver mDeviceObserver;
 
     @Override
     protected void setUp() {
-        mClient = new WampMockPeer();
+        mDevicePublisher = new WampMockPeer();
+        mCaller = new WampMockPeer();
 
-        mRouter = new WampMockDealerPeer(new WampMockBrokerPeer());
+        mRouter = new KadecotWampDealer(new KadecotWampBroker());
 
-        mClient.connect(mRouter);
+        mDevicePublisher.connect(mRouter);
+        mCaller.connect(mRouter);
         mDeviceObserver = new KadecotDeviceObserver(mRouter);
     }
 
     public void testBroadcastDevice() {
-        broadcastPublishDevice(mClient, KadecotWampTopic.TOPIC_PRIVATE_DEVICE);
+        broadcastPublishDevice(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
+                createDeviceJson());
+        WampMessage msg = broadcastCallDeviceList(mCaller, KadecotWampTopic.TOPIC_DEVICE);
+        assertEquals(WampMessageType.RESULT, msg.getMessageType());
+
+        if (msg.isResultMessage()) {
+            WampResultMessage resultMsg = msg.asResultMessage();
+            JSONArray expectedDeviceList = new JSONArray().put(createDeviceJson());
+            assertEquals(expectedDeviceList.toString(), resultMsg.getArguments().toString());
+        }
     }
 
-    private static WampMessage broadcastPublishDevice(WampTest publisher, String topic) {
+    private static WampMessage broadcastPublishDevice(WampTest publisher, String topic,
+            JSONObject device) {
         publisher.setCountDownLatch(new CountDownLatch(1));
 
-        try {
-            JSONObject device = new JSONObject().put(KadecotDeviceInfo.DEVICE_STATUS_KEY, 1)
-                    .put(KadecotDeviceInfo.DEVICE_PROTOCOL_KEY, "")
-                    .put(KadecotDeviceInfo.DEVICE_DEVICENAME_KEY, "")
-                    .put(KadecotDeviceInfo.DEVICE_NICKNAME_KEY, "testNickname")
-                    .put(KadecotDeviceInfo.DEVICE_PARENT_KEY, "")
-                    .put(KadecotDeviceInfo.DEVICE_DEVICETYPE_KEY, "");
-
-            WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
-                    new JSONArray(), device);
-            publisher.broadcast(msg);
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
+        WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
+                new JSONArray(), device);
+        publisher.broadcast(msg);
 
         try {
             TestCase.assertTrue(publisher.await(1, TimeUnit.SECONDS));
@@ -66,5 +69,33 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         }
 
         return publisher.getMessage();
+    }
+
+    private static JSONObject createDeviceJson() {
+        try {
+            return new JSONObject().put(KadecotDeviceInfo.DEVICE_STATUS_KEY, 1)
+                    .put(KadecotDeviceInfo.DEVICE_PROTOCOL_KEY, "")
+                    .put(KadecotDeviceInfo.DEVICE_DEVICENAME_KEY, "")
+                    .put(KadecotDeviceInfo.DEVICE_NICKNAME_KEY, "testNickname")
+                    .put(KadecotDeviceInfo.DEVICE_PARENT_KEY, "")
+                    .put(KadecotDeviceInfo.DEVICE_DEVICETYPE_KEY, "");
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    private static WampMessage broadcastCallDeviceList(WampTest caller, String procedure) {
+        caller.setCountDownLatch(new CountDownLatch(1));
+
+        caller.broadcast(WampMessageFactory.createCall(1, new JSONObject(),
+                procedure));
+
+        try {
+            TestCase.assertTrue(caller.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        return caller.getMessage();
     }
 }
