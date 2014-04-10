@@ -172,7 +172,7 @@ public abstract class WampDealer extends WampRouter {
         caller.send(createWampResultMessage(callInfo.getReceivedMessage().getRequestId(), message));
     }
 
-    private WampMessage createWampResultMessage(int callRequestId, WampYieldMessage msg) {
+    private static WampMessage createWampResultMessage(int callRequestId, WampYieldMessage msg) {
         if (msg.hasArguments() && msg.hasArgumentsKw()) {
             return WampMessageFactory.createResult(callRequestId, new JSONObject(),
                     msg.getArguments(), msg.getArgumentsKw());
