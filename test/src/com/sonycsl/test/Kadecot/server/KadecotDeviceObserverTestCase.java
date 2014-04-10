@@ -43,7 +43,7 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         mDeviceObserver = new KadecotDeviceObserver(mRouter);
     }
 
-    public void testBroadcastDevice() {
+    public void testGetDeviceList() {
         mDeviceObserver.start();
         broadcastPublishDevice(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
                 createDeviceJson());
