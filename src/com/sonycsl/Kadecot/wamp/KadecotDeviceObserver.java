@@ -7,6 +7,7 @@ import com.sonycsl.wamp.WampEventMessage;
 import com.sonycsl.wamp.WampInvocationMessage;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.WampPublisher;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.WampSubscribedMessage;
 import com.sonycsl.wamp.WampSubscriber;
@@ -31,6 +32,15 @@ public class KadecotDeviceObserver {
 
     private CountDownLatch mWelcomeLatch = new CountDownLatch(1);
     private CountDownLatch mSubscribedLatch = new CountDownLatch(1);
+    private CountDownLatch mRegisterLatch = new CountDownLatch(1);
+
+    private class DeviceObserverWampPublisher extends WampPublisher {
+
+        @Override
+        protected void onConsumed(WampMessage msg) {
+        }
+
+    }
 
     private class DeviceObserverWampCallee extends WampCallee {
 
@@ -42,6 +52,9 @@ public class KadecotDeviceObserver {
         protected void onConsumed(WampMessage msg) {
             if (msg.isWelcomeMessage()) {
                 mWelcomeLatch.countDown();
+            }
+            if (msg.isRegisteredMessage()) {
+                mRegisterLatch.countDown();
             }
         }
 
@@ -58,7 +71,8 @@ public class KadecotDeviceObserver {
 
     private class DeviceObserverWampSubscriber extends WampSubscriber {
 
-        public DeviceObserverWampSubscriber() {
+        public DeviceObserverWampSubscriber(WampClient client) {
+            super(client);
         }
 
         @Override
@@ -115,10 +129,12 @@ public class KadecotDeviceObserver {
     }
 
     public KadecotDeviceObserver(WampRouter router) {
-        mClientChain = new DeviceObserverWampCallee(new DeviceObserverWampSubscriber());
+        mClientChain = new DeviceObserverWampCallee(new DeviceObserverWampSubscriber(
+                new DeviceObserverWampPublisher()));
         mClientChain.connect(router);
         broadcastSyncHello();
         broadcastSyncSubscribe();
+        broadcastSyncRegister();
     }
 
     private void broadcastSyncHello() {
@@ -137,6 +153,18 @@ public class KadecotDeviceObserver {
                 KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
         try {
             if (!mSubscribedLatch.await(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Router returns no Subscribed message");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastSyncRegister() {
+        mClientChain.broadcast(WampMessageFactory.createRegister(1, new JSONObject(),
+                KadecotWampTopic.TOPIC_DEVICE));
+        try {
+            if (!mRegisterLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Subscribed message");
             }
         } catch (InterruptedException e) {
