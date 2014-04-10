@@ -26,6 +26,8 @@ public class KadecotDeviceObserver {
 
     private Map<String, JSONObject> mDeviceMap = new ConcurrentHashMap<String, JSONObject>();
 
+    public static final String DEVICE_LIST_PROCEDURE = "com.sonycsl.Kadecot.procedure.deviceList";
+
     private WampClient mClientChain;
 
     private int mRequestId = 0;
@@ -162,7 +164,7 @@ public class KadecotDeviceObserver {
 
     private void broadcastSyncRegister() {
         mClientChain.broadcast(WampMessageFactory.createRegister(1, new JSONObject(),
-                KadecotWampTopic.TOPIC_DEVICE));
+                DEVICE_LIST_PROCEDURE));
         try {
             if (!mRegisterLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Subscribed message");

@@ -44,7 +44,8 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     public void testBroadcastDevice() {
         broadcastPublishDevice(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
                 createDeviceJson());
-        WampMessage msg = broadcastCallDeviceList(mCaller, KadecotWampTopic.TOPIC_DEVICE);
+        WampMessage msg = broadcastCallDeviceList(mCaller,
+                KadecotDeviceObserver.DEVICE_LIST_PROCEDURE);
         assertEquals(WampMessageType.RESULT, msg.getMessageType());
 
         if (msg.isResultMessage()) {
