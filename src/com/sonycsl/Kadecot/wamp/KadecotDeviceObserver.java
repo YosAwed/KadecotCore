@@ -35,13 +35,15 @@ public class KadecotDeviceObserver {
     private int mRegistrationId = -1;
     private int mSubscriptionId = -1;
 
-    private CountDownLatch mWelcomeLatch = new CountDownLatch(1);
+    private CountDownLatch mHelloLatch = new CountDownLatch(1);
     private CountDownLatch mSubscribeLatch = new CountDownLatch(1);
     private CountDownLatch mRegisterLatch = new CountDownLatch(1);
 
     private CountDownLatch mGoodbyeLatch = new CountDownLatch(1);
     private CountDownLatch mUnsubscribeLatch = new CountDownLatch(1);
     private CountDownLatch mUnregisterLatch = new CountDownLatch(1);
+
+    private boolean mIsStarted = false;
 
     private class DeviceObserverWampPublisher extends WampPublisher {
 
@@ -60,7 +62,7 @@ public class KadecotDeviceObserver {
         @Override
         protected void onConsumed(WampMessage msg) {
             if (msg.isWelcomeMessage()) {
-                mWelcomeLatch.countDown();
+                mHelloLatch.countDown();
             }
             if (msg.isWelcomeMessage()) {
                 mGoodbyeLatch.countDown();
@@ -154,22 +156,60 @@ public class KadecotDeviceObserver {
         mClientChain.connect(router);
     }
 
-    public void start() {
+    public synchronized void start() {
+        if (mIsStarted) {
+            return;
+        }
+        initialize();
+
         broadcastSyncHello();
         broadcastSyncSubscribe();
         broadcastSyncRegister();
+        mIsStarted = true;
     }
 
-    public void stop() {
+    public synchronized void stop() {
+        if (!mIsStarted) {
+            return;
+        }
+
+        mIsStarted = false;
         broadcastSyncUnregister();
         broadcastSyncUnsubscribe();
         broadcastSyncGoodbye();
+
+        release();
+    }
+
+    private void initialize() {
+        mDeviceMap = new ConcurrentHashMap<String, JSONObject>();
+
+        mHelloLatch = new CountDownLatch(1);
+        mSubscribeLatch = new CountDownLatch(1);
+        mRegisterLatch = new CountDownLatch(1);
+
+        mGoodbyeLatch = new CountDownLatch(1);
+        mUnsubscribeLatch = new CountDownLatch(1);
+        mUnregisterLatch = new CountDownLatch(1);
+    }
+
+    private void release() {
+        mDeviceMap.clear();
+        mDeviceMap = null;
+
+        mHelloLatch = null;
+        mSubscribeLatch = null;
+        mRegisterLatch = null;
+
+        mGoodbyeLatch = null;
+        mUnsubscribeLatch = null;
+        mUnregisterLatch = null;
     }
 
     private void broadcastSyncHello() {
         mClientChain.broadcast(WampMessageFactory.createHello("relm", new JSONObject()));
         try {
-            if (!mWelcomeLatch.await(1, TimeUnit.SECONDS)) {
+            if (!mHelloLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Welcome message");
             }
         } catch (InterruptedException e) {
@@ -204,7 +244,7 @@ public class KadecotDeviceObserver {
     private void broadcastSyncUnsubscribe() {
         mClientChain.broadcast(WampMessageFactory.createUnsubscribe(1, mSubscriptionId));
         try {
-            if (!mUnregisterLatch.await(1, TimeUnit.SECONDS)) {
+            if (!mUnsubscribeLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Unsubscribed message");
             }
         } catch (InterruptedException e) {
@@ -226,17 +266,12 @@ public class KadecotDeviceObserver {
     private void broadcastSyncGoodbye() {
         mClientChain.broadcast(WampMessageFactory.createGoodbye(new JSONObject(), ""));
         try {
-            if (!mUnregisterLatch.await(1, TimeUnit.SECONDS)) {
+            if (!mGoodbyeLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Goodbye message");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public void release() {
-        mDeviceMap.clear();
-        mDeviceMap = null;
     }
 
 }
