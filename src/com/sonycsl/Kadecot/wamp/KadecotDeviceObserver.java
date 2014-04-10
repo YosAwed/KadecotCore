@@ -213,7 +213,7 @@ public class KadecotDeviceObserver {
     }
 
     private void broadcastSyncHello() {
-        mClientChain.broadcast(WampMessageFactory.createHello("relm", new JSONObject()));
+        mClientChain.broadcast(WampMessageFactory.createHello("realm", new JSONObject()));
         try {
             if (!mHelloLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Welcome message");
