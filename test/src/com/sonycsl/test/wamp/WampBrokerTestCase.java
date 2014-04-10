@@ -11,30 +11,12 @@ import com.sonycsl.wamp.WampSubscribedMessage;
 
 import junit.framework.TestCase;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class WampBrokerTestCase extends TestCase {
 
     private static class TestWampBroker extends WampBroker {
-
-        @Override
-        protected JSONObject createEventDetails(JSONObject options, JSONArray arguments,
-                JSONObject argumentKw) {
-            JSONObject eventDetails = new JSONObject();
-            try {
-                return eventDetails.put("detail", "test");
-            } catch (JSONException e) {
-                /**
-                 * Never happens
-                 */
-                return null;
-            }
-        }
 
         @Override
         protected void onConsumed(WampMessage msg) {

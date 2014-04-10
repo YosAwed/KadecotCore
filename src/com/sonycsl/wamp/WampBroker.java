@@ -1,7 +1,6 @@
 
 package com.sonycsl.wamp;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashSet;
@@ -36,7 +35,7 @@ public abstract class WampBroker extends WampRouter {
     @Override
     protected final boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isPublishMessage()) {
-            handlePublishMessage(friend, msg.asPublishMessage());
+            publish(friend, msg.asPublishMessage());
             return true;
         }
 
@@ -53,18 +52,9 @@ public abstract class WampBroker extends WampRouter {
         return false;
     }
 
-    private void handlePublishMessage(WampMessenger friend, WampPublishMessage message) {
-        int requestId = message.getRequestId();
-        JSONObject options = message.getOptions();
-        String topic = message.getTopic();
-        JSONArray arguments = message.getArguments();
-        JSONObject argumentKw = message.getArgumentsKw();
+    private void publish(WampMessenger publisher, WampPublishMessage msg) {
+        String topic = msg.getTopic();
 
-        publish(friend, requestId, options, topic, arguments, argumentKw);
-    }
-
-    private void publish(WampMessenger publisher, int requestId, JSONObject options, String topic,
-            JSONArray arguments, JSONObject argumentKw) {
         if (topic == null || "".equals(topic)) {
             throw new IllegalArgumentException("topic should not be null");
         }
@@ -78,14 +68,13 @@ public abstract class WampBroker extends WampRouter {
             if (subscriberSubscriptionIdsMap != null) {
                 for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
                     for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
-                        subscriber.send(WampMessageFactory.createEvent(subscriptionId,
-                                publicationId, createEventDetails(options, arguments, argumentKw),
-                                arguments, argumentKw));
+                        subscriber.send(createEventMessage(subscriptionId, publicationId,
+                                new JSONObject(), msg));
                     }
                 }
             }
         }
-        publisher.send(WampMessageFactory.createPublished(requestId, publicationId));
+        publisher.send(WampMessageFactory.createPublished(msg.getRequestId(), publicationId));
     }
 
     private void handleSubscribeMessage(WampMessenger subscriber, WampSubscribeMessage message) {
@@ -96,9 +85,6 @@ public abstract class WampBroker extends WampRouter {
 
         subscribe(subscriber, requestId, options, topic);
     }
-
-    protected abstract JSONObject createEventDetails(JSONObject options, JSONArray arguments,
-            JSONObject argumentKw);
 
     private void subscribe(WampMessenger friend, int requestId, JSONObject options, String topic) {
         int subscriptionId;
@@ -151,6 +137,21 @@ public abstract class WampBroker extends WampRouter {
                 unsubscriber.send(WampMessageFactory.createUnsubscribed(requestId));
             }
         }
+    }
+
+    private static WampMessage createEventMessage(int subscriptionId, int publicationId,
+            JSONObject details, WampPublishMessage msg) {
+        if (msg.hasArguments() && msg.hasArgumentsKw()) {
+            return WampMessageFactory.createEvent(subscriptionId, publicationId, details,
+                    msg.getArguments(), msg.getArgumentsKw());
+        }
+
+        if (msg.hasArguments()) {
+            return WampMessageFactory.createEvent(subscriptionId, publicationId, details,
+                    msg.getArguments());
+        }
+
+        return WampMessageFactory.createEvent(subscriptionId, publicationId, details);
     }
 
 }
