@@ -32,9 +32,16 @@ public class KadecotDeviceObserver {
 
     private int mRequestId = 0;
 
+    private int mRegistrationId = -1;
+    private int mSubscriptionId = -1;
+
     private CountDownLatch mWelcomeLatch = new CountDownLatch(1);
-    private CountDownLatch mSubscribedLatch = new CountDownLatch(1);
+    private CountDownLatch mSubscribeLatch = new CountDownLatch(1);
     private CountDownLatch mRegisterLatch = new CountDownLatch(1);
+
+    private CountDownLatch mGoodbyeLatch = new CountDownLatch(1);
+    private CountDownLatch mUnsubscribeLatch = new CountDownLatch(1);
+    private CountDownLatch mUnregisterLatch = new CountDownLatch(1);
 
     private class DeviceObserverWampPublisher extends WampPublisher {
 
@@ -55,8 +62,16 @@ public class KadecotDeviceObserver {
             if (msg.isWelcomeMessage()) {
                 mWelcomeLatch.countDown();
             }
+            if (msg.isWelcomeMessage()) {
+                mGoodbyeLatch.countDown();
+            }
             if (msg.isRegisteredMessage()) {
+                mRegistrationId = msg.asRegisteredMessage().getRegistrationId();
                 mRegisterLatch.countDown();
+            }
+            if (msg.isUnregisteredMessage()) {
+                mRegistrationId = -1;
+                mUnregisterLatch.countDown();
             }
         }
 
@@ -83,11 +98,14 @@ public class KadecotDeviceObserver {
 
         @Override
         protected void subscribed(WampSubscribedMessage msg) {
-            mSubscribedLatch.countDown();
+            mSubscriptionId = msg.getSubscriptionId();
+            mSubscribeLatch.countDown();
         }
 
         @Override
         protected void unsubscribed(WampUnsubscribedMessage msg) {
+            mSubscriptionId = -1;
+            mUnsubscribeLatch.countDown();
         }
 
         @Override
@@ -134,9 +152,18 @@ public class KadecotDeviceObserver {
         mClientChain = new DeviceObserverWampCallee(new DeviceObserverWampSubscriber(
                 new DeviceObserverWampPublisher()));
         mClientChain.connect(router);
+    }
+
+    public void start() {
         broadcastSyncHello();
         broadcastSyncSubscribe();
         broadcastSyncRegister();
+    }
+
+    public void stop() {
+        broadcastSyncUnregister();
+        broadcastSyncUnsubscribe();
+        broadcastSyncGoodbye();
     }
 
     private void broadcastSyncHello() {
@@ -154,7 +181,7 @@ public class KadecotDeviceObserver {
         mClientChain.broadcast(WampMessageFactory.createSubscribe(++mRequestId, new JSONObject(),
                 KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
         try {
-            if (!mSubscribedLatch.await(1, TimeUnit.SECONDS)) {
+            if (!mSubscribeLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Subscribed message");
             }
         } catch (InterruptedException e) {
@@ -168,6 +195,39 @@ public class KadecotDeviceObserver {
         try {
             if (!mRegisterLatch.await(1, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Router returns no Subscribed message");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastSyncUnsubscribe() {
+        mClientChain.broadcast(WampMessageFactory.createUnsubscribe(1, mSubscriptionId));
+        try {
+            if (!mUnregisterLatch.await(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Router returns no Unsubscribed message");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastSyncUnregister() {
+        mClientChain.broadcast(WampMessageFactory.createUnregister(1, mRegistrationId));
+        try {
+            if (!mUnregisterLatch.await(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Router returns no Unregistered message");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastSyncGoodbye() {
+        mClientChain.broadcast(WampMessageFactory.createGoodbye(new JSONObject(), ""));
+        try {
+            if (!mUnregisterLatch.await(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Router returns no Goodbye message");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

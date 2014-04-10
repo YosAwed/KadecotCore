@@ -27,7 +27,6 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     private WampMockPeer mDevicePublisher;
     private WampMockPeer mCaller;
     private KadecotWampDealer mRouter;
-    private KadecotDeviceObserver mDeviceObserver;
 
     @Override
     protected void setUp() {
@@ -38,7 +37,9 @@ public class KadecotDeviceObserverTestCase extends TestCase {
 
         mDevicePublisher.connect(mRouter);
         mCaller.connect(mRouter);
-        mDeviceObserver = new KadecotDeviceObserver(mRouter);
+
+        KadecotDeviceObserver deviceObserver = new KadecotDeviceObserver(mRouter);
+        deviceObserver.start();
     }
 
     public void testBroadcastDevice() {
