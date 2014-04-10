@@ -1,6 +1,8 @@
 
 package com.sonycsl.test.wamp.mock;
 
+import android.util.Log;
+
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
@@ -30,6 +32,9 @@ public class WampMockDealerPeer extends WampRouter implements WampTest {
     protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
         if (consumeMyMessage(friend, msg)) {
             mMessageQueue.add(msg);
+            if (mLatch != null) {
+                mLatch.countDown();
+            }
             return true;
         }
         return false;
@@ -81,13 +86,6 @@ public class WampMockDealerPeer extends WampRouter implements WampTest {
 
     @Override
     protected void onConsumed(WampMessage msg) {
-        if (msg.isCallMessage() || msg.isYieldMessage() || msg.isRegisterMessage()
-                || msg.isUnregisterMessage()) {
-            mMessageQueue.add(msg);
-        }
-        if (mLatch != null) {
-            mLatch.countDown();
-        }
     }
 
     @Override
