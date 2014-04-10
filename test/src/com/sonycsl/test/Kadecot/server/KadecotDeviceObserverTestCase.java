@@ -10,7 +10,6 @@ import com.sonycsl.test.wamp.mock.WampMockDealerPeer;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
-import com.sonycsl.wamp.WampRouter;
 
 import junit.framework.TestCase;
 
@@ -24,13 +23,17 @@ import java.util.concurrent.TimeUnit;
 public class KadecotDeviceObserverTestCase extends TestCase {
 
     private WampMockPeer mClient;
-    private WampRouter mRouter;
+    private WampMockDealerPeer mRouter;
+    private WampMockBrokerPeer mBroker;
     private KadecotDeviceObserver mDeviceObserver;
 
     @Override
     protected void setUp() {
         mClient = new WampMockPeer();
+
         mRouter = new WampMockDealerPeer(new WampMockBrokerPeer());
+
+        mClient.connect(mRouter);
         mDeviceObserver = new KadecotDeviceObserver(mRouter);
     }
 
@@ -63,6 +66,5 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         }
 
         return publisher.getMessage();
-
     }
 }
