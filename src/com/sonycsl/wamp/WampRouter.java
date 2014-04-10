@@ -56,12 +56,12 @@ public abstract class WampRouter extends WampPeer {
         }
 
         // If WAMP is not established, discard message
-        if (mSessionMap.get(friend) == null) {
-            // TODO: Send Error Messege
-            friend.send(WampMessageFactory
-                    .createError(msg.getMessageType(), -1, null, "wamp.error"));
-            return true;
-        }
+        // if (mSessionMap.get(friend) == null) {
+        // TODO: Send Error Messege
+        // friend.send(WampMessageFactory.createError(msg.getMessageType(),
+        // -1, null, "wamp.error"));
+        // return true;
+        // }
 
         return false;
     }

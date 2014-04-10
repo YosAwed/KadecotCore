@@ -62,9 +62,9 @@ abstract public class WampClient extends WampPeer {
             return false;
         }
 
-        if (mSessionMap.get(friend) == null) {
-            throw new IllegalStateException("session closed");
-        }
+        // if (mSessionMap.get(friend) == null) {
+        // throw new IllegalStateException("session closed");
+        // }
 
         if (msg.isGoodbyeMessage()) {
             mSessionMap.remove(friend);

@@ -83,10 +83,11 @@ public class WampDealerTestCase extends TestCase {
         WampTestUtil.broadcastRegisterSuccess(mFriendPeer1, TEST_PROCEDURE, mDealer);
     }
 
-    public void testRegisterWithoutHello() {
-        assertTrue(WampTestUtil.broadcastRegister(mFriendPeer1, TEST_PROCEDURE, mDealer)
-                .isErrorMessage());
-    }
+    // public void testRegisterWithoutHello() {
+    // assertTrue(WampTestUtil.broadcastRegister(mFriendPeer1, TEST_PROCEDURE,
+    // mDealer)
+    // .isErrorMessage());
+    // }
 
     public void testRegisterWithTwoClient() {
         WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
