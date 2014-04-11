@@ -70,6 +70,7 @@ public class KadecotDeviceObserver {
             }
             if (msg.isGoodbyeMessage()) {
                 mGoodbyeLatch.countDown();
+                stop();
             }
             if (msg.isRegisteredMessage()) {
                 mRegistrationId = msg.asRegisteredMessage().getRegistrationId();
