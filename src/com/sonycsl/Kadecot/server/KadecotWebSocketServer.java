@@ -8,6 +8,7 @@ import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
+import com.sonycsl.Kadecot.wamp.KadecotClockClient;
 import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
 import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
 import com.sonycsl.Kadecot.wamp.KadecotWampCaller;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class KadecotWebSocketServer {
     @SuppressWarnings("unused")
@@ -51,6 +53,8 @@ public class KadecotWebSocketServer {
 
     private KadecotDeviceObserver mDeviceObserver;
 
+    private KadecotClockClient mClockClient;
+
     public synchronized static KadecotWebSocketServer getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new KadecotWebSocketServer(context);
@@ -62,6 +66,7 @@ public class KadecotWebSocketServer {
         mContext = context.getApplicationContext();
         mRouterChain = new KadecotWampBroker(new KadecotWampDealer());
         mDeviceObserver = new KadecotDeviceObserver(mRouterChain);
+        mClockClient = new KadecotClockClient(mRouterChain, 5, TimeUnit.SECONDS);
 
         WebSocketImpl.DEBUG = false;// true;
     }
@@ -78,6 +83,7 @@ public class KadecotWebSocketServer {
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
         mWebSocketServer.start();
         mDeviceObserver.start();
+        mClockClient.start();
         mStarted = true;
     }
 
@@ -101,6 +107,7 @@ public class KadecotWebSocketServer {
             e.printStackTrace();
         }
         mDeviceObserver.stop();
+        mClockClient.stop();
 
         mWebSocketServer = null;
         mStarted = false;
