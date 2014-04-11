@@ -68,7 +68,7 @@ public class KadecotDeviceObserver {
             if (msg.isWelcomeMessage()) {
                 mHelloLatch.countDown();
             }
-            if (msg.isWelcomeMessage()) {
+            if (msg.isGoodbyeMessage()) {
                 mGoodbyeLatch.countDown();
             }
             if (msg.isRegisteredMessage()) {
