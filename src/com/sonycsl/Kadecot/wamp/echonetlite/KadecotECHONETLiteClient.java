@@ -212,6 +212,11 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
         }
     }
 
+    public void publish(String topic, JSONObject option) {
+        WampMessage msg = WampMessageFactory.createPublish(0, option, topic);
+        mClientChain.broadcast(msg);
+    }
+
     @Override
     protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg) {
 
@@ -228,19 +233,20 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
     protected void onConsumed(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
             mHelloLatch.countDown();
-        }
-        if (msg.isGoodbyeMessage()) {
+        } else if (msg.isGoodbyeMessage()) {
             mGoodbyeLatch.countDown();
-        }
-        if (msg.isRegisteredMessage()) {
+        } else if (msg.isRegisteredMessage()) {
             int reqId = msg.asRegisteredMessage().getRequestId();
             KadecotECHONETLiteProcedure p = mRegistrationRequestIdMap.get(reqId);
             int regId = msg.asRegisteredMessage().getRegistrationId();
             mRegistrationIdMap.put(p, regId);
             mRegisterLatch.countDown();
-        }
-        if (msg.isUnregisteredMessage()) {
+        } else if (msg.isUnregisteredMessage()) {
             mUnregisterLatch.countDown();
+        } else if (msg.isSubscribedMessage()) {
+            mSubscribeLatch.countDown();
+        } else if (msg.isUnsubscribedMessage()) {
+            mUnsubscribeLatch.countDown();
         }
     }
 
@@ -256,12 +262,28 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
         @Override
         protected WampMessage onInvocation(String procedure, WampInvocationMessage msg) {
+            // TODO
             return null;
         }
 
         @Override
         protected void onConsumed(WampMessage msg) {
-
+            if (msg.isWelcomeMessage()) {
+                mHelloLatch.countDown();
+            }
+            if (msg.isGoodbyeMessage()) {
+                mGoodbyeLatch.countDown();
+            }
+            if (msg.isRegisteredMessage()) {
+                int reqId = msg.asRegisteredMessage().getRequestId();
+                KadecotECHONETLiteProcedure p = mRegistrationRequestIdMap.get(reqId);
+                int regId = msg.asRegisteredMessage().getRegistrationId();
+                mRegistrationIdMap.put(p, regId);
+                mRegisterLatch.countDown();
+            }
+            if (msg.isUnregisteredMessage()) {
+                mUnregisterLatch.countDown();
+            }
         }
     }
 
@@ -277,8 +299,15 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
         @Override
         protected void onConsumed(WampMessage msg) {
+            if (msg.isHelloMessage()) {
+                mHelloLatch.countDown();
+            } else if (msg.isGoodbyeMessage()) {
+                mGoodbyeLatch.countDown();
+            } else if (msg.isPublishedMessage()) {
 
+            }
         }
+
     }
 
     private class ECHONETLiteSubscriber extends WampSubscriber {
@@ -293,22 +322,39 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
         @Override
         protected void subscribed(WampSubscribedMessage msg) {
-
+            mSubscriptionId = msg.getSubscriptionId();
+            mSubscribeLatch.countDown();
         }
 
         @Override
         protected void unsubscribed(WampUnsubscribedMessage msg) {
-
+            mSubscriptionId = -1;
+            mUnsubscribeLatch.countDown();
         }
 
+        /**
+         * This method request only DeviceDiscovery.
+         * 
+         * @param msg DeviceDiscovery Request
+         */
         @Override
         protected void event(WampEventMessage msg) {
-
+            // TODO
         }
 
         @Override
         protected void onConsumed(WampMessage msg) {
-
+            if (msg.isHelloMessage()) {
+                mHelloLatch.countDown();
+            } else if (msg.isGoodbyeMessage()) {
+                mGoodbyeLatch.countDown();
+            } else if (msg.isSubscribedMessage()) {
+                mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
+                mSubscribeLatch.countDown();
+            } else if (msg.isUnsubscribedMessage()) {
+                mSubscriptionId = -1;
+                mUnsubscribeLatch.countDown();
+            }
         }
     }
 }
