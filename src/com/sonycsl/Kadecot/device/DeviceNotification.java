@@ -36,6 +36,7 @@ public class DeviceNotification {
 
 		mNotification = new Notification(R.drawable.icon, "ERROR", System.currentTimeMillis());
 		//notice.flags |= Notification.FLAG_NO_CLEAR;
+		mNotification.flags |= Notification.FLAG_AUTO_CANCEL ;
 
 		PackageManager pm = mContext.getPackageManager();
 		//Intent intent = pm.getLaunchIntentForPackage("com.sonycsl.ARMoekaden");
@@ -48,7 +49,6 @@ public class DeviceNotification {
 		String errorInfo = "0x"+String.format("%02x", val0)+String.format("%02x", val1);
 		String contentText = "["+nickname+"]"+errorInfo;
 		mNotification.setLatestEventInfo(mContext, "ERROR", contentText, pendIntent);
-		
 		mNotificationId = ERROR_NOTIFICATION_ID;
 		
 		return this;
