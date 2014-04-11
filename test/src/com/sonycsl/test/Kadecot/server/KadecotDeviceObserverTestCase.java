@@ -26,6 +26,7 @@ public class KadecotDeviceObserverTestCase extends TestCase {
 
     private WampMockPeer mDevicePublisher;
     private WampMockPeer mCaller;
+    private WampMockPeer mSubscriber;
     private KadecotWampDealer mRouter;
 
     KadecotDeviceObserver mDeviceObserver;
@@ -34,11 +35,13 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     protected void setUp() {
         mDevicePublisher = new WampMockPeer();
         mCaller = new WampMockPeer();
+        mSubscriber = new WampMockPeer();
 
         mRouter = new KadecotWampDealer(new KadecotWampBroker());
 
         mDevicePublisher.connect(mRouter);
         mCaller.connect(mRouter);
+        mSubscriber.connect(mRouter);
 
         mDeviceObserver = new KadecotDeviceObserver(mRouter);
         mDeviceObserver.start();
@@ -50,7 +53,7 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     }
 
     public void testGetDeviceList() {
-        broadcastPublishDevice(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
+        broadcastPublishDeviceSuccess(mDevicePublisher, KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
                 createDeviceJson());
         WampMessage msg = broadcastCallDeviceList(mCaller,
                 KadecotDeviceObserver.DEVICE_LIST_PROCEDURE);
@@ -63,13 +66,30 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         }
     }
 
+    private static void broadcastPublishDeviceSuccess(WampTest publisher, String topic,
+            JSONObject device, WampTest... subscribers) {
+        TestCase.assertEquals(WampMessageType.PUBLISHED,
+                broadcastPublishDevice(publisher, topic, device).getMessageType());
+    }
+
     private static WampMessage broadcastPublishDevice(WampTest publisher, String topic,
-            JSONObject device) {
+            JSONObject device, WampTest... subscribers) {
         publisher.setCountDownLatch(new CountDownLatch(1));
+        for (WampTest subscriber : subscribers) {
+            subscriber.setCountDownLatch(new CountDownLatch(1));
+        }
 
         WampMessage msg = WampMessageFactory.createPublish(1, new JSONObject(), topic,
                 new JSONArray(), device);
         publisher.broadcast(msg);
+
+        try {
+            for (WampTest subscriber : subscribers) {
+                TestCase.assertTrue(subscriber.await(1, TimeUnit.SECONDS));
+            }
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
 
         try {
             TestCase.assertTrue(publisher.await(1, TimeUnit.SECONDS));
@@ -81,11 +101,15 @@ public class KadecotDeviceObserverTestCase extends TestCase {
     }
 
     private static JSONObject createDeviceJson() {
+        return createDeviceJson("testNickname");
+    }
+
+    private static JSONObject createDeviceJson(String nickName) {
         try {
             return new JSONObject().put(KadecotDeviceInfo.DEVICE_STATUS_KEY, 1)
                     .put(KadecotDeviceInfo.DEVICE_PROTOCOL_KEY, "")
                     .put(KadecotDeviceInfo.DEVICE_DEVICENAME_KEY, "")
-                    .put(KadecotDeviceInfo.DEVICE_NICKNAME_KEY, "testNickname")
+                    .put(KadecotDeviceInfo.DEVICE_NICKNAME_KEY, nickName)
                     .put(KadecotDeviceInfo.DEVICE_PARENT_KEY, "")
                     .put(KadecotDeviceInfo.DEVICE_DEVICETYPE_KEY, "");
         } catch (JSONException e) {
@@ -106,5 +130,25 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         }
 
         return caller.getMessage();
+    }
+
+    private static void broadcastSubscribeSuccess(WampTest subscriber, String topic) {
+        TestCase.assertEquals(WampMessageType.SUBSCRIBED, broadcastSubscribe(subscriber, topic)
+                .getMessageType());
+    }
+
+    private static WampMessage broadcastSubscribe(WampTest subscriber, String topic) {
+        subscriber.setCountDownLatch(new CountDownLatch(1));
+
+        WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), topic);
+        subscriber.broadcast(msg);
+
+        try {
+            TestCase.assertTrue(subscriber.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        return subscriber.getMessage();
     }
 }
