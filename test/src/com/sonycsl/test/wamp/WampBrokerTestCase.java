@@ -7,6 +7,7 @@ package com.sonycsl.test.wamp;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
 import com.sonycsl.wamp.WampBroker;
 import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.WampMessageType;
 import com.sonycsl.wamp.WampSubscribedMessage;
 
 import junit.framework.TestCase;
@@ -106,13 +107,23 @@ public class WampBrokerTestCase extends TestCase {
     public void testUnsubscribe() {
         WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
         WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
+        WampSubscribedMessage msg = WampTestUtil.broadcastSubscribe(mFriendPeer1, "topic1")
+                .asSubscribedMessage();
+        WampTestUtil.broadcastSubscribeSuccess(mFriendPeer2, "topic2");
+        WampTestUtil.broadcastUnsubscribeSuccess(mFriendPeer1, msg.getSubscriptionId());
+    }
+
+    public void testUnsubscribeAndPublish() {
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer1);
+        WampTestUtil.broadcastHelloSuccess(mFriendPeer2);
 
         WampMessage msg = WampTestUtil.broadcastSubscribe(mFriendPeer1, "some_topic");
         assertTrue(msg.isSubscribedMessage());
 
         WampSubscribedMessage subscribedMessege = msg.asSubscribedMessage();
         int subscriptionId = subscribedMessege.getSubscriptionId();
-        assertTrue(WampTestUtil.broadcastUnsubscribe(mFriendPeer2, subscriptionId).isErrorMessage());
+        assertEquals(WampMessageType.ERROR,
+                WampTestUtil.broadcastUnsubscribe(mFriendPeer2, subscriptionId).getMessageType());
         WampTestUtil.broadcastUnsubscribeSuccess(mFriendPeer1, subscriptionId);
 
         mFriendPeer1.setCountDownLatch(new CountDownLatch(1));
