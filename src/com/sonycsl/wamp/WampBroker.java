@@ -12,13 +12,15 @@ public abstract class WampBroker extends WampRouter {
 
     private final Map<String, Map<WampMessenger, Set<Integer>>> mTopicSubscriptionMap = new ConcurrentHashMap<String, Map<WampMessenger, Set<Integer>>>();
 
+    private final Map<String, Set<Integer>> mTopicSubscriptionIdsMap = new ConcurrentHashMap<String, Set<Integer>>();
+
+    private final Map<Integer, AccessInfo<WampSubscribeMessage>> mSubscriptionIdAccessInfoMap = new ConcurrentHashMap<Integer, AccessInfo<WampSubscribeMessage>>();
+
     private int mPublicationId = 0;
 
     private int mSubscriptionId = 0;
 
-    private static final String NO_SUCH_SUBSCRIPTION = "wamp.error.no_such_subscription";
-
-    private static final String NO_SUCH_SUBSCRIPTER = "wamp.error.no_such_subscripter";
+    private static final String NO_SUCH_SUBSCRIBER = "wamp.error.no_such_subscriber";
 
     public WampBroker() {
     }
@@ -40,12 +42,12 @@ public abstract class WampBroker extends WampRouter {
         }
 
         if (msg.isSubscribeMessage()) {
-            handleSubscribeMessage(friend, msg.asSubscribeMessage());
+            subscribe(friend, msg.asSubscribeMessage());
             return true;
         }
 
         if (msg.isUnsubscribeMessage()) {
-            handleUnsubscribeMessage(friend, msg.asUnsubscribeMessage());
+            unsubscribe(friend, msg.asUnsubscribeMessage());
             return true;
         }
 
@@ -61,82 +63,83 @@ public abstract class WampBroker extends WampRouter {
 
         int publicationId = ++mPublicationId;
 
-        synchronized (mTopicSubscriptionMap) {
-            Map<WampMessenger, Set<Integer>> subscriberSubscriptionIdsMap = mTopicSubscriptionMap
-                    .get(topic);
-
-            if (subscriberSubscriptionIdsMap != null) {
-                for (WampMessenger subscriber : subscriberSubscriptionIdsMap.keySet()) {
-                    for (int subscriptionId : subscriberSubscriptionIdsMap.get(subscriber)) {
-                        subscriber.send(createEventMessage(subscriptionId, publicationId,
-                                new JSONObject(), msg));
-                    }
-                }
+        synchronized (topic) {
+            Set<Integer> subscriptionIds = mTopicSubscriptionIdsMap.get(topic);
+            if (subscriptionIds == null) {
+                publisher.send(WampMessageFactory.createPublished(
+                        msg.getRequestId(), publicationId));
+                return;
             }
+
+            for (Integer subscriptionId : subscriptionIds) {
+                AccessInfo<WampSubscribeMessage> accessInfo = mSubscriptionIdAccessInfoMap
+                        .get(subscriptionId);
+
+                if (accessInfo == null) {
+                    publisher.send(WampMessageFactory.createPublished(
+                            msg.getRequestId(), publicationId));
+                    return;
+                }
+
+                accessInfo.getMessenger().send(
+                        createEventMessage(subscriptionId, publicationId, new JSONObject(), msg));
+            }
+
         }
+
         publisher.send(WampMessageFactory.createPublished(msg.getRequestId(), publicationId));
     }
 
-    private void handleSubscribeMessage(WampMessenger subscriber, WampSubscribeMessage message) {
+    private void subscribe(WampMessenger friend, WampSubscribeMessage message) {
+        int subscriptionId = ++mSubscriptionId;
 
-        int requestId = message.getRequestId();
-        JSONObject options = message.getOptions();
-        String topic = message.getTopic();
-
-        subscribe(subscriber, requestId, options, topic);
-    }
-
-    private void subscribe(WampMessenger friend, int requestId, JSONObject options, String topic) {
-        int subscriptionId;
-        synchronized (mTopicSubscriptionMap) {
-            Map<WampMessenger, Set<Integer>> subscriberSubscriptionIdsMap = mTopicSubscriptionMap
-                    .get(topic);
-            if (subscriberSubscriptionIdsMap == null) {
-                subscriberSubscriptionIdsMap = new ConcurrentHashMap<WampMessenger, Set<Integer>>();
-                mTopicSubscriptionMap.put(topic, subscriberSubscriptionIdsMap);
-            }
-
-            Set<Integer> subscriptionIds = subscriberSubscriptionIdsMap.get(friend);
+        synchronized (mTopicSubscriptionIdsMap) {
+            Set<Integer> subscriptionIds = mTopicSubscriptionIdsMap.get(message.getTopic());
             if (subscriptionIds == null) {
                 subscriptionIds = new HashSet<Integer>();
-                subscriberSubscriptionIdsMap.put(friend, subscriptionIds);
+                mTopicSubscriptionIdsMap.put(message.getTopic(), subscriptionIds);
             }
-
-            subscriptionId = ++mSubscriptionId;
             subscriptionIds.add(subscriptionId);
         }
 
-        friend.send(WampMessageFactory.createSubscribed(requestId, subscriptionId));
+        synchronized (mSubscriptionIdAccessInfoMap) {
+            mSubscriptionIdAccessInfoMap.put(Integer.valueOf(subscriptionId),
+                    new AccessInfo<WampSubscribeMessage>(friend, message));
+        }
+
+        friend.send(WampMessageFactory.createSubscribed(message.getRequestId(), subscriptionId));
     }
 
-    private void handleUnsubscribeMessage(WampMessenger unsubscriber, WampUnsubscribeMessage message) {
+    private void unsubscribe(WampMessenger unsubscriber, WampUnsubscribeMessage message) {
+        synchronized (mSubscriptionIdAccessInfoMap) {
+            AccessInfo<WampSubscribeMessage> msg = mSubscriptionIdAccessInfoMap.get(Integer
+                    .valueOf(message.getSubscriptionId()));
 
-        int requestId = message.getRequestId();
-        int subscriptionId = message.getSubscriptionId();
+            if (msg == null) {
+                unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
+                        message.getRequestId(), new JSONObject(), WampError.NO_SUCH_SUBSCRIPTION));
+                return;
+            }
+            if (msg.getMessenger() != unsubscriber) {
+                unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
+                        message.getRequestId(), new JSONObject(), NO_SUCH_SUBSCRIBER));
+                return;
+            }
+            mSubscriptionIdAccessInfoMap.remove(Integer.valueOf(message.getSubscriptionId()));
 
-        unsubscribe(unsubscriber, requestId, subscriptionId);
-    }
-
-    private void unsubscribe(WampMessenger unsubscriber, int requestId, int subscriptionId) {
-        synchronized (mTopicSubscriptionMap) {
-            for (Map<WampMessenger, Set<Integer>> subscriberSubscriptionIdsMap : mTopicSubscriptionMap
-                    .values()) {
-                Set<Integer> subscriptionIds = subscriberSubscriptionIdsMap.get(unsubscriber);
+            synchronized (mTopicSubscriptionIdsMap) {
+                Set<Integer> subscriptionIds = mTopicSubscriptionIdsMap.get(msg
+                        .getReceivedMessage().getTopic());
                 if (subscriptionIds == null) {
-                    unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTER));
-                    return;
+                    throw new IllegalStateException("Topic reference error");
                 }
-
-                if (!subscriptionIds.remove(Integer.valueOf(subscriptionId))) {
-                    unsubscriber.send(WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
-                            requestId, new JSONObject(), NO_SUCH_SUBSCRIPTION));
-                    return;
+                if (!subscriptionIds.remove(Integer.valueOf(message.getSubscriptionId()))) {
+                    throw new IllegalStateException("Topic reference error");
                 }
-
-                unsubscriber.send(WampMessageFactory.createUnsubscribed(requestId));
             }
         }
+
+        unsubscriber.send(WampMessageFactory.createUnsubscribed(message.getRequestId()));
     }
 
     private static WampMessage createEventMessage(int subscriptionId, int publicationId,
