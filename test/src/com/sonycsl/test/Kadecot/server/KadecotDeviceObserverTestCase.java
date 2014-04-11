@@ -8,6 +8,7 @@ import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
+import com.sonycsl.wamp.WampEventMessage;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampMessageType;
@@ -63,6 +64,22 @@ public class KadecotDeviceObserverTestCase extends TestCase {
             WampResultMessage resultMsg = msg.asResultMessage();
             JSONArray expectedDeviceList = new JSONArray().put(createDeviceJson());
             assertEquals(expectedDeviceList.toString(), resultMsg.getArguments().toString());
+        }
+    }
+
+    public void testOnDeviceStateChanged() {
+        broadcastSubscribeSuccess(mSubscriber, KadecotWampTopic.TOPIC_DEVICE);
+        broadcastPublishDevice(mDevicePublisher,
+                KadecotWampTopic.TOPIC_PRIVATE_DEVICE,
+                createDeviceJson("TV1"), mSubscriber);
+        WampEventMessage eventMsg =
+                mSubscriber.getMessage().asEventMessage();
+        try {
+            String deviceNickname = eventMsg.getArgumentsKw().getString(
+                    KadecotDeviceInfo.DEVICE_NICKNAME_KEY);
+            assertEquals("TV1", deviceNickname);
+        } catch (JSONException e) {
+            TestCase.fail();
         }
     }
 
