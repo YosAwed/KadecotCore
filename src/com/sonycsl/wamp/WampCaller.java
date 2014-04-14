@@ -30,6 +30,9 @@ public abstract class WampCaller extends WampClient {
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isResultMessage()) {
+            /**
+             * TODO: verify requestId of result message.
+             */
             result(msg.asResultMessage());
             return true;
         }

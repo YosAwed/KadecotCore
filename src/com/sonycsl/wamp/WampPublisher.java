@@ -19,6 +19,9 @@ abstract public class WampPublisher extends WampClient {
     }
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
+        /**
+         * TODO: verify request id of published message.
+         */
         if (msg.isPublishedMessage()) {
             return true;
         }

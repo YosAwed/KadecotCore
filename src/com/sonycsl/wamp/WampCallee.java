@@ -44,6 +44,9 @@ abstract public class WampCallee extends WampClient {
     }
 
     private void invocation(WampMessenger friend, WampInvocationMessage msg) {
+        /**
+         * TODO: verify registered procedure is null or not.
+         */
         friend.send(onInvocation(mRegisteredProcedures.get(msg.getRegistrationId()), msg));
     }
 
@@ -51,11 +54,17 @@ abstract public class WampCallee extends WampClient {
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isRegisteredMessage()) {
+            /**
+             * TODO: verify requestId of registered message.
+             */
             registered(msg.asRegisteredMessage());
             return true;
         }
 
         if (msg.isUnregisteredMessage()) {
+            /**
+             * TODO: verify requestId of unregistered message.
+             */
             unregistered(msg.asUnregisteredMessage());
             return true;
         }

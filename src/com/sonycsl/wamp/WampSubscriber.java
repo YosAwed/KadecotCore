@@ -32,16 +32,26 @@ public abstract class WampSubscriber extends WampClient {
 
     private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
         if (msg.isSubscribedMessage()) {
+            /**
+             * TODO: verify requestId of subscribed message.
+             */
             subscribed(msg.asSubscribedMessage());
             return true;
         }
 
         if (msg.isUnsubscribedMessage()) {
+
+            /**
+             * TODO: verify requestId of unsubscribed message.
+             */
             unsubscribed(msg.asUnsubscribedMessage());
             return true;
         }
 
         if (msg.isEventMessage()) {
+            /**
+             * TODO: verify subscriptionId of event message.
+             */
             event(msg.asEventMessage());
             return true;
         }
