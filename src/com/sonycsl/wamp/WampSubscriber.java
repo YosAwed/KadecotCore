@@ -1,6 +1,11 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampEventMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnsubscribedMessage;
+
 public abstract class WampSubscriber extends WampClient {
 
     public WampSubscriber() {

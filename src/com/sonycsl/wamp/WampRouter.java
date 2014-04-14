@@ -1,6 +1,9 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+
 import org.json.JSONObject;
 
 import java.util.Map;

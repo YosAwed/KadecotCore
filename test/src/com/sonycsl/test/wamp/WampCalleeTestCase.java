@@ -4,9 +4,9 @@ package com.sonycsl.test.wamp;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
 import com.sonycsl.test.wamp.mock.WampMockRouter;
 import com.sonycsl.wamp.WampCallee;
-import com.sonycsl.wamp.WampInvocationMessage;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.message.WampInvocationMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import junit.framework.TestCase;
 

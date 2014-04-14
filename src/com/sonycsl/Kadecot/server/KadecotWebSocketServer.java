@@ -15,9 +15,9 @@ import com.sonycsl.Kadecot.wamp.KadecotWampCaller;
 import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
 import com.sonycsl.Kadecot.wamp.KadecotWampSubscriber;
 import com.sonycsl.wamp.WampClient;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampRouter;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;

@@ -1,27 +1,27 @@
 
 package com.sonycsl.test.wamp.mock;
 
-import com.sonycsl.wamp.WampAbortMessage;
-import com.sonycsl.wamp.WampCallMessage;
-import com.sonycsl.wamp.WampErrorMessage;
-import com.sonycsl.wamp.WampEventMessage;
-import com.sonycsl.wamp.WampGoodbyeMessage;
-import com.sonycsl.wamp.WampHelloMessage;
-import com.sonycsl.wamp.WampInvocationMessage;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampPublishMessage;
-import com.sonycsl.wamp.WampPublishedMessage;
-import com.sonycsl.wamp.WampRegisterMessage;
-import com.sonycsl.wamp.WampRegisteredMessage;
-import com.sonycsl.wamp.WampResultMessage;
-import com.sonycsl.wamp.WampSubscribeMessage;
-import com.sonycsl.wamp.WampSubscribedMessage;
-import com.sonycsl.wamp.WampUnregisterMessage;
-import com.sonycsl.wamp.WampUnregisteredMessage;
-import com.sonycsl.wamp.WampUnsubscribeMessage;
-import com.sonycsl.wamp.WampUnsubscribedMessage;
-import com.sonycsl.wamp.WampWelcomeMessage;
-import com.sonycsl.wamp.WampYieldMessage;
+import com.sonycsl.wamp.message.WampAbortMessage;
+import com.sonycsl.wamp.message.WampCallMessage;
+import com.sonycsl.wamp.message.WampErrorMessage;
+import com.sonycsl.wamp.message.WampEventMessage;
+import com.sonycsl.wamp.message.WampGoodbyeMessage;
+import com.sonycsl.wamp.message.WampHelloMessage;
+import com.sonycsl.wamp.message.WampInvocationMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampPublishMessage;
+import com.sonycsl.wamp.message.WampPublishedMessage;
+import com.sonycsl.wamp.message.WampRegisterMessage;
+import com.sonycsl.wamp.message.WampRegisteredMessage;
+import com.sonycsl.wamp.message.WampResultMessage;
+import com.sonycsl.wamp.message.WampSubscribeMessage;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnregisterMessage;
+import com.sonycsl.wamp.message.WampUnregisteredMessage;
+import com.sonycsl.wamp.message.WampUnsubscribeMessage;
+import com.sonycsl.wamp.message.WampUnsubscribedMessage;
+import com.sonycsl.wamp.message.WampWelcomeMessage;
+import com.sonycsl.wamp.message.WampYieldMessage;
 
 public class WampMockMessage implements WampMessage {
 

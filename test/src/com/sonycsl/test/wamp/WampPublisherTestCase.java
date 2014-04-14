@@ -2,8 +2,8 @@
 package com.sonycsl.test.wamp;
 
 import com.sonycsl.test.wamp.mock.WampMockRouter;
-import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampPublisher;
+import com.sonycsl.wamp.message.WampMessage;
 
 import junit.framework.TestCase;
 

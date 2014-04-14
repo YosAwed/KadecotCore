@@ -1,8 +1,8 @@
 
 package com.sonycsl.test.wamp.mock;
 
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import org.json.JSONObject;
 

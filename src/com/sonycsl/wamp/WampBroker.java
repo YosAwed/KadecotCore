@@ -1,6 +1,13 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.WampPublishMessage;
+import com.sonycsl.wamp.message.WampSubscribeMessage;
+import com.sonycsl.wamp.message.WampUnsubscribeMessage;
+
 import org.json.JSONObject;
 
 import java.util.HashSet;

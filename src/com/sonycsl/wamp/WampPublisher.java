@@ -1,6 +1,8 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampMessage;
+
 abstract public class WampPublisher extends WampClient {
 
     public WampPublisher() {

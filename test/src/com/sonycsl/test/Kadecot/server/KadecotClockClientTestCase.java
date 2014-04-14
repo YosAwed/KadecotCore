@@ -6,7 +6,7 @@ import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.test.wamp.WampTestUtil;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
-import com.sonycsl.wamp.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
 
 import junit.framework.TestCase;
 

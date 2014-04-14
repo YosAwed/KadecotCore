@@ -1,8 +1,8 @@
 
 package com.sonycsl.test.wamp.mock;
 
-import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampPeer;
+import com.sonycsl.wamp.message.WampMessage;
 
 public class WampEchoMockPeer extends WampMockPeer {
 

@@ -1,6 +1,12 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampInvocationMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampRegisterMessage;
+import com.sonycsl.wamp.message.WampRegisteredMessage;
+import com.sonycsl.wamp.message.WampUnregisteredMessage;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -2,11 +2,11 @@
 package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
-import com.sonycsl.wamp.WampEventMessage;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampSubscribedMessage;
 import com.sonycsl.wamp.WampSubscriber;
-import com.sonycsl.wamp.WampUnsubscribedMessage;
+import com.sonycsl.wamp.message.WampEventMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnsubscribedMessage;
 
 import org.java_websocket.WebSocket;
 

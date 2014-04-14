@@ -3,8 +3,8 @@ package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampCaller;
 import com.sonycsl.wamp.WampClient;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampResultMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampResultMessage;
 
 import org.java_websocket.WebSocket;
 

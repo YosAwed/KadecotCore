@@ -6,9 +6,9 @@ package com.sonycsl.test.wamp;
 
 import com.sonycsl.test.wamp.mock.WampMockPeer;
 import com.sonycsl.wamp.WampBroker;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageType;
-import com.sonycsl.wamp.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
 
 import junit.framework.TestCase;
 

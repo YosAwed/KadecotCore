@@ -2,8 +2,8 @@
 package com.sonycsl.test.wamp.mock;
 
 import com.sonycsl.test.wamp.WampTest;
-import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampPeer;
+import com.sonycsl.wamp.message.WampMessage;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

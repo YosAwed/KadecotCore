@@ -1,6 +1,9 @@
 
 package com.sonycsl.wamp;
 
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampResultMessage;
+
 public abstract class WampCaller extends WampClient {
 
     public WampCaller() {

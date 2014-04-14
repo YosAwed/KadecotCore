@@ -4,9 +4,9 @@ package com.sonycsl.Kadecot.wamp;
 import android.util.Log;
 
 import com.sonycsl.wamp.WampBroker;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampPublisher;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import org.json.JSONObject;
 

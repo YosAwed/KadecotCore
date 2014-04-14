@@ -5,15 +5,15 @@ import android.util.Log;
 
 import com.sonycsl.wamp.WampCallee;
 import com.sonycsl.wamp.WampClient;
-import com.sonycsl.wamp.WampEventMessage;
-import com.sonycsl.wamp.WampInvocationMessage;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampPublisher;
 import com.sonycsl.wamp.WampRouter;
-import com.sonycsl.wamp.WampSubscribedMessage;
 import com.sonycsl.wamp.WampSubscriber;
-import com.sonycsl.wamp.WampUnsubscribedMessage;
+import com.sonycsl.wamp.message.WampEventMessage;
+import com.sonycsl.wamp.message.WampInvocationMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnsubscribedMessage;
 
 import org.json.JSONArray;
 import org.json.JSONException;

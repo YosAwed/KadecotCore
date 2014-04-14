@@ -1,8 +1,8 @@
 
 package com.sonycsl.test.Kadecot.wamp.mock;
 
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import junit.framework.TestCase;
 

@@ -8,11 +8,11 @@ import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.test.wamp.mock.WampMockPeer;
-import com.sonycsl.wamp.WampEventMessage;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
-import com.sonycsl.wamp.WampMessageType;
-import com.sonycsl.wamp.WampResultMessage;
+import com.sonycsl.wamp.message.WampEventMessage;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.WampResultMessage;
 
 import junit.framework.TestCase;
 

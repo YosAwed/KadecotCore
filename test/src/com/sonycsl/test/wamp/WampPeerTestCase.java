@@ -6,7 +6,7 @@ package com.sonycsl.test.wamp;
 
 import com.sonycsl.test.wamp.mock.WampEchoMockPeer;
 import com.sonycsl.test.wamp.mock.WampMockMessage;
-import com.sonycsl.wamp.WampMessage;
+import com.sonycsl.wamp.message.WampMessage;
 
 import junit.framework.TestCase;
 

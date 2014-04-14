@@ -2,9 +2,9 @@
 package com.sonycsl.test.wamp.mock;
 
 import com.sonycsl.test.wamp.WampTest;
-import com.sonycsl.wamp.WampMessage;
-import com.sonycsl.wamp.WampMessageFactory;
 import com.sonycsl.wamp.WampRouter;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
 
 import java.util.LinkedList;
 import java.util.Queue;
