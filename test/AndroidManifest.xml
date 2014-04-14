@@ -11,6 +11,8 @@
         android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="com.sonycsl.Kadecot.core" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
