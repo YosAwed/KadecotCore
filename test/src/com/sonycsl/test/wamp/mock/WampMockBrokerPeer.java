@@ -1,8 +1,6 @@
 
 package com.sonycsl.test.wamp.mock;
 
-import android.util.Log;
-
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
@@ -14,8 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class WampMockBrokerPeer extends WampRouter implements WampTest {
-
-    private WampMessenger mSubscriber;
 
     private CountDownLatch mLatch;
 

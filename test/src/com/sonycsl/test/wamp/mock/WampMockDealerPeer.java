@@ -1,8 +1,6 @@
 
 package com.sonycsl.test.wamp.mock;
 
-import android.util.Log;
-
 import com.sonycsl.test.wamp.WampTest;
 import com.sonycsl.wamp.WampMessage;
 import com.sonycsl.wamp.WampMessageFactory;
