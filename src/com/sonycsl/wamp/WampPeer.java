@@ -2,100 +2,64 @@
 package com.sonycsl.wamp;
 
 import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.role.WampRole;
+import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
 
-public abstract class WampPeer {
+abstract public class WampPeer {
 
-    protected interface WampMessenger {
-        public void send(WampMessage msg);
-    }
-
-    private WampPeer mNext;
-
-    private Map<WampPeer, WampMessenger> mMessengers = new ConcurrentHashMap<WampPeer, WampMessenger>();
+    private ArrayList<WampPeer> mReceivers = new ArrayList<WampPeer>();
+    private final WampRole mRole;
 
     public WampPeer() {
+        super();
+        mRole = getRole();
+        if (mRole == null) {
+            throw new NullPointerException("Role is null");
+        }
     }
 
-    public WampPeer(WampPeer next) {
-        mNext = next;
-    }
+    abstract protected WampRole getRole();
 
-    private Map<WampPeer, WampMessenger> getMessengers() {
-        return mMessengers;
-    }
-
-    public final void connect(final WampPeer friend) {
-        if (mMessengers.get(friend) != null) {
+    public final void connect(WampPeer receiver) {
+        if (mReceivers.contains(receiver)) {
             return;
         }
+        mReceivers.add(receiver);
+        receiver.connect(this);
+    }
 
-        final WampMessenger messenger = new WampMessenger() {
+    public void transmit(WampMessage msg) {
+        if (msg == null) {
+            throw new IllegalArgumentException("message should not be null");
+        }
 
+        for (WampPeer receiver : mReceivers) {
+            mRole.resolveTxMessage(receiver, msg);
+            receiver.onReceive(this, msg);
+        }
+    }
+
+    private void onReceive(final WampPeer transmitter, WampMessage msg) {
+        if (msg == null) {
+            throw new IllegalArgumentException("message should not be null");
+        }
+
+        OnReplyListener listener = new OnReplyListener() {
             @Override
-            public void send(final WampMessage msg) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        friend.onMessage(friend.getMessengers().get(WampPeer.this), msg);
-                    }
-                }).start();
+            public void onReply(WampPeer receiver, WampMessage reply) {
+                receiver.onReceive(WampPeer.this, reply);
             }
         };
 
-        mMessengers.put(friend, messenger);
-        friend.connect(this);
-    }
-
-    public final void broadcast(WampMessage msg) {
-        broadcast(mMessengers.values(), msg);
-    }
-
-    synchronized protected final void broadcast(Collection<WampMessenger> messengerList,
-            WampMessage msg) {
-        if (msg == null) {
-            throw new IllegalArgumentException("message should not be null");
-        }
-
-        if (consumeBroadcast(msg)) {
-            for (WampMessenger messenger : messengerList) {
-                messenger.send(msg);
-            }
+        if (mRole.resolveRxMessage(transmitter, msg, listener)) {
+            onReceived(msg);
             return;
         }
 
-        if (mNext != null) {
-            mNext.broadcast(messengerList, msg);
-            return;
-        }
-
-        throw new IllegalArgumentException("Can not handle broadcast: " + msg);
+        throw new UnsupportedOperationException(msg.toString() + this.toString());
     }
 
-    synchronized protected final void onMessage(WampMessenger friend, WampMessage msg) {
-        if (msg == null) {
-            throw new IllegalArgumentException("message should not be null");
-        }
-
-        // Delegation
-        if (consumeMessage(friend, msg)) {
-            return;
-        }
-
-        // Chain of Responsibility
-        if (mNext != null) {
-            mNext.onMessage(friend, msg);
-            return;
-        }
-
-        throw new IllegalArgumentException("Illegal Message, message: " + msg);
-    }
-
-    protected abstract boolean consumeMessage(WampMessenger friend, WampMessage msg);
-
-    protected abstract boolean consumeBroadcast(WampMessage msg);
-
+    abstract protected void onReceived(WampMessage msg);
 }

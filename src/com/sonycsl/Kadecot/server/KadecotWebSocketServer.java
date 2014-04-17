@@ -8,13 +8,13 @@ import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
-import com.sonycsl.Kadecot.wamp.KadecotClockClient;
 import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
-import com.sonycsl.Kadecot.wamp.KadecotWampBroker;
-import com.sonycsl.Kadecot.wamp.KadecotWampCaller;
-import com.sonycsl.Kadecot.wamp.KadecotWampDealer;
-import com.sonycsl.Kadecot.wamp.KadecotWampSubscriber;
+import com.sonycsl.Kadecot.wamp.KadecotTopicTimer;
+import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
+import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
+import com.sonycsl.Kadecot.wamp.KadecotWebSocketClient;
 import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -49,11 +49,11 @@ public class KadecotWebSocketServer {
 
     private boolean mStarted = false;
 
-    private KadecotWampBroker mRouterChain;
+    private KadecotWampRouter mRouter;
 
     private KadecotDeviceObserver mDeviceObserver;
 
-    private KadecotClockClient mClockClient;
+    private KadecotTopicTimer mTopicTimer;
 
     public synchronized static KadecotWebSocketServer getInstance(Context context) {
         if (sInstance == null) {
@@ -64,15 +64,19 @@ public class KadecotWebSocketServer {
 
     private KadecotWebSocketServer(Context context) {
         mContext = context.getApplicationContext();
-        mRouterChain = new KadecotWampBroker(new KadecotWampDealer());
-        mDeviceObserver = new KadecotDeviceObserver(mRouterChain);
-        mClockClient = new KadecotClockClient(mRouterChain, 5, TimeUnit.SECONDS);
+
+        mRouter = new KadecotWampRouter();
+        mDeviceObserver = new KadecotDeviceObserver();
+        mDeviceObserver.connect(mRouter);
+        mTopicTimer = new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
+                TimeUnit.SECONDS);
+        mTopicTimer.connect(mRouter);
 
         WebSocketImpl.DEBUG = false;// true;
     }
 
     public WampRouter getWampRouter() {
-        return mRouterChain;
+        return mRouter;
     }
 
     public synchronized void start() {
@@ -82,8 +86,10 @@ public class KadecotWebSocketServer {
         stop();
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
         mWebSocketServer.start();
-        mDeviceObserver.start();
-        mClockClient.start();
+        mDeviceObserver.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
+                new JSONObject()));
+        mTopicTimer.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
+                new JSONObject()));
         mStarted = true;
     }
 
@@ -106,8 +112,10 @@ public class KadecotWebSocketServer {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        mDeviceObserver.stop();
-        mClockClient.stop();
+        mDeviceObserver.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                WampError.CLOSE_REALM));
+        mTopicTimer.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                WampError.CLOSE_REALM));
 
         mWebSocketServer = null;
         mStarted = false;
@@ -117,7 +125,7 @@ public class KadecotWebSocketServer {
 
         private Map<WebSocket, KadecotCall> mKadecotCalls = new HashMap<WebSocket, KadecotCall>();
 
-        private Map<WebSocket, WampClient> mClientChains = new HashMap<WebSocket, WampClient>();
+        private Map<WebSocket, WampClient> mClients = new HashMap<WebSocket, WampClient>();
 
         public WebSocketServerImpl(InetSocketAddress address) {
             super(address);
@@ -133,10 +141,9 @@ public class KadecotWebSocketServer {
                 /** KadecotCall **/
 
                 /** WAMP **/
-                WampClient clientChain = new KadecotWampCaller(conn,
-                        new KadecotWampSubscriber(conn));
-                clientChain.connect(mRouterChain);
-                mClientChains.put(conn, clientChain);
+                WampClient client = new KadecotWebSocketClient(conn);
+                client.connect(mRouter);
+                mClients.put(conn, client);
 
             } else {
                 conn.close();
@@ -171,10 +178,10 @@ public class KadecotWebSocketServer {
             }
 
             /** WAMP **/
-            if (mClientChains.containsKey(conn)) {
+            if (mClients.containsKey(conn)) {
                 try {
-                    WampMessage wmsg = WampMessageFactory.create(new JSONArray(message));
-                    mClientChains.get(conn).broadcast(wmsg);
+                    WampMessage msg = WampMessageFactory.create(new JSONArray(message));
+                    mClients.get(conn).transmit(msg);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -201,7 +208,7 @@ public class KadecotWebSocketServer {
             mKadecotCalls.clear();
 
             /** WAMP **/
-            mClientChains.clear();
+            mClients.clear();
 
             self.mWebSocketServer = null;
 

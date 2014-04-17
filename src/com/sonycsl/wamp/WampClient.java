@@ -3,103 +3,101 @@ package com.sonycsl.wamp;
 
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
-import com.sonycsl.wamp.message.WampWelcomeMessage;
+import com.sonycsl.wamp.role.WampRole;
 
 import org.json.JSONObject;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 abstract public class WampClient extends WampPeer {
-
-    private final Map<WampMessenger, Integer> mSessionMap;
 
     public WampClient() {
         super();
-        mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
-    }
-
-    public WampClient(WampClient next) {
-        super(next);
-        mSessionMap = new ConcurrentHashMap<WampMessenger, Integer>();
     }
 
     @Override
-    protected final boolean consumeBroadcast(WampMessage msg) {
-        if (consumeMyBroadcast(msg)) {
-            return true;
-        }
-
-        return consumeRoleBroadcast(msg);
+    protected final WampRole getRole() {
+        WampRole role = getClientRole();
+        return (role == null) ? new WampClientSession() : new WampClientSession(role);
     }
 
-    private boolean consumeMyBroadcast(WampMessage msg) {
-        if (msg.isHelloMessage()) {
-            return true;
-        }
-        if (msg.isGoodbyeMessage()) {
-            return true;
-        }
-        return false;
-    }
+    abstract protected WampRole getClientRole();
 
     @Override
-    protected final boolean consumeMessage(WampMessenger friend, WampMessage msg) {
-        if (consumeMyMessage(friend, msg)) {
-            onConsumed(msg);
-            return true;
-        }
-
-        return consumeRoleMessage(friend, msg);
+    public final void transmit(WampMessage msg) {
+        super.transmit(msg);
     }
 
-    private boolean consumeMyMessage(WampMessenger friend, WampMessage msg) {
+    private static final class WampClientSession extends WampRole {
 
-        if (msg.isWelcomeMessage()) {
-            final WampWelcomeMessage welcome = msg.asWelcomeMessage();
-            mSessionMap.put(friend, Integer.valueOf(welcome.getSession()));
-            return true;
+        public WampClientSession() {
+            super();
         }
 
-        if (msg.isAbortMessage() || msg.isErrorMessage()) {
-            /* delegate */
-            return false;
+        public WampClientSession(WampRole next) {
+            super(next);
         }
 
-        // if (mSessionMap.get(friend) == null) {
-        // throw new IllegalStateException("session closed");
-        // }
-
-        if (msg.isGoodbyeMessage()) {
-            mSessionMap.remove(friend);
-            String reason = msg.asGoodbyeMessage().getReason();
-            if (reason.equals(WampError.SYSTEM_SHUTDOWN) || reason.equals(WampError.CLOSE_REALM)) {
-                friend.send(WampMessageFactory.createGoodbye(new JSONObject(),
-                        WampError.GOODBYE_AND_OUT));
+        @Override
+        protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+            if (msg.isHelloMessage()) {
+                return true;
             }
+            if (msg.isGoodbyeMessage()) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+                OnReplyListener listener) {
+
+            if (msg.isWelcomeMessage()) {
+                return true;
+            }
+
+            if (msg.isAbortMessage() || msg.isErrorMessage()) {
+                return true;
+            }
+
+            if (msg.isGoodbyeMessage()) {
+                return resolveGoodbyeMessage(transmitter, msg, listener);
+            }
+
+            if (msg.isChallengeMessage()) {
+                return resolveInvalidMessage(transmitter, msg, listener);
+            }
+
+            if (msg.isHeartbeatMessage()) {
+                return resolveInvalidMessage(transmitter, msg, listener);
+            }
+
+            return false;
+        }
+
+        private boolean resolveGoodbyeMessage(WampPeer transmitter, WampMessage msg,
+                OnReplyListener listener) {
+            String reason = msg.asGoodbyeMessage().getReason();
+
+            if (reason.equals(WampError.GOODBYE_AND_OUT)) {
+                return true;
+            }
+
+            if (reason.equals(WampError.SYSTEM_SHUTDOWN)
+                    || reason.equals(WampError.CLOSE_REALM)) {
+                listener.onReply(transmitter, WampMessageFactory.createGoodbye(new JSONObject(),
+                        WampError.GOODBYE_AND_OUT));
+                return true;
+            }
+
+            return resolveInvalidMessage(transmitter, msg, listener);
+        }
+
+        private boolean resolveInvalidMessage(WampPeer transmitter, WampMessage msg,
+                OnReplyListener listener) {
+            listener.onReply(transmitter,
+                    WampMessageFactory.createError(msg.getMessageType(), -1, null,
+                            WampError.NOT_AUTHORIZED));
             return true;
         }
-
-        if (msg.isChallengeMessage()) {
-            /*
-             * TODO future support
-             */
-            return false;
-        }
-
-        if (msg.isHeartbeatMessage()) {
-            /*
-             * TODO future support
-             */
-            return false;
-        }
-
-        return false;
     }
-
-    abstract protected boolean consumeRoleMessage(WampMessenger friend, WampMessage msg);
-
-    abstract protected boolean consumeRoleBroadcast(WampMessage msg);
-
-    abstract protected void onConsumed(WampMessage msg);
 }

@@ -4,90 +4,103 @@
 
 package com.sonycsl.test.wamp;
 
-import com.sonycsl.test.wamp.mock.WampEchoMockPeer;
-import com.sonycsl.test.wamp.mock.WampMockMessage;
+import com.sonycsl.test.wamp.mock.MockWampRole;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.role.WampRole;
 
 import junit.framework.TestCase;
+
+import org.json.JSONObject;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class WampPeerTestCase extends TestCase {
 
-    private WampEchoMockPeer mPeer;
-    private WampEchoMockPeer mNext;
-    private WampEchoMockPeer mFriendPeer;
+    abstract private static class TestWampPeer extends WampPeer {
+        private CountDownLatch mLatch;
+        private WampMessage mMsg;
+
+        public final void setCountDownLatch(CountDownLatch latch) {
+            mLatch = latch;
+        }
+
+        public final boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+            return mLatch.await(timeout, unit);
+        }
+
+        public final WampMessage getLatestMessage() {
+            return mMsg;
+        }
+
+        @Override
+        protected void onReceived(WampMessage msg) {
+            mMsg = msg;
+            if (mLatch != null) {
+                mLatch.countDown();
+            }
+        }
+    }
+
+    private static final class TestPeer1 extends TestWampPeer {
+
+        @Override
+        protected WampRole getRole() {
+            return new MockWampRole();
+        }
+    }
+
+    private static final class TestPeer2 extends TestWampPeer {
+
+        @Override
+        protected WampRole getRole() {
+            return new MockWampRole();
+        }
+
+        @Override
+        protected void onReceived(WampMessage msg) {
+            super.onReceived(msg);
+            transmit(msg);
+        }
+    }
+
+    private static final String TEST_REALM = "test";
+    private static final JSONObject DETAILS = new JSONObject();
+
+    private TestPeer1 mPeer1;
+    private TestPeer2 mPeer2;
 
     @Override
     protected void setUp() throws Exception {
-        mNext = new WampEchoMockPeer();
-        mPeer = new WampEchoMockPeer(mNext);
-        mFriendPeer = new WampEchoMockPeer();
-        mPeer.connect(mFriendPeer);
+        mPeer1 = new TestPeer1();
+        mPeer2 = new TestPeer2();
+        mPeer1.connect(mPeer2);
     }
 
     public void testCtor() {
-        assertNotNull(mPeer);
-        assertNotNull(mNext);
-        assertNotNull(mFriendPeer);
+        assertNotNull(mPeer1);
+        assertNotNull(mPeer2);
     }
 
-    public void testEcho() {
-        final CountDownLatch peerLatch = new CountDownLatch(1);
-        final CountDownLatch friendLatch = new CountDownLatch(1);
-        final WampMessage msg = new WampMockMessage();
-
-        mPeer.setCountDownLatch(peerLatch);
-        mFriendPeer.setCountDownLatch(friendLatch);
-
-        mFriendPeer.broadcast(msg);
+    public void testTramsmit() {
+        mPeer1.setCountDownLatch(new CountDownLatch(1));
+        mPeer2.setCountDownLatch(new CountDownLatch(1));
+        WampMessage hello = WampMessageFactory.createHello(TEST_REALM, DETAILS);
+        mPeer1.transmit(hello);
         try {
-            assertTrue(mPeer.await(1, TimeUnit.SECONDS));
+            assertTrue(mPeer2.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
-
-        assertEquals(msg, mPeer.getMessage());
+        assertEquals(hello, mPeer2.getLatestMessage());
 
         try {
-            assertTrue(mFriendPeer.await(1, TimeUnit.SECONDS));
+            mPeer1.await(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             fail();
         }
-
-        assertEquals(msg, mFriendPeer.getMessage());
-    }
-
-    public void testChainOfResponsibility() {
-        final WampMessage msg = new WampMockMessage();
-
-        mPeer.setConsumed(false);
-        mPeer.setCountDownLatch(new CountDownLatch(1));
-        mNext.setCountDownLatch(new CountDownLatch(1));
-        mFriendPeer.setCountDownLatch(new CountDownLatch(1));
-
-        mFriendPeer.broadcast(msg);
-        try {
-            assertFalse(mPeer.await(1, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException e1) {
-            fail();
-        }
-
-        try {
-            assertTrue(mNext.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-
-        assertEquals(msg, mNext.getMessage());
-
-        try {
-            assertTrue(mFriendPeer.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-
-        assertEquals(msg, mFriendPeer.getMessage());
+        assertEquals(hello, mPeer1.getLatestMessage());
     }
 }
