@@ -46,8 +46,8 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         }
 
         @Override
-        protected void onReceived(WampMessage msg) {
-            super.onReceived(msg);
+        protected void OnReceived(WampMessage msg) {
+            super.OnReceived(msg);
             mMsg = msg;
             if (mLatch != null) {
                 mLatch.countDown();

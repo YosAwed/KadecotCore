@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.role.WampCallee;
@@ -66,7 +67,11 @@ public class KadecotDeviceObserver extends WampClient {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
             transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
                     new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_DEVICE));

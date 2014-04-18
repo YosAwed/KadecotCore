@@ -2,6 +2,7 @@
 package com.sonycsl.Kadecot.wamp.echonetlite;
 
 import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampPublisher;
@@ -27,7 +28,11 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
     }
 
     private class ECHONETLiteCallee extends WampCallee {

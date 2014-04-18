@@ -36,7 +36,11 @@ public class WampPeerTestCase extends TestCase {
         }
 
         @Override
-        protected void onReceived(WampMessage msg) {
+        protected void OnConnected(WampPeer peer) {
+        }
+
+        @Override
+        protected void OnReceived(WampMessage msg) {
             mMsg = msg;
             if (mLatch != null) {
                 mLatch.countDown();
@@ -60,8 +64,8 @@ public class WampPeerTestCase extends TestCase {
         }
 
         @Override
-        protected void onReceived(WampMessage msg) {
-            super.onReceived(msg);
+        protected void OnReceived(WampMessage msg) {
+            super.OnReceived(msg);
             transmit(msg);
         }
     }

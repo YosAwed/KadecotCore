@@ -1,6 +1,7 @@
 
 package com.sonycsl.Kadecot.wamp;
 
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampBroker;
@@ -17,7 +18,11 @@ public class KadecotWampRouter extends WampRouter {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
     }
 
 }

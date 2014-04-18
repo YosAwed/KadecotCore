@@ -6,6 +6,7 @@ package com.sonycsl.test.wamp;
 
 import com.sonycsl.test.wamp.mock.MockWampClient;
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
@@ -27,7 +28,11 @@ public class WampRouterSessionTestCase extends TestCase {
         }
 
         @Override
-        protected void onReceived(WampMessage msg) {
+        protected void OnConnected(WampPeer peer) {
+        }
+
+        @Override
+        protected void OnReceived(WampMessage msg) {
             mMsg = msg;
             if (mLatch != null) {
                 mLatch.countDown();

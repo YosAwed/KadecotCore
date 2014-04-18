@@ -36,7 +36,11 @@ public class MockWampPeer extends WampPeer implements Testable {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
         mMsg = msg;
         if (mLatch != null) {
             mLatch.countDown();

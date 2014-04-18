@@ -1,6 +1,7 @@
 
 package com.sonycsl.test.wamp.mock;
 
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 
@@ -17,9 +18,14 @@ public class MockWampClient extends MockWampPeer {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+        super.OnConnected(peer);
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
         mMsgs.add(msg);
-        super.onReceived(msg);
+        super.OnReceived(msg);
     }
 
     public List<WampMessage> getAllMessages() {

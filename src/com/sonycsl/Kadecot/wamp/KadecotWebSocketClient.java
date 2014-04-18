@@ -2,6 +2,7 @@
 package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampRole;
@@ -29,7 +30,11 @@ public class KadecotWebSocketClient extends WampClient {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
         mWs.send(msg.toString());
     }
 

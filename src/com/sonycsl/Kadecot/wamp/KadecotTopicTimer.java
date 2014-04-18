@@ -2,6 +2,7 @@
 package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.role.WampPublisher;
@@ -21,7 +22,6 @@ public class KadecotTopicTimer extends WampClient {
     private final long mPollingTime;
     private final TimeUnit mTimeUnit;
     private TimerPublisher mPublsher;
-    private Runnable mRunnable;
 
     public KadecotTopicTimer(String topic, long pollingTime, TimeUnit timeUnit) {
         mTopic = topic;
@@ -31,22 +31,24 @@ public class KadecotTopicTimer extends WampClient {
 
     @Override
     protected WampRole getClientRole() {
-        mRunnable = new Runnable() {
-
-            @Override
-            public void run() {
-                transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
-                        new JSONObject(), mTopic));
-            }
-        };
-        mPublsher = new TimerPublisher(mRunnable, mPollingTime, mTimeUnit);
+        mPublsher = new TimerPublisher();
         return mPublsher;
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void OnConnected(WampPeer peer) {
+    }
+
+    @Override
+    protected void OnReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
-            mPublsher.start();
+            mPublsher.start(new Runnable() {
+                @Override
+                public void run() {
+                    transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
+                            new JSONObject(), mTopic));
+                }
+            }, mPollingTime, mTimeUnit);
             return;
         }
 
@@ -58,26 +60,19 @@ public class KadecotTopicTimer extends WampClient {
 
     private static class TimerPublisher extends WampPublisher {
 
-        private final long mPollingTime;
-        private final TimeUnit mTimeUnit;
-        private final Runnable mRunnable;
         private ScheduledExecutorService mScheduler;
         private ScheduledFuture<?> mFuture;
 
-        public TimerPublisher(Runnable runnable, long pollingTime, TimeUnit timeUnit) {
+        public TimerPublisher() {
             super();
-            mRunnable = runnable;
-            mPollingTime = pollingTime;
-            mTimeUnit = timeUnit;
         }
 
-        public synchronized void start() {
+        public synchronized void start(Runnable runnable, long pollingTime, TimeUnit timeUnit) {
             if (mFuture != null) {
                 return;
             }
             mScheduler = Executors.newSingleThreadScheduledExecutor();
-            // mFuture = mScheduler.scheduleAtFixedRate(mRunnable, 0,
-            // mPollingTime, mTimeUnit);
+            mFuture = mScheduler.scheduleAtFixedRate(runnable, 0, pollingTime, timeUnit);
         }
 
         public synchronized void stop() {
