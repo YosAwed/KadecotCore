@@ -10,21 +10,19 @@ import java.util.ArrayList;
 abstract public class WampPeer {
 
     private ArrayList<WampPeer> mReceivers = new ArrayList<WampPeer>();
-    private final WampRole mRole;
+    private WampRole mRole;
 
     public WampPeer() {
-        mRole = getRole();
-        if (mRole == null) {
-            throw new NullPointerException("Role is null");
-        }
     }
 
     abstract protected WampRole getRole();
 
     public final void connect(final WampPeer receiver) {
+
         if (mReceivers.contains(receiver)) {
             return;
         }
+
         mReceivers.add(receiver);
         receiver.connect(this);
 
@@ -34,6 +32,15 @@ abstract public class WampPeer {
                 OnConnected(receiver);
             }
         }).start();
+
+        if (mRole != null) {
+            return;
+        }
+
+        mRole = getRole();
+        if (mRole == null) {
+            throw new NullPointerException("Role is null");
+        }
     }
 
     public void transmit(WampMessage msg) {
