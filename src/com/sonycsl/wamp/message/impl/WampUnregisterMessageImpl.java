@@ -11,7 +11,7 @@ import org.json.JSONException;
 public class WampUnregisterMessageImpl extends WampAbstractMessage implements WampUnregisterMessage {
 
     private static final int REQUEST_ID_INDEX = 1;
-    private static final int REGISTRATION_INDEX = 2;
+    private static final int REGISTRATION_ID_INDEX = 2;
 
     public static WampMessage create(int requestId, int registrationId) {
         return new WampUnregisterMessageImpl(new JSONArray().put(WampMessageType.UNREGISTER)
@@ -44,7 +44,7 @@ public class WampUnregisterMessageImpl extends WampAbstractMessage implements Wa
     @Override
     public int getRegistrationId() {
         try {
-            return toJSON().getInt(REGISTRATION_INDEX);
+            return toJSON().getInt(REGISTRATION_ID_INDEX);
         } catch (JSONException e) {
             throw new IllegalArgumentException("there is no registraion id");
         }
