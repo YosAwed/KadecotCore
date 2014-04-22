@@ -5,6 +5,7 @@ import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.role.WampRole;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -79,8 +80,14 @@ public abstract class WampRouter extends WampPeer {
                 OnReplyListener listener) {
             int sessionId = ++mSessionId;
             mSessions.put(transmitter, sessionId);
-            listener.onReply(transmitter,
-                    WampMessageFactory.createWelcome(sessionId, new JSONObject()));
+            try {
+                JSONObject roles = new JSONObject().put("broker", new JSONObject()).put("dealer",
+                        new JSONObject());
+                JSONObject details = new JSONObject().put("roles", roles);
+                listener.onReply(transmitter, WampMessageFactory.createWelcome(sessionId, details));
+            } catch (JSONException e) {
+                throw new IllegalStateException("JSONException");
+            }
             return true;
         }
 
