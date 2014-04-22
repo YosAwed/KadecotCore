@@ -113,12 +113,12 @@ abstract public class WampCallee extends WampRole {
         return true;
     }
 
-    private boolean resolveInvocationMessage(WampPeer transmitter, WampMessage msg,
-            OnReplyListener listener) {
+    private boolean resolveInvocationMessage(final WampPeer transmitter, final WampMessage msg,
+            final OnReplyListener listener) {
 
         WampInvocationMessage invocation = msg.asInvocationMessage();
 
-        Map<Integer, String> procMap = mProcMaps.get(transmitter);
+        final Map<Integer, String> procMap = mProcMaps.get(transmitter);
         if (procMap == null) {
             return false;
         }
@@ -130,11 +130,16 @@ abstract public class WampCallee extends WampRole {
             return true;
         }
 
-        WampMessage reply = invocation(procMap.get(regId), msg);
-        if (!reply.isYieldMessage() && !reply.isErrorMessage()) {
-            return false;
-        }
-        listener.onReply(transmitter, reply);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                WampMessage reply = invocation(procMap.get(regId), msg);
+                if (!reply.isYieldMessage() && !reply.isErrorMessage()) {
+                    return;
+                }
+                listener.onReply(transmitter, reply);
+            }
+        }).start();
 
         return true;
     }

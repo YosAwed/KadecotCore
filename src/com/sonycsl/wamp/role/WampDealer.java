@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class WampDealer extends WampRole {
+abstract public class WampDealer extends WampRole {
 
     private final Map<String, RegisterInfo> mCallees = new ConcurrentHashMap<String, WampDealer.RegisterInfo>();
     private final Map<Integer, CallInfo> mCallers = new ConcurrentHashMap<Integer, WampDealer.CallInfo>();
@@ -156,17 +156,21 @@ public class WampDealer extends WampRole {
             WampCallMessage msg) {
 
         if (msg.hasArgumentsKw()) {
-            return WampMessageFactory.createInvocation(requestId, registrationId, new JSONObject(),
-                    msg.getArguments(), msg.getArgumentsKw());
+            return WampMessageFactory.createInvocation(requestId, registrationId,
+                    createInvocationDetails(msg.getOptions()), msg.getArguments(),
+                    msg.getArgumentsKw());
         }
 
         if (msg.hasArguments()) {
-            return WampMessageFactory.createInvocation(requestId, registrationId, new JSONObject(),
-                    msg.getArguments());
+            return WampMessageFactory.createInvocation(requestId, registrationId,
+                    createInvocationDetails(msg.getOptions()), msg.getArguments());
         }
 
-        return WampMessageFactory.createInvocation(requestId, registrationId, new JSONObject());
+        return WampMessageFactory.createInvocation(requestId, registrationId,
+                createInvocationDetails(msg.getOptions()));
     }
+
+    abstract protected JSONObject createInvocationDetails(JSONObject callOptions);
 
     private boolean resolveYieldMessage(WampPeer transmitter, WampMessage msg,
             OnReplyListener listener) {

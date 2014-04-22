@@ -32,6 +32,10 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     @Override
+    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
     protected void OnReceived(WampMessage msg) {
     }
 

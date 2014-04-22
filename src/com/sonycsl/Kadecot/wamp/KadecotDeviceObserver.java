@@ -71,6 +71,10 @@ public class KadecotDeviceObserver extends WampClient {
     }
 
     @Override
+    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
     protected void OnReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
             transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),

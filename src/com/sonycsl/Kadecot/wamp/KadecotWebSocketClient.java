@@ -34,6 +34,10 @@ public class KadecotWebSocketClient extends WampClient {
     }
 
     @Override
+    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
     protected void OnReceived(WampMessage msg) {
         mWs.send(msg.toString());
     }

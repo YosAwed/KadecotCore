@@ -49,9 +49,21 @@ abstract public class WampPeer {
         }
 
         for (WampPeer receiver : mReceivers) {
-            mRole.resolveTxMessage(receiver, msg);
+            if (!mRole.resolveTxMessage(receiver, msg)) {
+                continue;
+            }
             receiver.onReceive(this, msg);
+            notifyTransmit(receiver, msg);
         }
+    }
+
+    private void notifyTransmit(final WampPeer receiver, final WampMessage msg) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OnTransmitted(receiver, msg);
+            }
+        }).start();
     }
 
     private void onReceive(final WampPeer transmitter, final WampMessage msg) {
@@ -59,26 +71,33 @@ abstract public class WampPeer {
             throw new IllegalArgumentException("message should not be null");
         }
 
-        final OnReplyListener listener = new OnReplyListener() {
+        OnReplyListener listener = new OnReplyListener() {
             @Override
             public void onReply(WampPeer receiver, WampMessage reply) {
                 receiver.onReceive(WampPeer.this, reply);
             }
         };
 
+        if (mRole.resolveRxMessage(transmitter, msg, listener)) {
+            notifyOnReceive(transmitter, msg);
+            return;
+        }
+
+        throw new UnsupportedOperationException(msg.toString() + this.toString());
+    }
+
+    private void notifyOnReceive(final WampPeer transmitter, final WampMessage msg) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (mRole.resolveRxMessage(transmitter, msg, listener)) {
-                    OnReceived(msg);
-                    return;
-                }
-                throw new UnsupportedOperationException(msg.toString() + this.toString());
+                OnReceived(msg);
             }
         }).start();
     }
 
     abstract protected void OnConnected(WampPeer peer);
+
+    abstract protected void OnTransmitted(WampPeer peer, WampMessage msg);
 
     abstract protected void OnReceived(WampMessage msg);
 }

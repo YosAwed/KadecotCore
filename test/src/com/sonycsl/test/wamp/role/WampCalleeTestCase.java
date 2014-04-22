@@ -20,6 +20,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class WampCalleeTestCase extends TestCase {
 
@@ -42,6 +44,7 @@ public class WampCalleeTestCase extends TestCase {
 
         private WampPeer mReceiver;
         private WampMessage mReply;
+        private CountDownLatch mLatch;
 
         public WampPeer getReceiver() {
             return mReceiver;
@@ -51,10 +54,22 @@ public class WampCalleeTestCase extends TestCase {
             return mReply;
         }
 
+        public void setCountDownLatch(CountDownLatch latch) {
+            mLatch = latch;
+        }
+
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+            return mLatch.await(timeout, unit);
+        }
+
         @Override
         public void onReply(WampPeer receiver, WampMessage reply) {
             mReceiver = receiver;
             mReply = reply;
+            if (mLatch != null) {
+                mLatch.countDown();
+
+            }
         }
 
     }
@@ -229,7 +244,13 @@ public class WampCalleeTestCase extends TestCase {
             for (WampMessage ret : rets) {
 
                 mCallee.setInvocationReturn(ret);
+                mListener.setCountDownLatch(new CountDownLatch(1));
                 assertTrue(mCallee.resolveRxMessage(mPeer, entry.getKey(), entry.getValue()));
+                try {
+                    assertTrue(mListener.await(1, TimeUnit.SECONDS));
+                } catch (InterruptedException e) {
+                    fail();
+                }
                 assertEquals(mListener.getReceiver(), mPeer);
                 WampMessage reply = mListener.getLatestReply();
                 assertNotNull(reply);

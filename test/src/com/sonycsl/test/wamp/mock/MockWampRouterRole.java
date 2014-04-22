@@ -13,7 +13,7 @@ public class MockWampRouterRole extends WampRole {
 
     @Override
     protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
-        return false;
+        return msg.isGoodbyeMessage();
     }
 
     @Override

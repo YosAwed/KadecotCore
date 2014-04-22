@@ -13,6 +13,26 @@ public class MockWampClientRole extends WampRole {
 
     @Override
     protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+        if (msg.isHelloMessage()) {
+            return true;
+        }
+
+        if (msg.isGoodbyeMessage()) {
+            return true;
+        }
+
+        if (msg.isPublishMessage()) {
+            return true;
+        }
+
+        if (msg.isCallMessage()) {
+            return true;
+        }
+
+        if (msg.isSubscribeMessage()) {
+            return true;
+        }
+
         return false;
     }
 

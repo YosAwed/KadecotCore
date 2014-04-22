@@ -40,6 +40,10 @@ public class WampPeerTestCase extends TestCase {
         }
 
         @Override
+        protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+        }
+
+        @Override
         protected void OnReceived(WampMessage msg) {
             mMsg = msg;
             if (mLatch != null) {
