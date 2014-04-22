@@ -22,6 +22,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class WampDealerTestCase extends TestCase {
 
     private static class TestWampDealer extends WampDealer {
+
+        @Override
+        protected JSONObject createInvocationDetails(JSONObject callOptions) {
+            return new JSONObject();
+        }
     }
 
     private TestWampDealer mDealer;
