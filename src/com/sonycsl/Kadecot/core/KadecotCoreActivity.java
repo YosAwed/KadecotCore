@@ -10,10 +10,12 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
+import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -197,7 +199,7 @@ public class KadecotCoreActivity extends FragmentActivity {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    protected void setupWebView(WebView webView) {
+    protected void setupWebView(final WebView webView) {
         webView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
         WebSettings wsets = webView.getSettings();
         wsets.setJavaScriptEnabled(true);
@@ -229,6 +231,14 @@ public class KadecotCoreActivity extends FragmentActivity {
                     GeolocationPermissions.Callback callback) {
                 super.onGeolocationPermissionsShowPrompt(origin, callback);
                 callback.invoke(origin, true, false);
+            }
+
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.d(TAG, consoleMessage.message() + " -- From line "
+                        + consoleMessage.lineNumber() + " of "
+                        + consoleMessage.sourceId());
+                return true;
             }
 
         });

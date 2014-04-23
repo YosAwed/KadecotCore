@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.webkit.JavascriptInterface;
 
 /**
  * Kadecot My Page用のJSインターフェース
@@ -23,6 +24,7 @@ public class LocalCoreObject {
         mKadecot = kadecot;
     }
 
+    @JavascriptInterface
     public void startKadecot() {
         mKadecot.startKadecot();
     }

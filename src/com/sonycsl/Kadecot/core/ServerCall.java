@@ -1,6 +1,8 @@
 
 package com.sonycsl.Kadecot.core;
 
+import android.webkit.JavascriptInterface;
+
 import com.sonycsl.Kadecot.call.KadecotCall;
 
 import org.json.JSONException;
@@ -24,6 +26,7 @@ public class ServerCall {
         mCall = call;
     }
 
+    @JavascriptInterface
     public void invoke(final String msg) {
 
         mKadecot.runOnUiThread(new Runnable() {
@@ -41,6 +44,7 @@ public class ServerCall {
         });
     }
 
+    @JavascriptInterface
     public void onPageLoadFinished() {
         mKadecot.runOnUiThread(new Runnable() {
 
