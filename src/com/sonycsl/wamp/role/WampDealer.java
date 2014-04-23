@@ -138,8 +138,9 @@ abstract public class WampDealer extends WampRole {
         WampCallMessage call = msg.asCallMessage();
 
         if (!mCallees.containsKey(call.getProcedure())) {
-            listener.onReply(transmitter, WampMessageFactory.createError(msg.getMessageType(), -1,
-                    new JSONObject(), WampError.NO_SUCH_PROCEDURE));
+            listener.onReply(transmitter,
+                    WampMessageFactory.createError(msg.getMessageType(), call.getRequestId(),
+                            new JSONObject(), WampError.NO_SUCH_PROCEDURE));
             return true;
         }
 
