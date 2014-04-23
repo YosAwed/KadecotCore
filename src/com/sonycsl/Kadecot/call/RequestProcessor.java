@@ -2,7 +2,6 @@
 package com.sonycsl.Kadecot.call;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.device.DeviceProperty;
@@ -74,13 +73,14 @@ public class RequestProcessor {
 
     // devices
 
-    public Response set(JSONArray params) {
+    public Response set(JSONObject paramsObject) {
         String nickname;
         ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
-        if (params == null || params.length() <= 0) {
+        if (paramsObject == null || paramsObject.length() <= 0) {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
         }
         try {
+            JSONArray params = paramsObject.getJSONArray("param");
             nickname = params.getString(0);
             for (int i = 1; i < params.length(); i++) {
                 JSONArray prop = params.getJSONArray(i);
@@ -97,13 +97,14 @@ public class RequestProcessor {
         }
     }
 
-    public Response get(JSONArray params) {
+    public Response get(JSONObject paramsObject) {
         String nickname;
         ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
-        if (params == null || params.length() <= 0) {
+        if (paramsObject == null || paramsObject.length() <= 0) {
             return new ErrorResponse(ErrorResponse.INVALID_PARAMS_CODE);
         }
         try {
+            JSONArray params = paramsObject.getJSONArray("param");
             nickname = params.getString(0);
             for (int i = 1; i < params.length(); i++) {
                 JSONArray prop = params.getJSONArray(i);
