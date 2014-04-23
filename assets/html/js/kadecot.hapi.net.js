@@ -37,10 +37,11 @@ kHAPI.net = {
       if (typeof callbackfunc === 'function') callbackfunc(re, success);
     };
 
+    var arg = {'param':argObject};
     var st = JSON.stringify({
       'version': kHAPI.APIVer,
       'method': method,
-      'params': argObject,
+      'params': arg,
       'id': id
     });
     console.log("request params: " + st);
@@ -50,7 +51,17 @@ kHAPI.net = {
       if (kHAPI.isOnAndroid) {
         ServerCall.invoke(st);
       } else {
-        this.WS.send(st);
+        var uri = "com.sonycsl.Kadecot." + JSON.stringify(kHAPI.dev.findDeviceByNickname(argObject)) + ".procedure.";
+        var procedure = uri + method;
+        console.log("WS request, procedure:" + procedure + ", args:" + argObject[1] + ", nickname:" + argObject[0]);
+        
+        this.WS.serverConnection.call(procedure, argObject[1], null, {"nickname" : argObject[0]}).then(
+                function (result) {
+                  console.log("CALL result: " + result);
+                },
+                function (error) {
+                  console.log("CALL error: " + error);
+                });
       }
     } else if (r.next === 2 && kHAPI.isOnAndroid) {
       ServerCall.invoke(st);
@@ -115,64 +126,64 @@ kHAPI.net = {
   // ///////////////////////////////
   // Websocket object
   // ///////////////////////////////
-  ,
-  WS: {
+  ,WS: {
     serverConnection: undefined,
+    connection : undefined,
     connectServer: function(ip) {
-      var _WS = this;
-      try {
-        if (this.serverConnection !== undefined) {
-          this.serverConnection.close();
-          this.serverConnection = undefined;
-        }
-        kHAPI.net.ServerPredefinedReplies.onUpdateList([]);
-
-        function setupws(ws) {
-          ws.onopen = function() {
-            _WS.serverConnection = ws;
-            kHAPI.onServerConnected();
-            // onServerConnected is called from server.
-          };
-          ws.onerror = function(e) {
-            kHAPI.onServerConnectionFailed();
-            this.onclose();
-          };
-          ws.onclose = function() {
-            kHAPI.net.info = {
-              isConnected: false
-            };
-            if (_WS.serverConnection !== undefined) {// Unintentional close
-              // onSystemPaused
-              kHAPI.net.ServerPredefinedReplies.onSystemPaused.call(kHAPI.net);
-              _WS.serverConnection = undefined;
-              // Try reconnection
-              // setupws(new WebSocket('ws://'+ip+':41314/')) ;
-            } else {
-              // ip address is incorrect?
-            }
-          };
-          ws.onmessage = function(f) {
-            if (typeof f !== 'object') return;
-            kHAPI.net.callFromServer(f.data);
-          };
-        }
-        ;
-        setupws(new WebSocket('ws://' + ip + ':41314/'));
-      } catch (e) {
-        console.log(e);
+      _WS = this;
+      if (this.serverConnection !== undefined) {
+        this.connection.close('kadecot.hapi.net.js', 'Disconnect');
+        this.serverConnection = undefined;
       }
+      kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated();
+      
+      this.connection = new autobahn.Connection({
+        url: 'ws://' + ip + ':41314/',
+        realm: 'realm1'
+      });
+      
+      this.connection.onopen = function (session) {
+        _WS.serverConnection = session;
+        console.log("on server connected");
+        kHAPI.onServerConnected();
+        
+        _WS.serverConnection.subscribe('com.sonycsl.Kadecot.topic.device',
+          function onEvent(args, kwargs, details) {
+            console.log("device found: args:" + JSON.stringify(args) + "kwargs:" + JSON.stringify(kwargs));
+            kHAPI.net.ServerPredefinedReplies.onDeviceFound(kwargs);
+          }
+        );
+        
+        _WS.serverConnection.call('com.sonycsl.Kadecot.procedure.deviceList', [], {}, {}).then(
+                function (result) {
+                  console.log("call success:" + JSON.stringify(result));
+                  kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated();
+                },
+                function (error) {
+                  console.log("call fail:" + JSON.stringify(error));
+                }
+        );
+      }
+      
+      this.connection.onclose = function (reason, details) {
+        kHAPI.net.info = {
+          isConnected: false
+        };
+        if (this.serverConnection !== undefined) {// Unintentional close
+          // onSystemPaused
+          kHAPI.net.ServerPredefinedReplies.onSystemPaused.call(kHAPI.net);
+          _WS.serverConnection = undefined;
+          // Try reconnection
+          // setupws(new WebSocket('ws://'+ip+':41314/')) ;
+        } else {
+          // ip address is incorrect?
+        }
+      }
+      
+      this.connection.open();
     },
     disconnectServer: function() {
-      if (typeof this.serverConnection === 'undefined') return;
-      kHAPI.net.ServerPredefinedReplies.onSystemPaused.call(kHAPI.net);
-      var sc = this.serverConnection;
-      this.serverConnection = undefined;
-      sc.close();// never reconnect because serverConnection is undefined.
-    },
-    send: function(msg) {
-      if (typeof this.serverConnection === 'undefined') return false;
-      this.serverConnection.send(msg);
-      return true;
+      this.connection.close('kadecot.hapi.net.js', 'Disconnect');
     }
   }
 };
@@ -223,7 +234,11 @@ kHAPI.net.ServerPredefinedReplies = {
     }
   },
   onDeviceListUpdated: function(args) {
-    kHAPI.dev.setDevicesList(args.params.device);
+    if (args === undefined) {
+      kHAPI.dev.setDevicesList();
+    } else {
+      kHAPI.dev.setDevicesList(args.params.device);
+    }
     kHAPI.devListHandlers.onUpdateList(kHAPI.dev.devices);
   },
   onDeviceDeleted: function(args) {
