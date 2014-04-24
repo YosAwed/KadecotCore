@@ -152,12 +152,19 @@ kHAPI.net = {
             console.log("device found: args:" + JSON.stringify(args) + "kwargs:" + JSON.stringify(kwargs));
             kHAPI.net.ServerPredefinedReplies.onDeviceFound(kwargs);
           }
+        ).then(
+          function (subscription) {
+            console.log("subscribed " + subscription.topic);
+          },
+          function (error) {
+            console.log("subscribe error, error:" + error.error);
+          }
         );
         
         _WS.serverConnection.call('com.sonycsl.Kadecot.procedure.deviceList', [], {}, {}).then(
                 function (result) {
-                  console.log("call success:" + JSON.stringify(result));
-                  kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated();
+                  console.log("call: com.sonycsl.Kadecot.procedure.deviceList success:" + JSON.stringify(result));
+                  kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated(result);
                 },
                 function (error) {
                   console.log("call fail:" + JSON.stringify(error));
