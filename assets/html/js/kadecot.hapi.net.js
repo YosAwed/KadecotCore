@@ -37,7 +37,10 @@ kHAPI.net = {
       if (typeof callbackfunc === 'function') callbackfunc(re, success);
     };
 
-    var arg = {'param':argObject};
+    var arg = argObject;
+    if (method === 'get' || method === 'set') {
+      arg = {'param':argObject};
+    }
     var st = JSON.stringify({
       'version': kHAPI.APIVer,
       'method': method,
