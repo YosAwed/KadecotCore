@@ -166,7 +166,7 @@ kHAPI.net = {
         
         _WS.serverConnection.call('com.sonycsl.Kadecot.procedure.deviceList', [], {}, {}).then(
                 function (result) {
-                  console.log("call: com.sonycsl.Kadecot.procedure.deviceList success:" + JSON.stringify(result));
+                  console.log("Result: com.sonycsl.Kadecot.procedure.deviceList success:" + JSON.stringify(result));
                   kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated(result);
                 },
                 function (error) {
