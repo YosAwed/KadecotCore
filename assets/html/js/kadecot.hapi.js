@@ -33,7 +33,7 @@ var kHAPI = {
       // Setup APIs (mostly wrap functions)
       // called as kHAPI.methodName(args,function(re){})
       // /////////////////////////////////////
-      var wrapFuncs = ['setServerLocation', 'refreshList', 'changeNickname',
+      var wrapFuncs = ['setServerLocation', 'refreshDeviceList', 'changeNickname',
           'getDistinctNoun', 'deleteDevice', 'deleteInactiveDevices',
           'enablePersistentMode', 'enableJSONPServer', 'enableSnapServer',
           'queryLog'];
