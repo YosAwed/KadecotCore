@@ -11,7 +11,7 @@ import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
-import com.sonycsl.echo.eoj.device.DeviceObject;
+import com.sonycsl.wamp.WampPeer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +35,8 @@ public class DeviceManager {
     private final Context mContext;
 
     private final HashMap<String, DeviceProtocol> mDeviceProtocols;
+
+    private final List<WampPeer> mPeers;
 
     private boolean mStarted = false;
 
@@ -78,6 +80,7 @@ public class DeviceManager {
         mDeviceProtocols = new HashMap<String, DeviceProtocol>();
         registerDeviceProtocol(EchoManager.getInstance(mContext));
 
+        mPeers = new ArrayList<WampPeer>();
     }
 
     public static synchronized DeviceManager getInstance(Context context) {
@@ -226,6 +229,14 @@ public class DeviceManager {
 
     public void registerDeviceProtocol(DeviceProtocol protocol) {
         mDeviceProtocols.put(protocol.getProtocolName(), protocol);
+    }
+
+    public void registerWampPeer(WampPeer peer) {
+        mPeers.add(peer);
+    }
+
+    public List<WampPeer> getWampPeers() {
+        return mPeers;
     }
 
     public Response

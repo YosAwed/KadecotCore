@@ -8,6 +8,7 @@ import com.sonycsl.Kadecot.call.NotificationProcessor;
 import com.sonycsl.Kadecot.call.RequestProcessor;
 import com.sonycsl.Kadecot.core.Dbg;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
+import com.sonycsl.Kadecot.device.DeviceManager;
 import com.sonycsl.Kadecot.wamp.KadecotDeviceObserver;
 import com.sonycsl.Kadecot.wamp.KadecotTopicTimer;
 import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
@@ -15,6 +16,7 @@ import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.Kadecot.wamp.KadecotWebSocketClient;
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -30,6 +32,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +75,11 @@ public class KadecotWebSocketServer {
                 TimeUnit.SECONDS);
         mTopicTimer.connect(mRouter);
 
+        List<WampPeer> peers = DeviceManager.getInstance(context).getWampPeers();
+        for (WampPeer peer : peers) {
+            peer.connect(mRouter);
+        }
+
         WebSocketImpl.DEBUG = false;// true;
     }
 
@@ -90,6 +98,13 @@ public class KadecotWebSocketServer {
                 new JSONObject()));
         mTopicTimer.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
                 new JSONObject()));
+
+        List<WampPeer> peers = DeviceManager.getInstance(mContext).getWampPeers();
+        for (WampPeer peer : peers) {
+            peer.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
+                    new JSONObject()));
+        }
+
         mStarted = true;
     }
 
@@ -116,6 +131,11 @@ public class KadecotWebSocketServer {
                 WampError.CLOSE_REALM));
         mTopicTimer.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
                 WampError.CLOSE_REALM));
+        List<WampPeer> peers = DeviceManager.getInstance(mContext).getWampPeers();
+        for (WampPeer peer : peers) {
+            peer.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                    WampError.CLOSE_REALM));
+        }
 
         mWebSocketServer = null;
         mStarted = false;

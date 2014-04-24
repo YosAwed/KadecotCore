@@ -4,6 +4,7 @@ package com.sonycsl.test.Kadecot.server;
 import android.content.Context;
 import android.test.mock.MockContext;
 
+import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 import com.sonycsl.Kadecot.server.KadecotWebSocketServer;
 
 import junit.framework.TestCase;
@@ -14,9 +15,15 @@ public class KadecotWebSocketServerTestCase extends TestCase {
 
         @Override
         public Context getApplicationContext() {
-            return this;
-        }
+            return new KadecotCoreApplication() {
 
+                @Override
+                public Context getApplicationContext() {
+                    return this;
+                }
+
+            };
+        }
     }
 
     private KadecotWebSocketServer mServer;
