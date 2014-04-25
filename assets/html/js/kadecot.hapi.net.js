@@ -138,7 +138,7 @@ kHAPI.net = {
         this.connection.close('kadecot.hapi.net.js', 'Disconnect');
         this.serverConnection = undefined;
       }
-      kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated();
+      kHAPI.net.ServerPredefinedReplies.onDeviceListUpdatedNew();
       
       this.connection = new autobahn.Connection({
         url: 'ws://' + ip + ':41314/',
@@ -153,7 +153,7 @@ kHAPI.net = {
         _WS.serverConnection.subscribe('com.sonycsl.Kadecot.topic.device',
           function onEvent(args, kwargs, details) {
             console.log("device found: args:" + JSON.stringify(args) + "kwargs:" + JSON.stringify(kwargs));
-            kHAPI.net.ServerPredefinedReplies.onDeviceFound(kwargs);
+            kHAPI.net.ServerPredefinedReplies.onDeviceFoundNew(kwargs);
           }
         ).then(
           function (subscription) {
@@ -167,7 +167,7 @@ kHAPI.net = {
         _WS.serverConnection.call('com.sonycsl.Kadecot.procedure.deviceList', [], {}, {}).then(
                 function (result) {
                   console.log("Result: com.sonycsl.Kadecot.procedure.deviceList success:" + JSON.stringify(result));
-                  kHAPI.net.ServerPredefinedReplies.onDeviceListUpdated(result);
+                  kHAPI.net.ServerPredefinedReplies.onDeviceListUpdatedNew(result.args);
                 },
                 function (error) {
                   console.log("call fail:" + JSON.stringify(error));
@@ -230,6 +230,13 @@ kHAPI.net.ServerPredefinedReplies = {
     kHAPI.net.info = settings;
     kHAPI.onServerStatusUpdated(settings);
   },
+  onDeviceFoundNew: function(args) {
+    if (kHAPI.dev.addDevice(newDevices[devi])) {// Truly new device
+      kHAPI.devListHandlers.onDeviceFound(args, kHAPI.dev.devices);
+    } else {
+      kHAPI.devListHandlers.onDeviceActivated(args, kHAPI.dev.devices);
+    }
+  },
   onDeviceFound: function(args) {
     var newDevices = args.params.device;
 
@@ -242,6 +249,14 @@ kHAPI.net.ServerPredefinedReplies = {
                 kHAPI.dev.devices);
       }
     }
+  },
+  onDeviceListUpdatedNew: function(args) {
+    if (args === undefined) {
+      kHAPI.dev.setDevicesList();
+    } else {
+      kHAPI.dev.setDevicesList(args);
+    }
+    kHAPI.devListHandlers.onUpdateList(kHAPI.dev.devices);
   },
   onDeviceListUpdated: function(args) {
     if (args === undefined) {
