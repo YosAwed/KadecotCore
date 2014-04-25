@@ -5,7 +5,7 @@
 
 kHAPI.dev = {
   init: function() {
-    this.setDevicesList();
+    this.setDevicesList(this.emulation_devices);
   },
   devices: []
 
