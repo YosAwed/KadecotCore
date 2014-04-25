@@ -152,7 +152,7 @@ kHAPI.net = {
         
         _WS.serverConnection.subscribe('com.sonycsl.Kadecot.topic.device',
           function onEvent(args, kwargs, details) {
-            console.log("device found: args:" + JSON.stringify(args) + "kwargs:" + JSON.stringify(kwargs));
+            console.log("device found: kwargs:" + JSON.stringify(kwargs));
             kHAPI.net.ServerPredefinedReplies.onDeviceFoundNew(kwargs);
           }
         ).then(
@@ -231,7 +231,7 @@ kHAPI.net.ServerPredefinedReplies = {
     kHAPI.onServerStatusUpdated(settings);
   },
   onDeviceFoundNew: function(args) {
-    if (kHAPI.dev.addDevice(newDevices[devi])) {// Truly new device
+    if (kHAPI.dev.addDevice(args)) {// Truly new device
       kHAPI.devListHandlers.onDeviceFound(args, kHAPI.dev.devices);
     } else {
       kHAPI.devListHandlers.onDeviceActivated(args, kHAPI.dev.devices);

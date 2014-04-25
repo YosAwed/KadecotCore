@@ -32,7 +32,10 @@ kHAPI.dev = {
   ,
   setDevicesList: function(newdev) {
     if (newdev === undefined) newdev = [];
-    this.devices = newdev.concat(this.emulation_devices);
+    for (var devi = 0; devi < newdev.length; ++devi) {
+      this.devices.push(newdev[devi]);
+    }
+    Array.prototype.push.apply(this.devices, this.emulation_devices);
     this.sortDevices();
   }
   // returns true if new device is added.
