@@ -38,7 +38,7 @@ kHAPI.net = {
     };
 
     var arg = argObject;
-    if (method === 'get' || method === 'set') {
+    if (method === 'get' || method === 'set' || method === 'exec') {
       arg = {'param':argObject};
     }
     var st = JSON.stringify({
