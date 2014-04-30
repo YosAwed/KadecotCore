@@ -73,6 +73,13 @@ public class EchoManager implements DeviceProtocol {
 
     private final Map<InetAddress, Long> mLastAccessTimes;
 
+    private EchoDevicePropertyChangedListener mListener;
+
+    public interface EchoDevicePropertyChangedListener {
+        public void OnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list);
+    }
+
+    @Deprecated
     private EchoManager(Context context) {
         mContext = context.getApplicationContext();
 
@@ -83,6 +90,34 @@ public class EchoManager implements DeviceProtocol {
 
         mGenerators = new ConcurrentHashMap<String, EchoDeviceGenerator>();
 
+        mEchoDiscovery = new EchoDiscovery(mContext, null);
+
+        mLastAccessTimes = new ConcurrentHashMap<InetAddress, Long>();
+
+        setup();
+    }
+
+    @Deprecated
+    public static synchronized EchoManager getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new EchoManager(context);
+        }
+        return sInstance;
+    }
+
+    private EchoManager(Context context, EchoDevicePropertyChangedListener pListener,
+            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
+        mContext = context.getApplicationContext();
+
+        mNodeProfile = new MyNodeProfile();
+        mController = new MyController();
+
+        mCallbacks = new ConcurrentHashMap<String, Callback>();
+
+        mGenerators = new ConcurrentHashMap<String, EchoDeviceGenerator>();
+
+        mListener = pListener;
+
         mEchoDiscovery = new EchoDiscovery(mContext);
 
         mLastAccessTimes = new ConcurrentHashMap<InetAddress, Long>();
@@ -90,9 +125,19 @@ public class EchoManager implements DeviceProtocol {
         setup();
     }
 
-    public static synchronized EchoManager getInstance(Context context) {
+    public static synchronized EchoManager initialize(Context context,
+            EchoDevicePropertyChangedListener pListener,
+            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
         if (sInstance == null) {
-            sInstance = new EchoManager(context);
+            sInstance = new EchoManager(context, pListener, dListener);
+        }
+        return sInstance;
+    }
+
+    public static synchronized EchoManager getInstance() {
+        if (sInstance == null) {
+            // TODO: throw error
+            return null;
         }
         return sInstance;
     }
@@ -180,7 +225,11 @@ public class EchoManager implements DeviceProtocol {
                                             : null, success);
                     list.add(prop);
                 }
+
+                // TODO: delete DeviceManager method
                 getDeviceManager().onPropertyChanged(data, list);
+
+                mListener.OnPropertyChanged(data, list);
             }
 
             @Override
@@ -692,6 +741,13 @@ public class EchoManager implements DeviceProtocol {
         Dbg.print("(echo device info)nickname:" + data.nickname + ",address:" + data.address
                 + ",instanceCode:" + data.instanceCode + ",active:" + active);
         return info;
+    }
+
+    public EchoDeviceData getDeviceData(String nickname) {
+        return mEchoDeviceDatabase.getDeviceData(nickname);
+    }
+
+    public void changeNickname() {
     }
 
     @Override

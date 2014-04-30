@@ -43,14 +43,23 @@ public class KadecotECHONETLiteClient extends WampClient {
     public KadecotECHONETLiteClient(Context context) {
         super();
 
-        EchoManager.EchoDevicePropertyChangedListener pListener = new EchoManager.EchoDevicePropertyChangedListener() {
+        EchoManager.EchoDevicePropertyChangedListener pListener = createPropetyChangedListener();
+        EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
+        mManager = EchoManager.initialize(context, pListener, dListener);
+    }
+
+    private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
+        return new EchoManager.EchoDevicePropertyChangedListener() {
             @Override
             public void OnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
                 publishOnPropertyChanged(data, list);
             }
         };
 
-        EchoDiscovery.OnEchoDeviceInfoListener dListener = new EchoDiscovery.OnEchoDeviceInfoListener() {
+    }
+
+    private EchoDiscovery.OnEchoDeviceInfoListener createDeviceInfoListener() {
+        return new EchoDiscovery.OnEchoDeviceInfoListener() {
             @Override
             public void onDeviceStateChanged(EchoDeviceData deviceInfo) {
                 publishDeviceInfo(deviceInfo);
@@ -61,8 +70,6 @@ public class KadecotECHONETLiteClient extends WampClient {
                 publishDeviceInfo(deviceInfo);
             }
         };
-
-        mManager = EchoManager.initialize(context, pListener, dListener);
     }
 
     @Override
@@ -106,13 +113,13 @@ public class KadecotECHONETLiteClient extends WampClient {
         }
     }
 
-    private void publishDeviceInfo(EchoDeviceData deviceInfo) {
+    protected void publishDeviceInfo(EchoDeviceData deviceInfo) {
         transmit(WampMessageFactory.createPublish(++mRequestId, new JSONObject(),
                 KadecotWampTopic.TOPIC_PRIVATE_DEVICE, new JSONArray(),
                 createDeviceJSONObject(deviceInfo)));
     }
 
-    private void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
+    protected void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
 
         try {
             for (DeviceProperty dp : list) {

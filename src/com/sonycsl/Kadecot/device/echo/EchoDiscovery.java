@@ -35,11 +35,28 @@ public class EchoDiscovery {
 
     private final Logger mLogger;
 
+    private final OnEchoDeviceInfoListener mListener;
+
+    public interface OnEchoDeviceInfoListener {
+        public void onDeviceAdded(EchoDeviceData deviceInfo);
+
+        public void onDeviceStateChanged(EchoDeviceData deviceInfo);
+    }
+
     public EchoDiscovery(Context context) {
         mContext = context.getApplicationContext();
         mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
         mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
         mLogger = Logger.getInstance(mContext);
+        mListener = null;
+    }
+
+    public EchoDiscovery(Context context, OnEchoDeviceInfoListener listener) {
+        mContext = context.getApplicationContext();
+        mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
+        mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
+        mLogger = Logger.getInstance(mContext);
+        mListener = listener;
     }
 
     protected synchronized void onDiscoverNewActiveDevice(DeviceObject device) {
@@ -56,8 +73,15 @@ public class EchoDiscovery {
         // Log.d(TAG,DeviceManager.getInstance(mContext).getDeviceInfo(data,
         // 0).toString());
         // onDiscover(device);
-        Notification.informAllOnDeviceFound(DeviceManager.getInstance(mContext).getDeviceInfo(data,
-                0), EchoManager.getInstance(mContext).getAllowedPermissionLevel());
+
+        /**
+         * TODO: delete when completed wamp implementation.
+         */
+        Notification.informAllOnDeviceFound(
+                DeviceManager.getInstance(mContext).getDeviceInfo(data, 0), EchoManager
+                        .getInstance(mContext).getAllowedPermissionLevel());
+
+        // mListener.onDeviceAdded(data);
 
         // logger
         HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();
