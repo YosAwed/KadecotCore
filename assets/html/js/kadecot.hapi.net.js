@@ -54,7 +54,7 @@ kHAPI.net = {
       if (kHAPI.isOnAndroid) {
         ServerCall.invoke(st);
       } else {
-        var uri = "com.sonycsl.Kadecot." + JSON.stringify(kHAPI.dev.findDeviceByNickname(argObject)) + ".procedure.";
+        var uri = "com.sonycsl.Kadecot." + kHAPI.dev.findDeviceByNickname(argObject[0]).protocol + ".procedure.";
         var procedure = uri + method;
         console.log("WS request, procedure:" + procedure + ", args:" + argObject[1] + ", nickname:" + argObject[0]);
         
@@ -63,7 +63,7 @@ kHAPI.net = {
                   console.log("CALL result: " + result);
                 },
                 function (error) {
-                  console.log("CALL error: " + error);
+                  console.log("CALL error: " + JSON.stringify(error));
                 });
       }
     } else if (r.next === 2 && kHAPI.isOnAndroid) {
