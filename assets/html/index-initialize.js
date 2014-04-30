@@ -1326,6 +1326,29 @@ var myset = function(args, callback) {
   });
 };
 
+var myexec = function(args, callback) {
+  var nickname = args[0];
+  var dev = kHAPI.findDeviceByNickname(nickname);
+  if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
+  if (!(nickname in access_count)) {
+    access_count[nickname] = 0;
+  } else if (access_count[nickname] == 0) {
+    access_queuing(nickname);
+  }
+  access_count[nickname]++;
+
+  kHAPI.exec(args, function(ret, success) {
+
+    if (callback !== undefined) {
+      callback(ret, success);
+    }
+    access_count[nickname]--;
+    if (access_count[nickname] == 0) {
+      access_ending(nickname);
+    }
+  });
+};
+
 var areYouSure = function(big, small, yestext, notext, yescallback, nocallback) {
   $("#sure .big-message").text(escapeHTML(big));
   $("#sure .small-message").text(escapeHTML(small));

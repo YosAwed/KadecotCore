@@ -450,6 +450,11 @@ kHAPI.net.ServerCall = {
       };
 
   },
+  exec: function(args, cbfunc) {
+    return {
+      next: 1
+    };
+  },
   changeNickname: function(args, cbfunc) {
     var dev = null;
     var oldNickname = args.currentName;

@@ -129,6 +129,10 @@ var kHAPI = {
       kHAPI.set = function(args, callback) {
         this.net.callServerFunc('set', args, callback);
       };
+      
+      kHAPI.exec = function(args, callback) {
+        this.net.callServerFunc('exec', args, callback);
+      };
 
       kHAPI.readManifests = function(callback) {
         this.app.readManifests(callback);
