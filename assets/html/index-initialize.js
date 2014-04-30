@@ -491,7 +491,7 @@ var onDeviceDetailPageOpen = function(nickname, device) {
             + (device.isEmulation === true ? ' (Emulation)' : ''),
     deviceName: escapeHTML(device.deviceName),
     protocol: escapeHTML(device.protocol),
-    active: (device.active ? 'Active' : 'Inactive')
+    active: (device.active || device.status === 2 ? 'Active' : 'Inactive')
   });
 
   $("#device_description").html(description);
@@ -856,7 +856,7 @@ var onAppSettingPageOpen = function(index) {
     for (var j = 0; j < real_devices.length; j++) {
       var rv = real_devices[j];
       if (rv.deviceType === dev.deviceType && rv.protocol === dev.protocol
-              && rv.active === true) {
+              && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
           value: rv.nickname,
           text: escapeHTML(rv.nickname)
@@ -1042,7 +1042,7 @@ var refreshDevStatusForIcon = function(nickname) {
   }
   var epc_map = update_map(nickname);
 
-  if (!d.active) {
+  if (!(d.active || d.status === 2)) {
     $("#devLoadingIcon" + id).html("InActive");
   } else {
     $("#devLoadingIcon" + id).html("");
@@ -1165,7 +1165,7 @@ var update_map = function(nickname) {
     var ret = Object.create(null);
     ret['0x80'] = function(newval) {
       status_power_img.src = 'index_res/icons/Power'
-              + (d.active ? 'On' : 'Off') + '.png';
+              + ((d.active || d.status === 2) ? 'On' : 'Off') + '.png';
     };
     return ret;
   };
@@ -1283,7 +1283,7 @@ var access_count = Object.create(null);
 var myget = function(args, callback, with_out_queue) {
   var nickname = args[0];
   var dev = kHAPI.findDeviceByNickname(nickname);
-  if (dev === undefined || dev === null || !dev.active) { return; }
+  if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
   if (!(nickname in access_count)) {
     access_count[nickname] = 0;
   } else if (access_count[nickname] == 0) {
@@ -1306,7 +1306,7 @@ var myget = function(args, callback, with_out_queue) {
 var myset = function(args, callback) {
   var nickname = args[0];
   var dev = kHAPI.findDeviceByNickname(nickname);
-  if (dev === undefined || dev === null || !dev.active) { return; }
+  if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
   if (!(nickname in access_count)) {
     access_count[nickname] = 0;
   } else if (access_count[nickname] == 0) {
