@@ -54,17 +54,18 @@ kHAPI.net = {
       if (kHAPI.isOnAndroid) {
         ServerCall.invoke(st);
       } else {
-        var uri = "com.sonycsl.Kadecot." + kHAPI.dev.findDeviceByNickname(argObject[0]).protocol + ".procedure.";
-        var procedure = uri + method;
-        console.log("WS request, procedure:" + procedure + ", args:" + argObject[1] + ", nickname:" + argObject[0]);
+        console.log("WS request, procedure:" + argObject.procedure + ", nickname:" + argObject.nickname + ", params:" + argObject.params + ", paramsKw:" + JSON.stringify(argObject.paramsKw));
         
-        this.WS.serverConnection.call(procedure, argObject[1], null, {"nickname" : argObject[0]}).then(
-                function (result) {
-                  console.log("CALL result: " + result);
-                },
-                function (error) {
-                  console.log("CALL error: " + JSON.stringify(error));
-                });
+        this.WS.serverConnection.call(argObject.procedure, argObject.params, argObject.paramsKw, {"nickname" : argObject.nickname}).then(
+          function (result) {
+            console.log("CALL result: " + JSON.stringify(result));
+            kHAPI.net.callServerFunc_invokeMatch[id + '_'](result, true);
+          },
+          function (error) {
+            console.log("CALL error: " + JSON.stringify(error));
+            kHAPI.net.callServerFunc_invokeMatch[id + '_'](error, true);
+          }
+        );
       }
     } else if (r.next === 2 && kHAPI.isOnAndroid) {
       ServerCall.invoke(st);
@@ -214,13 +215,13 @@ kHAPI.net = {
 kHAPI.net.ServerPredefinedReplies = {
   // this is kHAPI.net
   onInvoke: function(d) {
-    if (typeof this.callServerFunc_invokeMatch[d.id] === 'function') {
+    if (typeof this.callServerFunc_invokeMatch[d.id + '_'] === 'function') {
       if (d.error !== undefined)
-        this.callServerFunc_invokeMatch[d.id](d.error, false);
+        this.callServerFunc_invokeMatch[d.id + '_'](d.error, false);
       else
-        this.callServerFunc_invokeMatch[d.id](d.result, true);
+        this.callServerFunc_invokeMatch[d.id + '_'](d.result, true);
     }
-    this.callServerFunc_invokeMatch[d.id] = undefined;
+    this.callServerFunc_invokeMatch[d.id + '_'] = undefined;
   },
   onServerStatusUpdated: function(d) {
     var settings = {
