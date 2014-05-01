@@ -229,7 +229,9 @@ public class EchoManager implements DeviceProtocol {
                 // TODO: delete DeviceManager method
                 getDeviceManager().onPropertyChanged(data, list);
 
-                mListener.OnPropertyChanged(data, list);
+                if (mListener != null) {
+                    mListener.OnPropertyChanged(data, list);
+                }
             }
 
             @Override
