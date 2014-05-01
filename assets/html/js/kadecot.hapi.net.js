@@ -292,6 +292,7 @@ kHAPI.net.ServerPredefinedReplies = {
   ,
   onSystemPaused: function() {
     this.info.isConnected = false;
+    kHAPI.dev.setDevicesList();
     kHAPI.net.ServerPredefinedReplies.onUpdateList([]);
     kHAPI.onServerDisconnected();
   }
