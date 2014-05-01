@@ -33,10 +33,10 @@ var kHAPI = {
       // Setup APIs (mostly wrap functions)
       // called as kHAPI.methodName(args,function(re){})
       // /////////////////////////////////////
-      var wrapFuncs = ['setServerLocation', 'refreshDeviceList', 'changeNickname',
-          'getDistinctNoun', 'deleteDevice', 'deleteInactiveDevices',
-          'enablePersistentMode', 'enableJSONPServer', 'enableSnapServer',
-          'queryLog'];
+      var wrapFuncs = ['setServerLocation', 'refreshDeviceList',
+          'changeNickname', 'getDistinctNoun', 'deleteDevice',
+          'deleteInactiveDevices', 'enablePersistentMode', 'enableJSONPServer',
+          'enableSnapServer', 'queryLog'];
 
       // This refreshes everything. the call number should be minimized.
       kHAPI.reqDevListHandlers_onUpdateList = function() {
@@ -129,10 +129,12 @@ var kHAPI = {
       kHAPI.set = function(args, callback) {
         this.net.callServerFunc('set', args, callback);
       };
-      
+
       kHAPI.exec = function(nickname, params, paramsKw, callback) {
         var method = "exec";
-        var procedure = "com.sonycsl.Kadecot." + kHAPI.dev.findDeviceByNickname(nickname).protocol + ".procedure." + method;
+        var procedure = "com.sonycsl.Kadecot."
+                + kHAPI.dev.findDeviceByNickname(nickname).protocol
+                + ".procedure." + method;
         var args = {
           "procedure": procedure,
           "nickname": nickname,
