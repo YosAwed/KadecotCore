@@ -137,7 +137,7 @@ public class KadecotECHONETLiteClient extends WampClient {
         Log.i(TAG, "publish deviceinfo : " + deviceInfo.nickname);
         transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
                 KadecotWampTopic.TOPIC_PRIVATE_DEVICE, new JSONArray(),
-                createDeviceJSONObject(deviceInfo)));
+                deviceInfo.toJSONObject()));
     }
 
     protected void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
@@ -160,17 +160,6 @@ public class KadecotECHONETLiteClient extends WampClient {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    private JSONObject createDeviceJSONObject(EchoDeviceData deviceInfo) {
-        JSONObject j = new JSONObject();
-        try {
-            j.put("deviceId", deviceInfo.deviceId);
-            j.put("protocol", deviceInfo.protocolName);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return j;
     }
 
     private class ECHONETLiteWampCallee extends WampCallee {

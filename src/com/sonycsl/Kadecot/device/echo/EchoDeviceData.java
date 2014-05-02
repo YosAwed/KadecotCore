@@ -2,6 +2,10 @@
 package com.sonycsl.Kadecot.device.echo;
 
 import com.sonycsl.Kadecot.device.DeviceData;
+import com.sonycsl.Kadecot.wamp.KadecotDeviceInfo;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class EchoDeviceData extends DeviceData {
     @SuppressWarnings("unused")
@@ -26,4 +30,19 @@ public class EchoDeviceData extends DeviceData {
         this.parentId = parentId;
     }
 
+    public JSONObject toJSONObject() {
+        JSONObject j = new JSONObject();
+        try {
+            j.put(KadecotDeviceInfo.DEVICE_NICKNAME_KEY, nickname);
+            j.put("deviceId", deviceId);
+            j.put(KadecotDeviceInfo.DEVICE_PROTOCOL_KEY, protocolName);
+            j.put("address", address);
+            j.put("echoClassCode", echoClassCode);
+            j.put("instanceCode", instanceCode);
+            j.put("parentId", parentId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return j;
+    }
 }
