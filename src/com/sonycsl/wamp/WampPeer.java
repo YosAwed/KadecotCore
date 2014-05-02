@@ -35,6 +35,7 @@ abstract public class WampPeer {
             }
         }).start();
 
+        // TODO: Avoid to get multiple role instance.
         if (mRoleSet != null) {
             return;
         }
