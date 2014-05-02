@@ -7,6 +7,11 @@ import com.sonycsl.wamp.message.WampMessage;
 public class WampCaller extends WampRole {
 
     @Override
+    public final String getRoleName() {
+        return "caller";
+    }
+
+    @Override
     public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         return msg.isCallMessage();
     }

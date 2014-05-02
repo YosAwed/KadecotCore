@@ -24,6 +24,11 @@ abstract public class WampDealer extends WampRole {
     private int mInvocationRequestId = 0;
 
     @Override
+    public final String getRoleName() {
+        return "dealer";
+    }
+
+    @Override
     public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         throw new UnsupportedOperationException();
     }

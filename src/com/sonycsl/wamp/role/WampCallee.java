@@ -23,6 +23,11 @@ abstract public class WampCallee extends WampRole {
     private final Map<WampPeer, Map<Integer, String>> mProcMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
     @Override
+    public final String getRoleName() {
+        return "callee";
+    }
+
+    @Override
     protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isRegisterMessage()) {
             mRegs.put(receiver, msg);

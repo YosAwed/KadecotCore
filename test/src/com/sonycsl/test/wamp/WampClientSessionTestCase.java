@@ -76,17 +76,13 @@ public class WampClientSessionTestCase extends TestCase {
     }
 
     public void testGoodbye() {
-        // WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM,
-        // mRouter);
-        // WampTestUtil.transmitGoodbyeSuccess(mClient, WampError.CLOSE_REALM,
-        // mRouter);
+        WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM, mRouter);
+        WampTestUtil.transmitGoodbyeSuccess(mClient, WampError.CLOSE_REALM, mRouter);
 
         WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM, mRouter);
         WampTestUtil.transmitGoodbyeSuccess(mRouter, WampError.CLOSE_REALM, mClient);
 
-        // WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM,
-        // mRouter);
-        // WampTestUtil.transmitGoodbyeSuccess(mRouter,
-        // WampError.SYSTEM_SHUTDOWN, mClient);
+        WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM, mRouter);
+        WampTestUtil.transmitGoodbyeSuccess(mRouter, WampError.SYSTEM_SHUTDOWN, mClient);
     }
 }

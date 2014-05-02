@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,8 +19,9 @@ public abstract class WampRouter extends WampPeer {
     @Override
     protected final Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new WampRouterSession());
-        roleSet.addAll(getRouterRoleSet());
+        Set<WampRole> routerRole = getRouterRoleSet();
+        roleSet.add(new WampRouterSession(routerRole));
+        roleSet.addAll(routerRole);
         return roleSet;
     }
 
@@ -38,6 +40,19 @@ public abstract class WampRouter extends WampPeer {
         private int mSessionId = 0;
 
         private final Map<WampPeer, Integer> mSessions = new ConcurrentHashMap<WampPeer, Integer>();
+
+        private Set<WampRole> mRoleSet;
+
+        private static final String ROLES_KEY = "roles";
+
+        @Override
+        public final String getRoleName() {
+            return "sessionRouter";
+        }
+
+        public WampRouterSession(Set<WampRole> roleSet) {
+            mRoleSet = roleSet;
+        }
 
         @Override
         public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
@@ -73,9 +88,12 @@ public abstract class WampRouter extends WampPeer {
             int sessionId = ++mSessionId;
             mSessions.put(transmitter, sessionId);
             try {
-                JSONObject roles = new JSONObject().put("broker", new JSONObject()).put("dealer",
-                        new JSONObject());
-                JSONObject details = new JSONObject().put("roles", roles);
+                JSONObject roles = new JSONObject();
+                Iterator<WampRole> ite = mRoleSet.iterator();
+                while (ite.hasNext()) {
+                    roles.put(ite.next().getRoleName(), new JSONObject());
+                }
+                JSONObject details = new JSONObject().put(ROLES_KEY, roles);
                 listener.onReply(transmitter, WampMessageFactory.createWelcome(sessionId, details));
             } catch (JSONException e) {
                 throw new IllegalStateException("JSONException");

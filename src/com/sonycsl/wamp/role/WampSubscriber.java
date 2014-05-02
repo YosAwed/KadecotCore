@@ -23,6 +23,11 @@ abstract public class WampSubscriber extends WampRole {
     private final Map<WampPeer, Map<Integer, String>> mTopicMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
     @Override
+    public final String getRoleName() {
+        return "subscriber";
+    }
+
+    @Override
     public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isSubscribeMessage()) {
             mSubs.put(receiver, msg);

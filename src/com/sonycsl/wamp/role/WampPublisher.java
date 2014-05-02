@@ -14,6 +14,11 @@ public class WampPublisher extends WampRole {
     private Map<WampPeer, WampMessage> mPubs = new ConcurrentHashMap<WampPeer, WampMessage>();
 
     @Override
+    public final String getRoleName() {
+        return "publisher";
+    }
+
+    @Override
     public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (!msg.isPublishMessage()) {
             return false;

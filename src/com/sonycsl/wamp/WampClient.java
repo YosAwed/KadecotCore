@@ -15,8 +15,9 @@ abstract public class WampClient extends WampPeer {
     @Override
     protected final Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new WampClientSession());
-        roleSet.addAll(getClientRoleSet());
+        Set<WampRole> clientRole = getClientRoleSet();
+        roleSet.add(new WampClientSession(clientRole));
+        roleSet.addAll(clientRole);
         return roleSet;
     }
 
@@ -28,6 +29,17 @@ abstract public class WampClient extends WampPeer {
     }
 
     private static final class WampClientSession extends WampRole {
+
+        private Set<WampRole> mRoleSet;
+
+        public WampClientSession(Set<WampRole> roleSet) {
+            mRoleSet = roleSet;
+        }
+
+        @Override
+        public final String getRoleName() {
+            return "sessionClient";
+        }
 
         @Override
         protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {

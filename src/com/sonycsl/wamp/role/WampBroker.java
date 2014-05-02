@@ -23,6 +23,11 @@ public class WampBroker extends WampRole {
     private int mSubscriptionId = 0;
 
     @Override
+    public final String getRoleName() {
+        return "broker";
+    }
+
+    @Override
     protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         throw new UnsupportedOperationException();
     }

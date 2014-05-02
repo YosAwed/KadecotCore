@@ -8,6 +8,11 @@ import com.sonycsl.wamp.role.WampRole;
 public class MockWampRole extends WampRole {
 
     @Override
+    public String getRoleName() {
+        return "mock";
+    }
+
+    @Override
     protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         return true;
     }

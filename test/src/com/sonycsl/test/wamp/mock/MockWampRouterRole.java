@@ -12,6 +12,11 @@ import org.json.JSONObject;
 public class MockWampRouterRole extends WampRole {
 
     @Override
+    public String getRoleName() {
+        return "mockRouter";
+    }
+
+    @Override
     protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         return msg.isGoodbyeMessage();
     }

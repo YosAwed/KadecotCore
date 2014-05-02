@@ -24,6 +24,11 @@ public class WampRoleTestCase extends TestCase {
         private boolean mIsTxResult = true;
         private boolean mIsRxResult = true;
 
+        @Override
+        public String getRoleName() {
+            return "testRole";
+        }
+
         public void setCountDownLatch(CountDownLatch latch) {
             mLatch = latch;
         }

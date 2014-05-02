@@ -6,6 +6,8 @@ import com.sonycsl.wamp.message.WampMessage;
 
 abstract public class WampRole {
 
+    abstract public String getRoleName();
+
     public interface OnReplyListener {
         void onReply(WampPeer receiver, WampMessage reply);
     }

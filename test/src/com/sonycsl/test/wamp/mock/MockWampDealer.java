@@ -13,6 +13,11 @@ import java.util.Queue;
 
 public class MockWampDealer extends WampRole {
 
+    @Override
+    public String getRoleName() {
+        return "mockDealer";
+    }
+
     private Queue<WampMessage> mMessageQueue = new LinkedList<WampMessage>();
 
     public WampMessage getMessage() {
