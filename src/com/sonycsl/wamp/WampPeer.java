@@ -35,6 +35,10 @@ abstract public class WampPeer {
             }
         }).start();
 
+        if (mRoleSet != null) {
+            return;
+        }
+
         mRoleSet = getRoleSet();
         if (mRoleSet == null) {
             throw new NullPointerException("Role is null");
@@ -81,12 +85,10 @@ abstract public class WampPeer {
             }
         };
 
-        String log = "";
         Iterator<WampRole> iter = mRoleSet.iterator();
         while (iter.hasNext()) {
             WampRole role = iter.next();
             if (role.resolveRxMessage(transmitter, msg, listener)) {
-                log += role.getClass().getSimpleName() + ", ";
                 notifyOnReceive(transmitter, msg);
                 return;
             }
