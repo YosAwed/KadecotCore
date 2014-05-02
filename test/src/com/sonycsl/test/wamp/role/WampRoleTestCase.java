@@ -24,14 +24,6 @@ public class WampRoleTestCase extends TestCase {
         private boolean mIsTxResult = true;
         private boolean mIsRxResult = true;
 
-        public TestWampRole() {
-            super();
-        }
-
-        public TestWampRole(WampRole next) {
-            super(next);
-        }
-
         public void setCountDownLatch(CountDownLatch latch) {
             mLatch = latch;
         }
@@ -114,39 +106,42 @@ public class WampRoleTestCase extends TestCase {
         assertEquals(welcome, mRole.getLatestMessage());
     }
 
-    public void testChainOfResponsibilityAtResolveTxMessage() {
-        final WampMessage hello = WampMessageFactory.createHello("", new JSONObject());
-        TestWampRole firstRole = new TestWampRole(mRole);
-        firstRole.setTxResult(false);
+    // public void testChainOfResponsibilityAtResolveTxMessage() {
+    // final WampMessage hello = WampMessageFactory.createHello("", new
+    // JSONObject());
+    // TestWampRole firstRole = new TestWampRole(mRole);
+    // firstRole.setTxResult(false);
+    //
+    // mRole.setCountDownLatch(new CountDownLatch(1));
+    //
+    // assertTrue(firstRole.resolveTxMessage(new MockWampPeer(), hello));
+    // try {
+    // assertTrue(mRole.await(1, TimeUnit.SECONDS));
+    // } catch (InterruptedException e) {
+    // fail();
+    // }
+    // assertEquals(hello, mRole.getLatestMessage());
+    // }
 
-        mRole.setCountDownLatch(new CountDownLatch(1));
-
-        assertTrue(firstRole.resolveTxMessage(new MockWampPeer(), hello));
-        try {
-            assertTrue(mRole.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertEquals(hello, mRole.getLatestMessage());
-    }
-
-    public void testChainOfResponsibilityAtResolveRxMessage() {
-        final WampMessage welcome = WampMessageFactory.createWelcome(1, new JSONObject());
-        TestWampRole firstRole = new TestWampRole(mRole);
-        firstRole.setRxResult(false);
-
-        mRole.setCountDownLatch(new CountDownLatch(1));
-
-        assertTrue(firstRole.resolveRxMessage(new MockWampPeer(), welcome, new OnReplyListener() {
-            @Override
-            public void onReply(WampPeer receiver, WampMessage reply) {
-            }
-        }));
-        try {
-            assertTrue(mRole.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
-        assertEquals(welcome, mRole.getLatestMessage());
-    }
+    // public void testChainOfResponsibilityAtResolveRxMessage() {
+    // final WampMessage welcome = WampMessageFactory.createWelcome(1, new
+    // JSONObject());
+    // TestWampRole firstRole = new TestWampRole(mRole);
+    // firstRole.setRxResult(false);
+    //
+    // mRole.setCountDownLatch(new CountDownLatch(1));
+    //
+    // assertTrue(firstRole.resolveRxMessage(new MockWampPeer(), welcome, new
+    // OnReplyListener() {
+    // @Override
+    // public void onReply(WampPeer receiver, WampMessage reply) {
+    // }
+    // }));
+    // try {
+    // assertTrue(mRole.await(1, TimeUnit.SECONDS));
+    // } catch (InterruptedException e) {
+    // fail();
+    // }
+    // assertEquals(welcome, mRole.getLatestMessage());
+    // }
 }

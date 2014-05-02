@@ -6,14 +6,6 @@ import com.sonycsl.wamp.message.WampMessage;
 
 public class WampCaller extends WampRole {
 
-    public WampCaller() {
-        super();
-    }
-
-    public WampCaller(WampRole next) {
-        super(next);
-    }
-
     @Override
     public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         return msg.isCallMessage();

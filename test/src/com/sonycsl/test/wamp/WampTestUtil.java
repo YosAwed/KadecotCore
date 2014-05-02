@@ -49,8 +49,8 @@ public final class WampTestUtil {
                 WampMessageFactory.createGoodbye(new JSONObject(), reason), responder);
     }
 
-    public static void transmitGoodbyeSuccess(Testable requester, String reason, Testable reponder) {
-        WampMessage reply = transmitGoodbye(requester, reason, reponder);
+    public static void transmitGoodbyeSuccess(Testable requester, String reason, Testable responder) {
+        WampMessage reply = transmitGoodbye(requester, reason, responder);
         TestCase.assertTrue(reply.isGoodbyeMessage());
         TestCase.assertEquals(WampError.GOODBYE_AND_OUT, reply.asGoodbyeMessage().getReason());
     }

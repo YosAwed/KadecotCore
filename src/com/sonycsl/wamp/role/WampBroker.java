@@ -22,21 +22,13 @@ public class WampBroker extends WampRole {
 
     private int mSubscriptionId = 0;
 
-    public WampBroker() {
-        super();
-    }
-
-    public WampBroker(WampRole next) {
-        super(next);
-    }
-
     @Override
-    public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+    protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+    protected final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
             OnReplyListener listener) {
 
         if (msg.isSubscribeMessage()) {

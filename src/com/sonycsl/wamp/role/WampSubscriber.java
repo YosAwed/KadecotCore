@@ -22,14 +22,6 @@ abstract public class WampSubscriber extends WampRole {
     private final Map<WampPeer, WampMessage> mUnsubs = new ConcurrentHashMap<WampPeer, WampMessage>();
     private final Map<WampPeer, Map<Integer, String>> mTopicMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
-    public WampSubscriber() {
-        super();
-    }
-
-    public WampSubscriber(WampRole next) {
-        super(next);
-    }
-
     @Override
     public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isSubscribeMessage()) {

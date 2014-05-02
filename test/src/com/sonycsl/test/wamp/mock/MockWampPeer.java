@@ -6,6 +6,8 @@ import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -13,10 +15,6 @@ public class MockWampPeer extends WampPeer implements Testable {
 
     private CountDownLatch mLatch;
     private WampMessage mMsg;
-
-    public MockWampPeer() {
-        super();
-    }
 
     public void setCountDownLatch(CountDownLatch latch) {
         mLatch = latch;
@@ -31,8 +29,10 @@ public class MockWampPeer extends WampPeer implements Testable {
     }
 
     @Override
-    protected WampRole getRole() {
-        return new MockWampRole();
+    protected Set<WampRole> getRoleSet() {
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(new MockWampRole());
+        return roleSet;
     }
 
     @Override

@@ -14,6 +14,8 @@ import junit.framework.TestCase;
 
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -55,16 +57,20 @@ public class WampPeerTestCase extends TestCase {
     private static final class TestPeer1 extends TestWampPeer {
 
         @Override
-        protected WampRole getRole() {
-            return new MockWampRole();
+        protected Set<WampRole> getRoleSet() {
+            Set<WampRole> roleSet = new HashSet<WampRole>();
+            roleSet.add(new MockWampRole());
+            return roleSet;
         }
     }
 
     private static final class TestPeer2 extends TestWampPeer {
 
         @Override
-        protected WampRole getRole() {
-            return new MockWampRole();
+        protected Set<WampRole> getRoleSet() {
+            Set<WampRole> roleSet = new HashSet<WampRole>();
+            roleSet.add(new MockWampRole());
+            return roleSet;
         }
 
         @Override

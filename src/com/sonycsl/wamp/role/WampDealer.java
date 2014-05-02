@@ -23,14 +23,6 @@ abstract public class WampDealer extends WampRole {
     private int mRegistraionId = 0;
     private int mInvocationRequestId = 0;
 
-    public WampDealer() {
-        super();
-    }
-
-    public WampDealer(WampRole next) {
-        super(next);
-    }
-
     @Override
     public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         throw new UnsupportedOperationException();

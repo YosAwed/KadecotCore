@@ -26,7 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class KadecotECHONETLiteClient extends WampClient {
 
@@ -73,11 +75,16 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     @Override
-    protected WampRole getClientRole() {
+    protected Set<WampRole> getClientRoleSet() {
         WampRole publisher = new WampPublisher();
-        mSubscriber = new ECHONETLiteWampSubscriber(publisher);
-        mCallee = new ECHONETLiteWampCallee(mSubscriber);
-        return mCallee;
+        mSubscriber = new ECHONETLiteWampSubscriber();
+        mCallee = new ECHONETLiteWampCallee();
+
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(publisher);
+        roleSet.add(mSubscriber);
+        roleSet.add(mCallee);
+        return roleSet;
     }
 
     @Override
@@ -152,10 +159,6 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     private class ECHONETLiteWampCallee extends WampCallee {
-
-        public ECHONETLiteWampCallee(WampRole next) {
-            super(next);
-        }
 
         @Override
         protected WampMessage invocation(String procedure, WampMessage msg) {
@@ -317,9 +320,6 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     private class ECHONETLiteWampSubscriber extends WampSubscriber {
-        public ECHONETLiteWampSubscriber(WampRole next) {
-            super(next);
-        }
 
         @Override
         protected void event(String topic, WampMessage msg) {

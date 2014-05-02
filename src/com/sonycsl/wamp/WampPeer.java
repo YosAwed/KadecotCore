@@ -6,16 +6,18 @@ import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
 abstract public class WampPeer {
 
     private ArrayList<WampPeer> mReceivers = new ArrayList<WampPeer>();
-    private WampRole mRole;
+    private Set<WampRole> mRoleSet;
 
     public WampPeer() {
     }
 
-    abstract protected WampRole getRole();
+    abstract protected Set<WampRole> getRoleSet();
 
     public final void connect(final WampPeer receiver) {
 
@@ -33,12 +35,8 @@ abstract public class WampPeer {
             }
         }).start();
 
-        if (mRole != null) {
-            return;
-        }
-
-        mRole = getRole();
-        if (mRole == null) {
+        mRoleSet = getRoleSet();
+        if (mRoleSet == null) {
             throw new NullPointerException("Role is null");
         }
     }
@@ -48,13 +46,18 @@ abstract public class WampPeer {
             throw new IllegalArgumentException("message should not be null");
         }
 
+        Iterator<WampRole> iter = mRoleSet.iterator();
         for (WampPeer receiver : mReceivers) {
-            if (!mRole.resolveTxMessage(receiver, msg)) {
-                continue;
+            while (iter.hasNext()) {
+                if (iter.next().resolveTxMessage(receiver, msg)) {
+                    receiver.onReceive(this, msg);
+                    notifyTransmit(receiver, msg);
+                    break;
+                }
             }
-            receiver.onReceive(this, msg);
-            notifyTransmit(receiver, msg);
         }
+
+        // TODO: Throw transmit exception not to handle message
     }
 
     private void notifyTransmit(final WampPeer receiver, final WampMessage msg) {
@@ -78,12 +81,20 @@ abstract public class WampPeer {
             }
         };
 
-        if (mRole.resolveRxMessage(transmitter, msg, listener)) {
-            notifyOnReceive(transmitter, msg);
-            return;
+        String log = "";
+        Iterator<WampRole> iter = mRoleSet.iterator();
+        while (iter.hasNext()) {
+            WampRole role = iter.next();
+            if (role.resolveRxMessage(transmitter, msg, listener)) {
+                log += role.getClass().getSimpleName() + ", ";
+                notifyOnReceive(transmitter, msg);
+                return;
+            }
         }
 
-        throw new UnsupportedOperationException(msg.toString() + this.toString());
+        // TODO: return error
+        throw new UnsupportedOperationException(msg.toString() + ", " + this.toString()
+                + ", roleSet=" + mRoleSet);
     }
 
     private void notifyOnReceive(final WampPeer transmitter, final WampMessage msg) {

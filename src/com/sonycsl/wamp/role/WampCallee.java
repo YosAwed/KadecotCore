@@ -22,16 +22,8 @@ abstract public class WampCallee extends WampRole {
     private final Map<WampPeer, WampMessage> mUnregs = new ConcurrentHashMap<WampPeer, WampMessage>();
     private final Map<WampPeer, Map<Integer, String>> mProcMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
-    public WampCallee() {
-        super();
-    }
-
-    public WampCallee(WampRole next) {
-        super(next);
-    }
-
     @Override
-    public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+    protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isRegisterMessage()) {
             mRegs.put(receiver, msg);
             if (mProcMaps.get(receiver) == null) {
@@ -49,7 +41,7 @@ abstract public class WampCallee extends WampRole {
     }
 
     @Override
-    public final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+    protected final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
             OnReplyListener listener) {
 
         if (msg.isRegisteredMessage()) {

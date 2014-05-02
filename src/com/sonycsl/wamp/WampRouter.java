@@ -8,22 +8,22 @@ import com.sonycsl.wamp.role.WampRole;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class WampRouter extends WampPeer {
 
-    public WampRouter() {
-        super();
-    }
-
     @Override
-    protected final WampRole getRole() {
-        WampRole role = getRouterRole();
-        return (role == null) ? new WampRouterSession() : new WampRouterSession(role);
+    protected final Set<WampRole> getRoleSet() {
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(new WampRouterSession());
+        roleSet.addAll(getRouterRoleSet());
+        return roleSet;
     }
 
-    abstract protected WampRole getRouterRole();
+    abstract protected Set<WampRole> getRouterRoleSet();
 
     @Override
     public final void transmit(WampMessage msg) {
@@ -38,14 +38,6 @@ public abstract class WampRouter extends WampPeer {
         private int mSessionId = 0;
 
         private final Map<WampPeer, Integer> mSessions = new ConcurrentHashMap<WampPeer, Integer>();
-
-        public WampRouterSession() {
-            super();
-        }
-
-        public WampRouterSession(WampRole next) {
-            super(next);
-        }
 
         @Override
         public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {

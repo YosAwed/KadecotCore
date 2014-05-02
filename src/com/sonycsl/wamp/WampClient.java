@@ -7,19 +7,20 @@ import com.sonycsl.wamp.role.WampRole;
 
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 abstract public class WampClient extends WampPeer {
 
-    public WampClient() {
-        super();
-    }
-
     @Override
-    protected final WampRole getRole() {
-        WampRole role = getClientRole();
-        return (role == null) ? new WampClientSession() : new WampClientSession(role);
+    protected final Set<WampRole> getRoleSet() {
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(new WampClientSession());
+        roleSet.addAll(getClientRoleSet());
+        return roleSet;
     }
 
-    abstract protected WampRole getClientRole();
+    abstract protected Set<WampRole> getClientRoleSet();
 
     @Override
     public final void transmit(WampMessage msg) {
@@ -27,14 +28,6 @@ abstract public class WampClient extends WampPeer {
     }
 
     private static final class WampClientSession extends WampRole {
-
-        public WampClientSession() {
-            super();
-        }
-
-        public WampClientSession(WampRole next) {
-            super(next);
-        }
 
         @Override
         protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {

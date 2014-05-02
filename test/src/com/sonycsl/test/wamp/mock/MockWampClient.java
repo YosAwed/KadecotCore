@@ -6,15 +6,19 @@ import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MockWampClient extends MockWampPeer {
 
     private List<WampMessage> mMsgs = new ArrayList<WampMessage>();
 
     @Override
-    protected WampRole getRole() {
-        return new MockWampClientRole();
+    protected Set<WampRole> getRoleSet() {
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(new MockWampClientRole());
+        return roleSet;
     }
 
     @Override

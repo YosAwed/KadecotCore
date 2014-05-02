@@ -13,6 +13,8 @@ import com.sonycsl.wamp.role.WampRole;
 
 import junit.framework.TestCase;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -23,8 +25,8 @@ public class WampRouterSessionTestCase extends TestCase {
         private WampMessage mMsg;
 
         @Override
-        protected WampRole getRouterRole() {
-            return null;
+        protected Set<WampRole> getRouterRoleSet() {
+            return new HashSet<WampRole>();
         }
 
         @Override

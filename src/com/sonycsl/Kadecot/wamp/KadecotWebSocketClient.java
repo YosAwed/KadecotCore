@@ -10,6 +10,9 @@ import com.sonycsl.wamp.role.WampSubscriber;
 
 import org.java_websocket.WebSocket;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class KadecotWebSocketClient extends WampClient {
 
     private final WebSocket mWs;
@@ -20,13 +23,15 @@ public class KadecotWebSocketClient extends WampClient {
     }
 
     @Override
-    protected WampRole getClientRole() {
-        WampSubscriber subscriber = new WampSubscriber() {
+    protected Set<WampRole> getClientRoleSet() {
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(new WampCaller());
+        roleSet.add(new WampSubscriber() {
             @Override
             protected void event(String topic, WampMessage msg) {
             }
-        };
-        return new WampCaller(subscriber);
+        });
+        return roleSet;
     }
 
     @Override

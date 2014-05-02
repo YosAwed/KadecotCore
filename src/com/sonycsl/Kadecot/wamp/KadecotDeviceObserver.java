@@ -17,7 +17,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class KadecotDeviceObserver extends WampClient {
@@ -30,10 +32,6 @@ public class KadecotDeviceObserver extends WampClient {
     private int mSubscriptionId;
     private int mRegistrationId;
 
-    public KadecotDeviceObserver() {
-        super();
-    }
-
     private void publishDeviceInfo(JSONObject deviceInfo) {
         transmit(WampMessageFactory.
                 createPublish(++mRequestId, new JSONObject(),
@@ -41,9 +39,9 @@ public class KadecotDeviceObserver extends WampClient {
     }
 
     @Override
-    protected WampRole getClientRole() {
+    protected Set<WampRole> getClientRoleSet() {
         WampRole publisher = new WampPublisher();
-        mSubscriber = new DeviceObserverWampSubscriber(publisher,
+        mSubscriber = new DeviceObserverWampSubscriber(
                 new DeviceObserverWampSubscriber.OnDeviceInfoListener() {
 
                     @Override
@@ -56,14 +54,19 @@ public class KadecotDeviceObserver extends WampClient {
                         publishDeviceInfo(deviceInfo);
                     }
                 });
-        mCallee = new DeviceObserverWampCallee(mSubscriber,
+        mCallee = new DeviceObserverWampCallee(
                 new DeviceObserverWampCallee.OnDeviceListRequiredListener() {
                     @Override
                     public JSONArray OnDeviceListRequired() {
                         return mSubscriber.getDeviceList();
                     }
                 });
-        return mCallee;
+
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(publisher);
+        roleSet.add(mSubscriber);
+        roleSet.add(mCallee);
+        return roleSet;
     }
 
     @Override
@@ -112,8 +115,7 @@ public class KadecotDeviceObserver extends WampClient {
 
         private final OnDeviceListRequiredListener mListener;
 
-        public DeviceObserverWampCallee(WampRole next, OnDeviceListRequiredListener listener) {
-            super(next);
+        public DeviceObserverWampCallee(OnDeviceListRequiredListener listener) {
             mListener = listener;
         }
 
@@ -141,8 +143,7 @@ public class KadecotDeviceObserver extends WampClient {
 
         private final OnDeviceInfoListener mListener;
 
-        public DeviceObserverWampSubscriber(WampRole next, OnDeviceInfoListener listener) {
-            super(next);
+        public DeviceObserverWampSubscriber(OnDeviceInfoListener listener) {
             mListener = listener;
         }
 

@@ -11,6 +11,8 @@ import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -30,9 +32,11 @@ public class KadecotTopicTimer extends WampClient {
     }
 
     @Override
-    protected WampRole getClientRole() {
+    protected Set<WampRole> getClientRoleSet() {
         mPublsher = new TimerPublisher();
-        return mPublsher;
+        Set<WampRole> roleSet = new HashSet<WampRole>();
+        roleSet.add(mPublsher);
+        return roleSet;
     }
 
     @Override
@@ -66,10 +70,6 @@ public class KadecotTopicTimer extends WampClient {
 
         private ScheduledExecutorService mScheduler;
         private ScheduledFuture<?> mFuture;
-
-        public TimerPublisher() {
-            super();
-        }
 
         public synchronized void start(Runnable runnable, long pollingTime, TimeUnit timeUnit) {
             if (mFuture != null) {

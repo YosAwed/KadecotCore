@@ -13,14 +13,6 @@ public class WampPublisher extends WampRole {
 
     private Map<WampPeer, WampMessage> mPubs = new ConcurrentHashMap<WampPeer, WampMessage>();
 
-    public WampPublisher() {
-        super();
-    }
-
-    public WampPublisher(WampRole next) {
-        super(next);
-    }
-
     @Override
     public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (!msg.isPublishMessage()) {
