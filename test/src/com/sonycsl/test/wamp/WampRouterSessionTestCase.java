@@ -9,9 +9,13 @@ import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampRole;
 
 import junit.framework.TestCase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +30,27 @@ public class WampRouterSessionTestCase extends TestCase {
 
         @Override
         protected Set<WampRole> getRouterRoleSet() {
-            return new HashSet<WampRole>();
+            Set<WampRole> roles = new HashSet<WampRole>();
+            WampRole role = new WampRole() {
+
+                @Override
+                protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+                    return false;
+                }
+
+                @Override
+                protected boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+                        OnReplyListener listener) {
+                    return false;
+                }
+
+                @Override
+                public String getRoleName() {
+                    return "testRole";
+                }
+            };
+            roles.add(role);
+            return roles;
         }
 
         @Override
@@ -89,5 +113,16 @@ public class WampRouterSessionTestCase extends TestCase {
 
         WampTestUtil.transmitHelloSuccess(mClient, WampTestParam.REALM, mRouter);
         WampTestUtil.transmitGoodbyeSuccess(mRouter, WampError.SYSTEM_SHUTDOWN, mClient);
+    }
+
+    public void testRouterCapability() {
+        WampMessage welcomeMsg = WampTestUtil.transmitHello(mClient, WampTestParam.REALM, mRouter);
+        assertEquals(WampMessageType.WELCOME, welcomeMsg.getMessageType());
+        try {
+            JSONObject roles = welcomeMsg.asWelcomeMessage().getDetails().getJSONObject("roles");
+            roles.get("testRole");
+        } catch (JSONException e) {
+            fail(welcomeMsg.toString());
+        }
     }
 }
