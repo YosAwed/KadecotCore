@@ -36,7 +36,7 @@ public class KadecotECHONETLiteClient extends WampClient {
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
 
     private int mSubscriptionId;
-    private int mRegistrationId;
+    private ArrayList<Integer> mRegistrationId;
 
     private ECHONETLiteWampCallee mCallee;
     private ECHONETLiteWampSubscriber mSubscriber;
@@ -49,6 +49,7 @@ public class KadecotECHONETLiteClient extends WampClient {
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
         mManager = EchoManager.getInstance(context);
         mManager.setListener(pListener, dListener);
+        mRegistrationId = new ArrayList<Integer>();
     }
 
     private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
@@ -115,10 +116,11 @@ public class KadecotECHONETLiteClient extends WampClient {
         } else if (msg.isSubscribedMessage()) {
             mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
         } else if (msg.isRegisteredMessage()) {
-            mRegistrationId = msg.asRegisteredMessage().getRegistrationId();
+            mRegistrationId.add(msg.asRegisteredMessage().getRegistrationId());
         } else if (msg.isGoodbyeMessage()) {
-            transmit(WampMessageFactory.createUnregister(WampRequestIdGenerator.getId(),
-                    mRegistrationId));
+            for (int id : mRegistrationId) {
+                transmit(WampMessageFactory.createUnregister(WampRequestIdGenerator.getId(), id));
+            }
             transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
                     mSubscriptionId));
             // stopDiscovery();
