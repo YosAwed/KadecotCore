@@ -2,6 +2,7 @@
 package com.sonycsl.Kadecot.wamp.echonetlite;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.sonycsl.Kadecot.device.AccessException;
 import com.sonycsl.Kadecot.device.DeviceProperty;
@@ -34,7 +35,6 @@ public class KadecotECHONETLiteClient extends WampClient {
 
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
 
-    private int mRequestId = 0;
     private int mSubscriptionId;
     private int mRegistrationId;
 
@@ -47,7 +47,8 @@ public class KadecotECHONETLiteClient extends WampClient {
 
         EchoManager.EchoDevicePropertyChangedListener pListener = createPropetyChangedListener();
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
-        mManager = EchoManager.initialize(context, pListener, dListener);
+        mManager = EchoManager.getInstance(context);
+        mManager.setListener(pListener, dListener);
     }
 
     private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
@@ -121,7 +122,8 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     protected void publishDeviceInfo(EchoDeviceData deviceInfo) {
-        transmit(WampMessageFactory.createPublish(++mRequestId, new JSONObject(),
+        Log.i(TAG, "publish deviceinfo : " + deviceInfo.nickname);
+        transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
                 KadecotWampTopic.TOPIC_PRIVATE_DEVICE, new JSONArray(),
                 createDeviceJSONObject(deviceInfo)));
     }
@@ -140,7 +142,8 @@ public class KadecotECHONETLiteClient extends WampClient {
                         + data.nickname + "." + dp.name;
                 JSONArray arguments = new JSONArray();
                 arguments.put(dp.value);
-                transmit(WampMessageFactory.createPublish(++mRequestId, options, topic, arguments));
+                transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), options,
+                        topic, arguments));
             }
         } catch (JSONException e) {
             e.printStackTrace();

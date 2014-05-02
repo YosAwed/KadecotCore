@@ -11,6 +11,7 @@ import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
 import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
+import com.sonycsl.Kadecot.wamp.echonetlite.KadecotECHONETLiteClient;
 import com.sonycsl.wamp.WampPeer;
 
 import org.json.JSONArray;
@@ -74,6 +75,8 @@ public class DeviceManager {
 
     private KadecotCoreApplication mApp;
 
+    private KadecotECHONETLiteClient mEcho;
+
     private DeviceManager(Context context) {
         mApp = (KadecotCoreApplication) context.getApplicationContext();
         mContext = mApp;
@@ -81,6 +84,8 @@ public class DeviceManager {
         registerDeviceProtocol(EchoManager.getInstance(mContext));
 
         mPeers = new ArrayList<WampPeer>();
+        mEcho = new KadecotECHONETLiteClient(mContext);
+        registerWampPeer(mEcho);
     }
 
     public static synchronized DeviceManager getInstance(Context context) {

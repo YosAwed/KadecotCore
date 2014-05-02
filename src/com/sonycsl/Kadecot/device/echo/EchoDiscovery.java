@@ -35,7 +35,7 @@ public class EchoDiscovery {
 
     private final Logger mLogger;
 
-    private final OnEchoDeviceInfoListener mListener;
+    private OnEchoDeviceInfoListener mListener;
 
     public interface OnEchoDeviceInfoListener {
         public void onDeviceAdded(EchoDeviceData deviceInfo);
@@ -51,11 +51,7 @@ public class EchoDiscovery {
         mListener = null;
     }
 
-    public EchoDiscovery(Context context, OnEchoDeviceInfoListener listener) {
-        mContext = context.getApplicationContext();
-        mActiveDevices = Collections.synchronizedSet(new HashSet<DeviceObject>());
-        mEchoDeviceDatabase = EchoDeviceDatabase.getInstance(mContext);
-        mLogger = Logger.getInstance(mContext);
+    public void setListener(OnEchoDeviceInfoListener listener) {
         mListener = listener;
     }
 
@@ -81,7 +77,9 @@ public class EchoDiscovery {
                 DeviceManager.getInstance(mContext).getDeviceInfo(data, 0), EchoManager
                         .getInstance(mContext).getAllowedPermissionLevel());
 
-        // mListener.onDeviceAdded(data);
+        if (mListener != null) {
+            mListener.onDeviceAdded(data);
+        }
 
         // logger
         HashSet<DeviceProperty> propertySet = new HashSet<DeviceProperty>();

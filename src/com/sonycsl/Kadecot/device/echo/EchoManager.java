@@ -79,7 +79,6 @@ public class EchoManager implements DeviceProtocol {
         public void OnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list);
     }
 
-    @Deprecated
     private EchoManager(Context context) {
         mContext = context.getApplicationContext();
 
@@ -90,34 +89,6 @@ public class EchoManager implements DeviceProtocol {
 
         mGenerators = new ConcurrentHashMap<String, EchoDeviceGenerator>();
 
-        mEchoDiscovery = new EchoDiscovery(mContext, null);
-
-        mLastAccessTimes = new ConcurrentHashMap<InetAddress, Long>();
-
-        setup();
-    }
-
-    @Deprecated
-    public static synchronized EchoManager getInstance(Context context) {
-        if (sInstance == null) {
-            sInstance = new EchoManager(context);
-        }
-        return sInstance;
-    }
-
-    private EchoManager(Context context, EchoDevicePropertyChangedListener pListener,
-            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
-        mContext = context.getApplicationContext();
-
-        mNodeProfile = new MyNodeProfile();
-        mController = new MyController();
-
-        mCallbacks = new ConcurrentHashMap<String, Callback>();
-
-        mGenerators = new ConcurrentHashMap<String, EchoDeviceGenerator>();
-
-        mListener = pListener;
-
         mEchoDiscovery = new EchoDiscovery(mContext);
 
         mLastAccessTimes = new ConcurrentHashMap<InetAddress, Long>();
@@ -125,13 +96,17 @@ public class EchoManager implements DeviceProtocol {
         setup();
     }
 
-    public static synchronized EchoManager initialize(Context context,
-            EchoDevicePropertyChangedListener pListener,
-            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
+    public static synchronized EchoManager getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new EchoManager(context, pListener, dListener);
+            sInstance = new EchoManager(context);
         }
         return sInstance;
+    }
+
+    public void setListener(EchoDevicePropertyChangedListener pListener,
+            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
+        mListener = pListener;
+        mEchoDiscovery.setListener(dListener);
     }
 
     public static synchronized EchoManager getInstance() {
