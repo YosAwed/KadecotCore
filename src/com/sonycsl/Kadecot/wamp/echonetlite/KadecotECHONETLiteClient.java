@@ -107,7 +107,11 @@ public class KadecotECHONETLiteClient extends WampClient {
                         new JSONObject(), procedure.toString()));
             }
 
-            mManager.start();
+            /**
+             * remove this comment out and stop comment out after remove
+             * DeviceManager.
+             */
+            // startDiscovery();
         } else if (msg.isSubscribedMessage()) {
             mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
         } else if (msg.isRegisteredMessage()) {
@@ -117,8 +121,16 @@ public class KadecotECHONETLiteClient extends WampClient {
                     mRegistrationId));
             transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
                     mSubscriptionId));
-            mManager.stop();
+            // stopDiscovery();
         }
+    }
+
+    public void startDiscovery() {
+        mManager.start();
+    }
+
+    public void stopDiscovery() {
+        mManager.stop();
     }
 
     protected void publishDeviceInfo(EchoDeviceData deviceInfo) {
