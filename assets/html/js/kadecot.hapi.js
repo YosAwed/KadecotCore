@@ -132,7 +132,7 @@ var kHAPI = {
 
       kHAPI.exec = function(nickname, params, paramsKw, callback) {
         var method = "exec";
-        var procedure = "com.sonycsl.Kadecot."
+        var procedure = "com.sonycsl.kadecot."
                 + kHAPI.dev.findDeviceByNickname(nickname).protocol
                 + ".procedure." + method;
         var args = {

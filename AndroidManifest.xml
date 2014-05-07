@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sonycsl.Kadecot.core"
+    package="com.sonycsl.kadecot.core"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".KadecotCoreActivity"
+            android:name="com.sonycsl.kadecot.core.KadecotCoreActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_kadecot_core" >
             <intent-filter>
@@ -33,13 +33,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.sonycsl.Kadecot.LAUNCH_FROM_DEVICE_ERROR_NOTIFICATION" />
+                <action android:name="com.sonycsl.kadecot.LAUNCH_FROM_DEVICE_ERROR_NOTIFICATION" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <service android:name="com.sonycsl.Kadecot.server.KadecotServerService" >
+        <service android:name="com.sonycsl.kadecot.server.KadecotServerService" >
         </service>
     </application>
 
