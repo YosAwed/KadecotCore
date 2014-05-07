@@ -1,14 +1,15 @@
+/*
+ * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
+ * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
+ */
 
 package com.sonycsl.Kadecot.core;
 
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context;
 
 import com.sonycsl.Kadecot.device.DeviceData;
 import com.sonycsl.Kadecot.device.DeviceInfo;
 import com.sonycsl.Kadecot.device.DeviceProperty;
-
-import android.content.Context;
 
 public class AppModifiableCoreObject {
     @SuppressWarnings("unused")
