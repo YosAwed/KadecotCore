@@ -6,7 +6,6 @@ import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
 abstract public class WampPeer {
@@ -51,10 +50,9 @@ abstract public class WampPeer {
             throw new IllegalArgumentException("message should not be null");
         }
 
-        Iterator<WampRole> iter = mRoleSet.iterator();
         for (WampPeer receiver : mReceivers) {
-            while (iter.hasNext()) {
-                if (iter.next().resolveTxMessage(receiver, msg)) {
+            for (WampRole role : mRoleSet) {
+                if (role.resolveTxMessage(receiver, msg)) {
                     receiver.onReceive(this, msg);
                     notifyTransmit(receiver, msg);
                     break;
@@ -86,9 +84,7 @@ abstract public class WampPeer {
             }
         };
 
-        Iterator<WampRole> iter = mRoleSet.iterator();
-        while (iter.hasNext()) {
-            WampRole role = iter.next();
+        for (WampRole role : mRoleSet) {
             if (role.resolveRxMessage(transmitter, msg, listener)) {
                 notifyOnReceive(transmitter, msg);
                 return;
