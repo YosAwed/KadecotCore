@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.sonycsl.Kadecot.device.AccessException;
+import com.sonycsl.Kadecot.device.DeviceInfo;
 import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.Kadecot.device.echo.EchoDiscovery;
@@ -36,7 +37,7 @@ public class KadecotECHONETLiteClient extends WampClient {
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
 
     private int mSubscriptionId;
-    private ArrayList<Integer> mRegistrationId;
+    private List<Integer> mRegistrationIds;
 
     private ECHONETLiteWampCallee mCallee;
     private ECHONETLiteWampSubscriber mSubscriber;
@@ -49,7 +50,7 @@ public class KadecotECHONETLiteClient extends WampClient {
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
         mManager = EchoManager.getInstance(context);
         mManager.setListener(pListener, dListener);
-        mRegistrationId = new ArrayList<Integer>();
+        mRegistrationIds = new ArrayList<Integer>();
     }
 
     private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
@@ -116,11 +117,18 @@ public class KadecotECHONETLiteClient extends WampClient {
         } else if (msg.isSubscribedMessage()) {
             mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
         } else if (msg.isRegisteredMessage()) {
-            mRegistrationId.add(msg.asRegisteredMessage().getRegistrationId());
-        } else if (msg.isGoodbyeMessage()) {
-            for (int id : mRegistrationId) {
-                transmit(WampMessageFactory.createUnregister(WampRequestIdGenerator.getId(), id));
+            synchronized (mRegistrationIds) {
+                mRegistrationIds.add(msg.asRegisteredMessage().getRegistrationId());
             }
+        } else if (msg.isGoodbyeMessage()) {
+            synchronized (mRegistrationIds) {
+                for (int id : mRegistrationIds) {
+                    transmit(WampMessageFactory
+                            .createUnregister(WampRequestIdGenerator.getId(), id));
+                }
+                mRegistrationIds.clear();
+            }
+
             transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
                     mSubscriptionId));
             // stopDiscovery();
