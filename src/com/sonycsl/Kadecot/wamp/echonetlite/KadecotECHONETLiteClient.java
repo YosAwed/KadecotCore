@@ -9,7 +9,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.sonycsl.Kadecot.device.AccessException;
-import com.sonycsl.Kadecot.device.DeviceInfo;
 import com.sonycsl.Kadecot.device.DeviceProperty;
 import com.sonycsl.Kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.Kadecot.device.echo.EchoDiscovery;
@@ -125,13 +124,15 @@ public class KadecotECHONETLiteClient extends WampClient {
                 mRegistrationIds.add(msg.asRegisteredMessage().getRegistrationId());
             }
         } else if (msg.isGoodbyeMessage()) {
-            synchronized (mRegistrationIds) {
-                for (int id : mRegistrationIds) {
-                    transmit(WampMessageFactory
-                            .createUnregister(WampRequestIdGenerator.getId(), id));
-                }
-                mRegistrationIds.clear();
-            }
+
+            // TODO: manage registration
+            // synchronized (mRegistrationIds) {
+            // for (int id : mRegistrationIds) {
+            // transmit(WampMessageFactory
+            // .createUnregister(WampRequestIdGenerator.getId(), id));
+            // }
+            // mRegistrationIds.clear();
+            // }
 
             transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
                     mSubscriptionId));
