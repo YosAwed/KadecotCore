@@ -16,10 +16,6 @@ import org.json.JSONObject;
  * Kadecot My Page用のJSインターフェース
  */
 public class ServerCall {
-    @SuppressWarnings("unused")
-    private static final String TAG = ServerCall.class.getSimpleName();
-
-    private final ServerCall self = this;
 
     private final KadecotCoreActivity mKadecot;
 

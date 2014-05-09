@@ -9,10 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Response {
-    @SuppressWarnings("unused")
-    private static final String TAG = Response.class.getSimpleName();
-
-    private final Response self = this;
 
     public final Object value;
 

@@ -221,13 +221,8 @@ public class KadecotECHONETLiteClient extends WampClient {
                 case SET:
                     response = callSet(data, params);
                     break;
-                case DELETE_DEVICE_DATA:
-                    mManager.deleteDeviceData(data.deviceId);
-                    break;
-                case NOT_PROCEDURE:
-                    /**
-                     * This is already dealed with.
-                     */
+                default:
+                    throw new UnsupportedOperationException(procedure.getString());
             }
             return propertyListToJSONArray(response);
         }
@@ -277,23 +272,6 @@ public class KadecotECHONETLiteClient extends WampClient {
                 throws JSONException, AccessException {
             List<DeviceProperty> propertyList = makePropertyListForSet(data, params);
             return mManager.set(data.deviceId, propertyList);
-        }
-
-        /**
-         * @param data
-         * @param params [propName1, propName2, ...]
-         * @return
-         */
-        private List<String> makePropertyNameList(EchoDeviceData data, JSONArray params)
-                throws JSONException {
-            ArrayList<String> propertyList = new ArrayList<String>();
-
-            // make propertyList
-            for (int i = 0; i < params.length(); i++) {
-                propertyList.add(params.getString(i));
-            }
-
-            return propertyList;
         }
 
         /**

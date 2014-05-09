@@ -40,7 +40,6 @@ import org.json.JSONObject;
 import java.util.concurrent.Executors;
 
 public class KadecotCoreActivity extends FragmentActivity {
-    @SuppressWarnings("unused")
     private static final String TAG = KadecotCoreActivity.class.getSimpleName();
 
     private final KadecotCoreActivity self = this;
@@ -171,7 +170,7 @@ public class KadecotCoreActivity extends FragmentActivity {
         setupWebView(mKadecotMyPage);
 
         mMainLayout.addView(mKadecotMyPage, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
         // mAppView
         mAppView = new WebView(this);
@@ -180,7 +179,7 @@ public class KadecotCoreActivity extends FragmentActivity {
         mAppView.setVisibility(WebView.INVISIBLE);
 
         mMainLayout.addView(mAppView, 1, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.FILL_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
         // JS interface
         mKadecotMyPage.addJavascriptInterface(getLocalObject(), "Local");
@@ -202,6 +201,7 @@ public class KadecotCoreActivity extends FragmentActivity {
 
     }
 
+    @SuppressWarnings("deprecation")
     @SuppressLint("SetJavaScriptEnabled")
     protected void setupWebView(final WebView webView) {
         webView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);

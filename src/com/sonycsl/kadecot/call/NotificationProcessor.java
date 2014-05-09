@@ -16,10 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class NotificationProcessor {
-    @SuppressWarnings("unused")
     private static final String TAG = NotificationProcessor.class.getSimpleName();
-
-    private final NotificationProcessor self = this;
 
     protected final Context mContext;
 

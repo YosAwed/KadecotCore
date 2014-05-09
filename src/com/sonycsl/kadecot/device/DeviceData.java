@@ -9,10 +9,6 @@ package com.sonycsl.kadecot.device;
  * Databaseに保存されているデータ
  */
 public class DeviceData {
-    @SuppressWarnings("unused")
-    private static final String TAG = DeviceData.class.getSimpleName();
-
-    private final DeviceData self = this;
 
     public final long deviceId;
 

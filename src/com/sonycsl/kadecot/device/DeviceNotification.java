@@ -10,7 +10,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.support.v4.app.NotificationCompat;
 
 import com.sonycsl.kadecot.core.R;
 
@@ -18,10 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class DeviceNotification {
-    @SuppressWarnings("unused")
-    private static final String TAG = DeviceNotification.class.getSimpleName();
-
-    private final DeviceNotification self = this;
 
     protected static final int ERROR_NOTIFICATION_ID = 137;
 
@@ -41,10 +37,6 @@ public class DeviceNotification {
     public DeviceNotification buildEchoErrorNotification(String nickname, JSONArray errorValue)
             throws JSONException {
 
-        mNotification = new Notification(R.drawable.icon, "ERROR", System.currentTimeMillis());
-        // notice.flags |= Notification.FLAG_NO_CLEAR;
-
-        PackageManager pm = mContext.getPackageManager();
         // Intent intent =
         // pm.getLaunchIntentForPackage("com.sonycsl.ARMoekaden");
         Intent intent = new Intent(INTENT_ACTION_LAUNCH_FROM_DEVICE_ERROR_NOTIFICATION);
@@ -55,7 +47,10 @@ public class DeviceNotification {
         byte val1 = (byte) errorValue.getInt(1);
         String errorInfo = "0x" + String.format("%02x", val0) + String.format("%02x", val1);
         String contentText = "[" + nickname + "]" + errorInfo;
-        mNotification.setLatestEventInfo(mContext, "ERROR", contentText, pendIntent);
+
+        mNotification = new NotificationCompat.Builder(mContext).setSmallIcon(R.drawable.icon)
+                .setTicker("ERROR").setWhen(System.currentTimeMillis()).setContentText(contentText)
+                .setContentTitle("ERROR").setContentIntent(pendIntent).build();
 
         mNotificationId = ERROR_NOTIFICATION_ID;
 

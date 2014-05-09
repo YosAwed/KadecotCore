@@ -22,12 +22,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Locale;
 
 public class ServerNetwork {
-    @SuppressWarnings("unused")
-    private static final String TAG = ServerNetwork.class.getSimpleName();
-
-    private final ServerNetwork self = this;
 
     private static ServerNetwork sInstance = null;
 
@@ -179,8 +176,11 @@ public class ServerNetwork {
         if (info.getType() == ConnectivityManager.TYPE_WIFI) {
             WifiInfo wInfo = mWifiManager.getConnectionInfo();
             int ipAddress = wInfo.getIpAddress();
-            return String.format("%01d.%01d.%01d.%01d", (ipAddress >> 0) & 0xff,
-                    (ipAddress >> 8) & 0xff, (ipAddress >> 16) & 0xff, (ipAddress >> 24) & 0xff);
+            return String.format(Locale.getDefault(), "%01d.%01d.%01d.%01d",
+                    (ipAddress >> 0) & 0xff,
+                    (ipAddress >> 8) & 0xff,
+                    (ipAddress >> 16) & 0xff,
+                    (ipAddress >> 24) & 0xff);
         } else {
             InetAddress address = null;
             try {

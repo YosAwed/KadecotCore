@@ -11,10 +11,6 @@ import com.sonycsl.kadecot.core.Dbg;
 import com.sonycsl.kadecot.device.echo.EchoDeviceData;
 
 public class EchoDeviceAgent extends DeviceObject {
-    @SuppressWarnings("unused")
-    private static final String TAG = EchoDeviceAgent.class.getSimpleName();
-
-    private final EchoDeviceAgent self = this;
 
     private final EchoDeviceData mData;
 

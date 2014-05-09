@@ -26,10 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class EchoDiscovery {
-    @SuppressWarnings("unused")
-    private static final String TAG = EchoDiscovery.class.getSimpleName();
-
-    private final EchoDiscovery self = this;
 
     private final Context mContext;
 

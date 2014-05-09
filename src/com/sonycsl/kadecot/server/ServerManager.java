@@ -15,10 +15,6 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 public class ServerManager {
-    @SuppressWarnings("unused")
-    private static final String TAG = ServerManager.class.getSimpleName();
-
-    private final ServerManager self = this;
 
     private static ServerManager sInstance = null;
 

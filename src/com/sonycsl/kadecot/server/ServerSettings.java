@@ -16,11 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ServerSettings {
-    @SuppressWarnings("unused")
-    private static final String TAG = ServerSettings.class.getSimpleName();
-
-    private final ServerSettings self = this;
-
     private static String PREFERENCES_NAME = "Settings";
 
     private static String KEY_LOCATION_LAT = "location_lat";

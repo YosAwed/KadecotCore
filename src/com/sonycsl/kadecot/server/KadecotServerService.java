@@ -11,13 +11,11 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 
 import com.sonycsl.kadecot.core.R;
 
 public class KadecotServerService extends Service {
-
-    @SuppressWarnings("unused")
-    private static final String TAG = KadecotServerService.class.getSimpleName();
 
     private final KadecotServerService self = this;
 
@@ -61,9 +59,6 @@ public class KadecotServerService extends Service {
         if (mForeground == false) {
             return;
         }
-        Notification notice =
-                new Notification(R.drawable.icon, "Kadecot Server", System.currentTimeMillis());
-        notice.flags |= Notification.FLAG_NO_CLEAR;
 
         PackageManager pm = getPackageManager();
         Intent intent = pm.getLaunchIntentForPackage(getPackageName());
@@ -92,9 +87,12 @@ public class KadecotServerService extends Service {
                 "Snap:"
                         + (ServerManager.getInstance(self).isStartedSnapServer() ? "ON\n" : "OFF\n");
 
-        notice.setLatestEventInfo(self, "Kadecot Server", contentText, pendIntent);
+        Notification notice = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.icon)
+                .setTicker("Kadecot Server").setWhen(System.currentTimeMillis())
+                .setContentTitle("Kadecot Server").setContentText(contentText)
+                .setContentIntent(pendIntent).build();
+        notice.flags |= Notification.FLAG_NO_CLEAR;
         self.startForeground(FOREGROUND_ID, notice);
-
     }
 
     public void startForeground() {

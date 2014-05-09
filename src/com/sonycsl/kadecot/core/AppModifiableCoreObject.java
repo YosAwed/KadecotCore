@@ -12,9 +12,6 @@ import com.sonycsl.kadecot.device.DeviceInfo;
 import com.sonycsl.kadecot.device.DeviceProperty;
 
 public class AppModifiableCoreObject {
-    @SuppressWarnings("unused")
-    private static final String TAG = AppModifiableCoreObject.class.getSimpleName();
-    private final AppModifiableCoreObject self = this;
 
     protected final Context mContext;
 

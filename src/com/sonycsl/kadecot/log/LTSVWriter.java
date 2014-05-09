@@ -12,10 +12,6 @@ import java.io.OutputStreamWriter;
 import java.util.LinkedHashMap;
 
 public class LTSVWriter {
-    @SuppressWarnings("unused")
-    private static final String TAG = LTSVWriter.class.getSimpleName();
-
-    private final LTSVWriter self = this;
 
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 

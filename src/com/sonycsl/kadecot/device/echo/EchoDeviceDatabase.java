@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 public class EchoDeviceDatabase {
-    @SuppressWarnings("unused")
-    private static final String TAG = EchoDeviceDatabase.class.getSimpleName();
-
-    private final EchoDeviceDatabase self = this;
 
     protected static final String DB_NAME = "echo_device.db";
 

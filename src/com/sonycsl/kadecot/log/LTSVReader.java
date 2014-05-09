@@ -14,10 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class LTSVReader {
-    @SuppressWarnings("unused")
-    private static final String TAG = LTSVReader.class.getSimpleName();
-
-    private final LTSVReader self = this;
 
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 

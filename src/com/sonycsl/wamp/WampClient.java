@@ -20,7 +20,7 @@ abstract public class WampClient extends WampPeer {
     protected final Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
         Set<WampRole> clientRole = getClientRoleSet();
-        roleSet.add(new WampClientSession(clientRole));
+        roleSet.add(new WampClientSession());
         roleSet.addAll(clientRole);
         return roleSet;
     }
@@ -34,10 +34,7 @@ abstract public class WampClient extends WampPeer {
 
     private static final class WampClientSession extends WampRole {
 
-        private Set<WampRole> mRoleSet;
-
-        public WampClientSession(Set<WampRole> roleSet) {
-            mRoleSet = roleSet;
+        public WampClientSession() {
         }
 
         @Override

@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
-    private static final String TAG = DatabaseOpenHelper.class.getSimpleName();
-
     public static final String DATA_TYPE_INTEGER = "INTEGER";
 
     public static final String DATA_TYPE_TEXT = "TEXT";

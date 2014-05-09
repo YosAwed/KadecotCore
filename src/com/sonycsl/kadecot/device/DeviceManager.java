@@ -30,10 +30,7 @@ import java.util.List;
  * Deviceを管理するクラス
  */
 public class DeviceManager {
-    @SuppressWarnings("unused")
     private static final String TAG = DeviceManager.class.getSimpleName();
-
-    private final DeviceManager self = this;
 
     private static DeviceManager sInstance = null;
 

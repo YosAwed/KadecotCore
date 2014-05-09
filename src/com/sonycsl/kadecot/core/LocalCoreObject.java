@@ -15,10 +15,6 @@ import android.webkit.JavascriptInterface;
  * Kadecot My Page用のJSインターフェース
  */
 public class LocalCoreObject {
-    @SuppressWarnings("unused")
-    private static final String TAG = LocalCoreObject.class.getSimpleName();
-
-    private final LocalCoreObject self = this;
 
     protected final KadecotCoreActivity mKadecot;
 

@@ -8,10 +8,6 @@ package com.sonycsl.kadecot.server;
 import android.os.Binder;
 
 public class ServerBinder extends Binder {
-    @SuppressWarnings("unused")
-    private static final String TAG = ServerBinder.class.getSimpleName();
-
-    private final ServerBinder self = this;
 
     protected final KadecotServerService mKadecotServer;
 

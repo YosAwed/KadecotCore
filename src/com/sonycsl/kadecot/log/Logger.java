@@ -52,10 +52,6 @@ import java.util.concurrent.Executors;
 //
 // 30分以内(1ヶ月過ぎた分は消去)と一日以内(無限?)のファイルは別にいる．
 public class Logger {
-    @SuppressWarnings("unused")
-    private static final String TAG = Logger.class.getSimpleName();
-
-    private final Logger self = this;
 
     protected final Context mContext;
 

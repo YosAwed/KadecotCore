@@ -38,8 +38,6 @@ import java.util.regex.Pattern;
 
 // JSONPで返せるように
 public class KadecotJSONPServer {
-    @SuppressWarnings("unused")
-    private static final String TAG = KadecotJSONPServer.class.getSimpleName();
 
     private static KadecotJSONPServer sInstance;
 
@@ -48,8 +46,6 @@ public class KadecotJSONPServer {
     private ServerSocket mServerSocket;
 
     private final List<HttpGet> mHttpGetList = new ArrayList<HttpGet>();
-
-    private final HashMap<String, Result> mResults = new HashMap<String, Result>();
 
     private final String[] ACCESSIBLE_METHODS = {
             "refreshList", "list", "get", "set"
@@ -123,32 +119,6 @@ public class KadecotJSONPServer {
                 res.success(TYPE_JSON, result);
             }
         });
-    }
-
-    private class Result {
-        Thread cur;
-
-        JSONObject result;
-
-        Result(Thread t) {
-            cur = t;
-        }
-
-        void putResult(JSONObject result) {
-            this.result = result;
-            cur.interrupt();
-        }
-    }
-
-    public void onGetResult(JSONObject result) {
-        try {
-            if (mResults.containsKey(result.get("key"))) {
-                // Log.v(TAG, "ok:"+result.getString("key"));
-                mResults.get(result.get("key")).putResult(result);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     public static KadecotJSONPServer getInstance(Context context) {
@@ -271,7 +241,7 @@ public class KadecotJSONPServer {
 
         // set method
         // split args_s into byte array
-        String[] args_s = args_sp.split(",");
+        // String[] args_s = args_sp.split(",");
         // byte[] params = new byte[args_s.length] ;
         // for( int ai=0;ai<args_s.length;++ai ) params[ai] =
         // Integer.decode(args_s[ai]).byteValue()
@@ -286,7 +256,6 @@ public class KadecotJSONPServer {
     // /////////////////////////////////
 
     private class Request {
-        public String method;
 
         public String path = null;
 
@@ -318,7 +287,6 @@ public class KadecotJSONPServer {
             line = requests.get(0);
             Matcher m = REQUEST_LINE_PATTERN.matcher(line);
             if (m.matches()) {
-                method = m.group(1);
                 String p = m.group(2);
                 String[] ss = p.split("\\?");
                 path = ss[0];
@@ -393,10 +361,6 @@ public class KadecotJSONPServer {
             this.path = path;
         }
 
-        public HttpGet(Pattern path) {
-            // 未実装
-        }
-
         public boolean match(String path) {
 
             return this.path.equalsIgnoreCase(path);
@@ -416,7 +380,6 @@ public class KadecotJSONPServer {
 
         @Override
         public void run() {
-            List<String> reqList;
             OutputStream out = null;
             InputStream in = null;
             try {

@@ -12,10 +12,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EchoDeviceData extends DeviceData {
-    @SuppressWarnings("unused")
-    private static final String TAG = EchoDeviceData.class.getSimpleName();
-
-    private final EchoDeviceData self = this;
 
     public final String address;
 

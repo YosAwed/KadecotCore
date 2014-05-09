@@ -22,10 +22,6 @@ import java.util.Map;
  * デバイスのニックネーム _id : デバイスのid(デバイスの詳細情報を持つデータベースと共有する)
  */
 public class DeviceDatabase {
-    @SuppressWarnings("unused")
-    private static final String TAG = DeviceDatabase.class.getSimpleName();
-
-    private final DeviceDatabase self = this;
 
     private static final String DB_NAME = "device.db";
 

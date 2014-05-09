@@ -20,10 +20,6 @@ import java.util.concurrent.Executors;
  * JSON-RPC 2.0 をベースとしている(paramsは配列のみ)
  */
 public abstract class KadecotCall {
-    @SuppressWarnings("unused")
-    private static final String TAG = KadecotCall.class.getSimpleName();
-
-    private final KadecotCall self = this;
 
     private static final String VERSION = "3.0";
 
@@ -34,8 +30,6 @@ public abstract class KadecotCall {
     private final NotificationProcessor mNotificationProcessor;
 
     protected static HashSet<KadecotCall> mKadecotCalls = new HashSet<KadecotCall>();
-
-    private final static long REQUEST_TIMEOUT = 1000 * 60 * 5;
 
     private final int mPermissionLevel;
 

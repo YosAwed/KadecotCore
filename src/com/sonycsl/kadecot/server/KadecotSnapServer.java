@@ -37,15 +37,12 @@ public class KadecotSnapServer extends HTTPServer {
 
     private static final String PORT_NUMBER_PLACEHOLDER = "31338";
 
-    private Context context;
-
     private KadecotSnapServer(Context context) {
         super(ACCESS_ORIGIN);
         initialize(context);
     }
 
     protected void initialize(final Context context) {
-        this.context = context;
         addHttpGet(new HttpGet("/block.xml") {
             @Override
             public void run(Request req, Response res) throws IOException {

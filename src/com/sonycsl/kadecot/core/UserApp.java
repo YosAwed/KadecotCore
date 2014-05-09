@@ -8,10 +8,6 @@ package com.sonycsl.kadecot.core;
 import android.webkit.WebView;
 
 public class UserApp {
-    @SuppressWarnings("unused")
-    private static final String TAG = UserApp.class.getSimpleName();
-
-    private final UserApp self = this;
 
     private final KadecotCoreActivity mKadecot;
 

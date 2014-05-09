@@ -9,10 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ErrorResponse extends Response {
-    @SuppressWarnings("unused")
-    private static final String TAG = ErrorResponse.class.getSimpleName();
-
-    private final ErrorResponse self = this;
 
     public static final int PARSE_ERROR_CODE = -32700;
 

@@ -8,9 +8,6 @@ package com.sonycsl.kadecot.core;
 import android.util.Log;
 
 public class Dbg {
-    @SuppressWarnings("unused")
-    private static final String TAG = Dbg.class.getSimpleName();
-    private final Dbg self = this;
 
     private Dbg() {
     }

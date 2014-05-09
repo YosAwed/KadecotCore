@@ -25,8 +25,6 @@ public class WampRoleTestCase extends TestCase {
 
         private CountDownLatch mLatch;
         private WampMessage mMsg;
-        private boolean mIsTxResult = true;
-        private boolean mIsRxResult = true;
 
         @Override
         public String getRoleName() {
@@ -45,14 +43,6 @@ public class WampRoleTestCase extends TestCase {
             return mMsg;
         }
 
-        public void setTxResult(boolean result) {
-            mIsTxResult = result;
-        }
-
-        public void setRxResult(boolean result) {
-            mIsRxResult = result;
-        }
-
         @Override
         protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
             mMsg = msg;
@@ -60,7 +50,7 @@ public class WampRoleTestCase extends TestCase {
                 mLatch.countDown();
             }
 
-            return mIsTxResult;
+            return true;
         }
 
         @Override
@@ -70,7 +60,7 @@ public class WampRoleTestCase extends TestCase {
             if (mLatch != null) {
                 mLatch.countDown();
             }
-            return mIsRxResult;
+            return true;
         }
 
     }

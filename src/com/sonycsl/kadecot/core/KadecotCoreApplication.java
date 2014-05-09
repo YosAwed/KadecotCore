@@ -8,10 +8,6 @@ package com.sonycsl.kadecot.core;
 import android.app.Application;
 
 public class KadecotCoreApplication extends Application {
-    @SuppressWarnings("unused")
-    private static final String TAG = KadecotCoreApplication.class
-            .getSimpleName();
-    private final KadecotCoreApplication self = this;
 
     protected AppModifiableCoreObject mModifiableCoreObject;
 

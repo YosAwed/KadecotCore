@@ -25,8 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RequestProcessor {
-    @SuppressWarnings("unused")
-    private static final String TAG = RequestProcessor.class.getSimpleName();
 
     protected final Context mContext;
 
@@ -149,7 +147,7 @@ public class RequestProcessor {
                     @Override
                     public boolean predicate(LinkedHashMap<String, String> data) {
                         try {
-                            Iterator keys = obj.keys();
+                            Iterator<?> keys = obj.keys();
                             boolean flag = true;
                             while (keys.hasNext()) {
                                 String key = (String) keys.next();

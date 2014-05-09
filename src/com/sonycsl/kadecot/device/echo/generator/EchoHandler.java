@@ -18,10 +18,6 @@ import com.sonycsl.kadecot.device.echo.EchoManager;
 import org.json.JSONObject;
 
 public class EchoHandler {
-    @SuppressWarnings("unused")
-    private static final String TAG = EchoHandler.class.getSimpleName();
-
-    private final EchoHandler self = this;
 
     protected final Context mContext;
 

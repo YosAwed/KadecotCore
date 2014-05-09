@@ -6,10 +6,6 @@
 package com.sonycsl.kadecot.core;
 
 public class MyPageCall {
-    @SuppressWarnings("unused")
-    private static final String TAG = MyPageCall.class.getSimpleName();
-
-    private final MyPageCall self = this;
 
     private final KadecotCoreActivity mKadecot;
 
