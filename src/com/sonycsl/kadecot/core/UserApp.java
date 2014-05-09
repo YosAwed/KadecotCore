@@ -5,6 +5,7 @@
 
 package com.sonycsl.kadecot.core;
 
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 public class UserApp {
@@ -20,10 +21,12 @@ public class UserApp {
      * 
      * @param message
      */
+    @JavascriptInterface
     public void postMessage(final String message) {
         mKadecot.callJsOnAppView("kadecot._wa.onMsgFromServer(null," + message + ");");
     }
 
+    @JavascriptInterface
     public void openAppView(final String url) {
         mKadecot.runOnUiThread(new Runnable() {
 
@@ -36,6 +39,7 @@ public class UserApp {
         });
     }
 
+    @JavascriptInterface
     public void closeAppView() {
         mKadecot.runOnUiThread(new Runnable() {
 

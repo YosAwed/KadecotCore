@@ -5,6 +5,8 @@
 
 package com.sonycsl.kadecot.core;
 
+import android.webkit.JavascriptInterface;
+
 public class MyPageCall {
 
     private final KadecotCoreActivity mKadecot;
@@ -13,6 +15,7 @@ public class MyPageCall {
         mKadecot = kadecot;
     }
 
+    @JavascriptInterface
     public void postMessage(final String message) {
 
         mKadecot.callJsOnKadecotMyPage("kHAPI.app.onMsgFromApp(null," + message + ")");

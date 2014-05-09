@@ -5,6 +5,8 @@
 
 package com.sonycsl.kadecot.core;
 
+import android.webkit.JavascriptInterface;
+
 public class ExitApp {
 
     private KadecotCoreActivity mActivity;
@@ -13,6 +15,7 @@ public class ExitApp {
         mActivity = activity;
     }
 
+    @JavascriptInterface
     public void exitActivity() {
 
         mActivity.runOnUiThread(new Runnable() {

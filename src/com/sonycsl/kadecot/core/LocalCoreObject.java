@@ -29,6 +29,7 @@ public class LocalCoreObject {
         mKadecot.startKadecot();
     }
 
+    @JavascriptInterface
     public void openWebBrowser(final String url) {
         mKadecot.runOnUiThread(new Runnable() {
             @Override
@@ -39,7 +40,7 @@ public class LocalCoreObject {
     }
 
     // Audio
-
+    @JavascriptInterface
     public void playAudio(String path) {
         if (path.startsWith("file://"))
             path = path.substring("file://".length());
@@ -57,6 +58,7 @@ public class LocalCoreObject {
         }
     }
 
+    @JavascriptInterface
     public void stopAudio(String path) {
         if (mSoundPool == null)
             return;
