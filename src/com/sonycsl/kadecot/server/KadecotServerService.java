@@ -13,7 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
-import com.sonycsl.kadecot.core.R;
+import com.sonycsl.kadecotcore.R;
 
 public class KadecotServerService extends Service {
 
