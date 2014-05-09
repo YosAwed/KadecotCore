@@ -1,7 +1,7 @@
 KadecotCore
 ===========
 
-[![Build Status](https://travis-ci.org/SonyCSL/KadecotCore.svg?branch=try-travis-ci)](https://travis-ci.org/SonyCSL/KadecotCore)
+[![Build Status](https://travis-ci.org/SonyCSL/KadecotCore.svg?branch=master)](https://travis-ci.org/SonyCSL/KadecotCore)
 
 オープンソースのAndroid用ホームサーバーアプリです。  
 以下の機能を持っています。  
