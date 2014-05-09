@@ -104,6 +104,7 @@ public class KadecotECHONETLiteClient extends WampClient {
     @Override
     protected void OnReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
+            // TODO : don't do self-registration and subscription
             transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
                     new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_SEARCH));
 
@@ -124,6 +125,7 @@ public class KadecotECHONETLiteClient extends WampClient {
                 mRegistrationIds.add(msg.asRegisteredMessage().getRegistrationId());
             }
         } else if (msg.isGoodbyeMessage()) {
+            // TODO : don't do self-unregistration and unsubscription
 
             // TODO: manage registration
             // synchronized (mRegistrationIds) {

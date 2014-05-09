@@ -84,6 +84,7 @@ public class KadecotDeviceObserver extends WampClient {
     @Override
     protected void OnReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
+            // TODO : don't do self-registration and subscription
             transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
                     new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
             transmit(WampMessageFactory.createRegister(WampRequestIdGenerator.getId(),
@@ -103,6 +104,7 @@ public class KadecotDeviceObserver extends WampClient {
         }
 
         if (msg.isGoodbyeMessage()) {
+            // TODO : don't do self-unregistration and unsubscription
             transmit(WampMessageFactory.createUnregister(WampRequestIdGenerator.getId(),
                     mRegistrationId));
             transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
