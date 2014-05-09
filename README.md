@@ -1,22 +1,29 @@
 KadecotCore
 ===========
 
-オープンソースのAndroid用ホームサーバーアプリです。以下の機能を持っています。  
+オープンソースのAndroid用ホームサーバーアプリです。  
+以下の機能を持っています。  
 
-*[ECHONET Lite][]プロトコルをサポートした家電やセンサーをJSONPやWebSocketのWebAPIから制御・情報取得できる  
-*ライブラリプロジェクトとして構築されているので、単体動作も他プロジェクトからリンクして用いることも可能  
-*機器連携WebアプリをJavaScriptで作りやすくするためのラッピングライブラリがある(kadecot.js)。簡単なものですがサンプルがassets/html/Apps/Test/index.htmlにあります。assets/html/js/kadecot.jsの最初の方のコメントもご参照ください。  
+* [ECHONET Lite][] プロトコルをサポートした家電やセンサーを JSONP や WebSocket の WebAPI から制御・情報取得できる  
+* ライブラリプロジェクトとして構築されているので、単体動作も他プロジェクトからリンクして用いることも可能  
+* 機器連携 Web アプリを JavaScript で作りやすくするためのラッピングライブラリがある (kadecot.js)
+	- 簡単なものですがサンプルが assets/html/Apps/Test/index.html にあります
+	- assets/html/js/kadecot.js の最初の方のコメントもご参照ください。  
 
-KadecotCoreを用いた実証実験版アプリ[Kadecot][]がGoogle Playから配布されています。  
-いくつかの機能が追加されていますので、ホームサーバーの開発に興味がなく単に利用されたい場合はそちらをご利用ください。（ただし、2013年9月30日現在、Kadecotの方にはKadecotCoreは反映されておらず、次期バージョンでの対応となります。ご了承ください。Kadecotの次期アップデートは2013年10月中を予定しています）
+KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play から配布されています。  
+いくつかの機能が追加されていますので、ホームサーバーの開発に興味がなく単に利用されたい場合はそちらをご利用ください。  
+ただし、2013年9月30日現在、Kadecot の方には KadecotCoreは 反映されておらず、次期バージョンでの対応となります。ご了承ください。  
+(Kadecotの次期アップデートは2013年10月中を予定しています）
 
-本アプリは内部で[OpenECHO][]を用いています。こちらも独立したオープンソースとして配布していますので、WebAPI等が不要だという方はそちらをご参照ください。  
+本アプリは内部で [OpenECHO][] を用いています。こちらも独立したオープンソースとして配布していますので、WebAPI 等が不要だという方はそちらをご参照ください。  
 
-※本ソフトウェアの著作権は[株式会社ソニーコンピュータサイエンス研究所][]が保持しており、[MITライセンス][]で配布されています。ライセンスに従い，自由にご利用ください。  
+**本ソフトウェアの著作権は[株式会社ソニーコンピュータサイエンス研究所][]が保持しており、[MITライセンス][]で配布されています。**  
+**ライセンスに従い，自由にご利用ください。**
 
 バグレポート等お待ちしています！  
 
-また、開発者MLみたいなものも作りたいと思っています。ご興味のある方は、ひとまずinfo@kadecot.netまで空メールを送って頂ければ幸いです(特に返答システムはありませんのでご了承ください)。  
+また、開発者 ML みたいなものも作りたいと思っています。  
+ご興味のある方は、ひとまず info@kadecot.net まで空メールを送って頂ければ幸いです(特に返答システムはありませんのでご了承ください)。  
 
 [ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
 [Kadecot]: http://kadecot.net/ "Kadecot"
@@ -27,15 +34,18 @@ KadecotCoreを用いた実証実験版アプリ[Kadecot][]がGoogle Playから�
 ===========
 本プロジェクトで用いているソフトウェアとライセンス
 
-jQuery/jQuery Mobile : jQuery/jQuery Mobile License
-Java-WebSocket : MIT
+| Software | License |
+| :--------: | :-------: |
+| jQuery/jQuery Mobile | jQuery/jQuery Mobile License |
+| Java-WebSocket | MIT |
+| AutobahnJS | MIT |
 
 以下ライセンス文章です：
 
 ===========
-jQuery/jQuery Mobile
+**jQuery/jQuery Mobile**
 
-Copyright (c) 2011 John Resig, http://jquery.com/<br>
+Copyright (c) 2011 John Resig, http://jquery.com/
 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -45,7 +55,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ===========
-Java-WebSocket
+**Java-WebSocket**
 
 https://github.com/TooTallNate/Java-WebSocket
 
@@ -59,3 +69,28 @@ Copyright (c) 2010-2012 Nathan Rajlich
  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+===========
+**AutobahnJS**
+
+https://github.com/tavendo/AutobahnJS
+
+
+Copyright (c) 2011-2014 Tavendo GmbH.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
