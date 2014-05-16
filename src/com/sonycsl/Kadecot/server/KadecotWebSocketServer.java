@@ -117,6 +117,10 @@ public class KadecotWebSocketServer {
 
 			// origin
 			String origin = handshake.getFieldValue("origin");
+			/*if( origin.equalsIgnoreCase("http://apps.kadecot.net")){
+				conn.close() ;
+				return ;
+			}*/
 			KadecotCall kc = new WebSocketCall(mContext, conn);
 				
 			mKadecotCalls.put(conn, kc);
