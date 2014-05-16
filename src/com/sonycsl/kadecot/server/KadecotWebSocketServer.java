@@ -6,6 +6,7 @@
 package com.sonycsl.kadecot.server;
 
 import android.content.Context;
+import android.os.Build;
 
 import com.sonycsl.kadecot.call.KadecotCall;
 import com.sonycsl.kadecot.call.NotificationProcessor;
@@ -70,6 +71,11 @@ public class KadecotWebSocketServer {
     }
 
     private KadecotWebSocketServer(Context context) {
+        if (Build.PRODUCT.startsWith("sdk")) {
+            java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+            java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+        }
+
         mContext = context.getApplicationContext();
 
         mRouter = new KadecotWampRouter();
