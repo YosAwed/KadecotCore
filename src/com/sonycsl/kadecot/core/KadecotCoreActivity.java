@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
@@ -202,15 +204,19 @@ public class KadecotCoreActivity extends FragmentActivity {
     }
 
     @SuppressWarnings("deprecation")
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({ "SetJavaScriptEnabled", "NewApi" })
     protected void setupWebView(final WebView webView) {
         webView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
         WebSettings wsets = webView.getSettings();
         wsets.setJavaScriptEnabled(true);
         wsets.setDomStorageEnabled(true);
         wsets.setDatabaseEnabled(true);
-        wsets.setDatabasePath(getFilesDir() + "/localstorage");
-
+        wsets.setDatabasePath(getFilesDir() + "/localstrage");
+        // for AJAX.
+        // http://stackoverflow.com/questions/11318703/access-control-allow-origin-error-at-android-4-1
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
+            wsets.setAllowUniversalAccessFromFileURLs(true);
+        }
         wsets.setGeolocationEnabled(true);
         webView.setBackgroundColor(Color.BLACK);
 
