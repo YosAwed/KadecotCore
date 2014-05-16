@@ -403,7 +403,7 @@ kHAPI.net.ServerCall = {
       };
 
       // ECHONET Lite Emulator.
-      for (i = 1; i < args.length; i++) {
+      for (var i = 1; i < args.length; i++) {
         if (args[i][0] in d.access) {
           result_value.property[i - 1] = {
             name: args[i][0],
@@ -428,15 +428,24 @@ kHAPI.net.ServerCall = {
         next: 1
       };
     }
+    return;
   },
+  // arguments is [nickname,[0x80,null],[0x31,null]]
   get: function(args, cbfunc) {
     var d = kHAPI.dev.findDeviceByNickname(args[0]);
     if (d === undefined) {
       console.log(d + " not found");
       return;
     }
-    if (d.isEmulation) {
 
+    // Maybe, there are codes like this. kHAPI.get(["hoge",0x80]) in App.js.
+    for (var i=1;i<args.length;i++) {
+      if(!(args[i] instanceof Array)){
+        args[i] = [args[i], null];
+      }
+    }
+
+    if (d.isEmulation) {
       var ret = {
         nickname: args[0],
         property: []
