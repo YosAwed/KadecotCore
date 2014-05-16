@@ -13,6 +13,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,6 +113,9 @@ public class ServerNetwork {
     }
 
     public int isConnectedHomeNetwork() {
+        if (Build.PRODUCT.startsWith("sdk")) {
+            return CONNECTED;
+        }
 
         NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
 
