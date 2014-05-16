@@ -21,7 +21,7 @@ kHAPI.local = {
       if (ao === undefined) return;
       ao.pause();
       ao = undefined;
-    }
+    };
   }
 
   ,

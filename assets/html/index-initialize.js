@@ -219,6 +219,23 @@ var addDeviceForGoodPlace = function(newdev) {
   return;
 };
 
+var onColorKeyDown = function(keycode){
+    // blue -> 186
+    // red -> 183
+    // green -> 184
+    // yellow -> 185
+    // left to right?.
+    if(keycode == 186){
+        $.mobile.changePage("#log_page");
+    }else if(keycode == 183){
+        $.mobile.changePage("#devlist_page");
+    }else if(keycode == 184){
+        $.mobile.changePage("#app_page");
+    }else if(keycode == 185){
+        onClickSettingsPageButton();
+    }
+};
+
 var onClickRefreshLogButton = function() {
   getSimpleLog();
   return false;
@@ -501,7 +518,7 @@ var onDeviceDetailPageOpen = function(nickname, device) {
   $("#nickname_button").unbind("click");
   $("#nickname_button").click(function() {
     var new_nickname = $("#nickname_input").val();
-    onClickChangeNickname(nickname, new_nickname);
+    onClickChangeNickname(nickname,new_nickname);
   });
 
   // Power logger
@@ -855,7 +872,8 @@ var onAppSettingPageOpen = function(index) {
     var selected_value = "none";
     for (var j = 0; j < real_devices.length; j++) {
       var rv = real_devices[j];
-      if (rv.deviceType === dev.deviceType && rv.protocol === dev.protocol
+      if (rv.deviceType.toLowerCase() === dev.deviceType.toLowerCase()
+              && rv.protocol.toLowerCase() === dev.protocol.toLowerCase()
               && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
           value: rv.nickname,
@@ -961,7 +979,7 @@ var makeDeviceLi = function(device) {
           + "</a>"
           +
 
-          "<input type='button' value='Settings' class='jqmNone'"
+          "<input type='button' value='Settings' class='jqmNone setting_button'"
           + "onclick='onDeviceDetailPageOpen(\"{nickname}\");' style='width:100%' ></input>"
           + "</li>";
   return template.format({
@@ -984,7 +1002,7 @@ function refreshManifests(manifs) {
           + "<img src='{image}' /> "
           + "<div style='position:absolute; top:0px; left:0px;'>{title}</div>"
           + "</a>"
-          + "<input type='button' value='Settings' class='jqmNone'"
+          + "<input type='button' value='Settings' class='jqmNone setting_button'"
           + "onclick='onAppSettingPageOpen({index})' style='width:100%' ></input>"
           + "</li>";
 
@@ -1021,7 +1039,7 @@ var getImageUrl = function(device) {
             || device.deviceType === "0x0260" || device.deviceType === "0x026b") {
       imgurl = 'index_res/icons/' + device.deviceType.substring(0, 6) + ".png";
     } else {
-      imgurl = 'index_res/icons/' + device.deviceType.substring(0, 4) + ".png";
+      imgurl = 'index_res/icons/' + device.deviceType.substring(0,4) + ".png";
     }
   }
   return imgurl;
@@ -1290,6 +1308,13 @@ var myget = function(args, callback, with_out_queue) {
     access_queuing(nickname);
   }
   access_count[nickname]++;
+
+  // set null as get argument
+  // TODO : set correct argument
+  var i;
+  for (i = 1; i < args.length; i++) {
+    args[i] = [args[i], null];
+  }
 
   kHAPI.get(args, function(ret, success) {
     access_count[nickname]--;

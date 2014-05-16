@@ -24,7 +24,7 @@ function l(val, msg) {
 };
 
 var kHAPI = {
-  APIVer: '1',
+  APIVer: '3.0',
   isOnAndroid: ('ServerCall' in window && 'UserApp' in window),
   init: function(oncomplete_func) {
     // Executed after al includes are finished
