@@ -19,11 +19,6 @@ public class AppModifiableCoreObject {
         mContext = context;
     }
 
-    public boolean acceptWebSocketOrigin(String origin) {
-        Dbg.print("WebSocket origin:" + origin);
-        return true;
-    }
-
     public void onControlProperty(final DeviceData data, DeviceInfo info,
             String accessType, DeviceProperty property) {
 
