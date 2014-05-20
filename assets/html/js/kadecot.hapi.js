@@ -130,8 +130,7 @@ var kHAPI = {
         this.net.callServerFunc('set', args, callback);
       };
 
-      kHAPI.exec = function(nickname, params, paramsKw, callback) {
-        var method = "exec";
+      kHAPI.invoke = function(method, nickname, params, paramsKw, callback) {
         var procedure = "com.sonycsl.kadecot."
                 + kHAPI.dev.findDeviceByNickname(nickname).protocol
                 + ".procedure." + method;
@@ -141,8 +140,8 @@ var kHAPI = {
           "params": params,
           "paramsKw": paramsKw,
         };
-        console.log("kHAPI.exec: args= " + JSON.stringify(args));
-        this.net.callServerFunc("exec", args, callback);
+        console.log("kHAPI.invoke: args= " + JSON.stringify(args));
+        this.net.callServerFunc(method, args, callback);
       };
 
       kHAPI.readManifests = function(callback) {

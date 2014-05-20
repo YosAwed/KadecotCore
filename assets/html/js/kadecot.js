@@ -217,13 +217,13 @@ var kadecot = {
       }
 
       if( wa.isOnAndroid ){
-		wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
+        wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
       } else {
-	window.addEventListener(
-		"message",function(e){ kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data)); }, false);
+        window.addEventListener(
+                "message",function(e){ kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data)); }, false);
 
 
-		wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
+        wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
       return true ;
     } // kadecot._wa.init end
 
@@ -258,8 +258,7 @@ var kadecot = {
 		// console.log('postMsgToMyPage : '+JSON.stringify( {'method':methodName ,
     // 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } ))
     // ;
-		this.myPageWnd.postMessage( msgToPost
-		,kadecot.myPageURL.substring(0 , kadecot.myPageURL.lastIndexOf('/')+1)) ;
+		this.myPageWnd.postMessage( msgToPost		,kadecot.myPageURL.substring(0 , kadecot.myPageURL.lastIndexOf('/')+1)) ;
 	}
     }
 

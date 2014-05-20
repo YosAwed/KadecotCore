@@ -1336,7 +1336,7 @@ var myexec = function(nickname, params, paramsKw, callback) {
   }
   access_count[nickname]++;
 
-  kHAPI.exec(nickname, params, paramsKw, function(ret, success) {
+  kHAPI.invoke("exec", nickname, params, paramsKw, function(ret, success) {
     if (callback !== undefined) {
       callback(ret, success);
     }
