@@ -69,12 +69,22 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     }
 
     @Override
+    public boolean hasArguments() {
+        return toJSON().length() > ARGUMENTS_INDEX;
+    }
+
+    @Override
     public JSONArray getArguments() {
         try {
             return toJSON().getJSONArray(ARGUMENTS_INDEX);
         } catch (JSONException e) {
             throw new IllegalArgumentException("there is no argument");
         }
+    }
+
+    @Override
+    public boolean hasArgumentsKw() {
+        return toJSON().length() > ARGUMENTS_KW_INDEX;
     }
 
     @Override

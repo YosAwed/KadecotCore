@@ -5,35 +5,16 @@
 
 package com.sonycsl.test.kadecot.server;
 
-import android.content.Context;
-import android.test.mock.MockContext;
-
-import com.sonycsl.kadecot.core.KadecotCoreApplication;
 import com.sonycsl.kadecot.server.KadecotWebSocketServer;
 
 import junit.framework.TestCase;
 
 public class KadecotWebSocketServerTestCase extends TestCase {
 
-    private static class TestMockContext extends MockContext {
-
-        @Override
-        public Context getApplicationContext() {
-            return new KadecotCoreApplication() {
-
-                @Override
-                public Context getApplicationContext() {
-                    return this;
-                }
-
-            };
-        }
-    }
-
     private KadecotWebSocketServer mServer;
 
     protected void setUp() throws Exception {
-        mServer = KadecotWebSocketServer.getInstance(new TestMockContext());
+        mServer = KadecotWebSocketServer.getInstance();
     }
 
     @Override
@@ -48,7 +29,7 @@ public class KadecotWebSocketServerTestCase extends TestCase {
     }
 
     public void testSingleton() {
-        assertEquals(mServer, KadecotWebSocketServer.getInstance(new TestMockContext()));
+        assertEquals(mServer, KadecotWebSocketServer.getInstance());
     }
 
     public void testStart() {
