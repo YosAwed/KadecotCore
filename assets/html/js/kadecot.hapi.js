@@ -24,7 +24,7 @@ function l(val, msg) {
 };
 
 var kHAPI = {
-  APIVer: '1',
+  APIVer: '3.0',
   isOnAndroid: ('ServerCall' in window && 'UserApp' in window),
   init: function(oncomplete_func) {
     // Executed after al includes are finished
@@ -98,7 +98,7 @@ var kHAPI = {
                 t: send_args.length - 1
               });
             }
-            kHAPI.net.callServerFunc("get", send_args, function(recv_args,
+            var get_callback = function(recv_args,
                     success) {
               for (var i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] !== undefined) {
@@ -114,7 +114,15 @@ var kHAPI = {
                   }
                 }
               }
-            });
+            };
+            
+            if (kHAPI.isOnAndroid) {
+              kHAPI.net.callServerFunc("get", send_args, get_callback);
+              return;
+            }
+            
+            //XXX: Call only first property
+            kHAPI.invoke('get', nickname, [], {"propertyName":props[0]}, callback);
           }, waitingTimeForQueue);
         } else {
           deviceAccessQueue[nickname].push({
@@ -127,21 +135,49 @@ var kHAPI = {
       // args = [nickname,[prop1,newval1],[prop2,newval2] ..],
       // result is the same as get.
       kHAPI.set = function(args, callback) {
-        this.net.callServerFunc('set', args, callback);
+        if (kHAPI.isOnAndroid) {
+          this.net.callServerFunc('set', args, callback);
+          return;
+        }
+        
+        var nickname = args[0];
+        var propertyName = args[1][0];
+        var propertyValue = args[1][1];
+
+        //XXX: Call only first property
+        kHAPI.invoke('set', nickname, [], {"propertyName":propertyName, "propertyValue":propertyValue}, callback);
       };
 
       kHAPI.invoke = function(method, nickname, params, paramsKw, callback) {
         var procedure = "com.sonycsl.kadecot."
                 + kHAPI.dev.findDeviceByNickname(nickname).protocol
                 + ".procedure." + method;
-        var args = {
-          "procedure": procedure,
-          "nickname": nickname,
-          "params": params,
-          "paramsKw": paramsKw,
-        };
-        console.log("kHAPI.invoke: args= " + JSON.stringify(args));
-        this.net.callServerFunc(method, args, callback);
+        
+        var options = {"nickname": nickname};
+        
+        this.net.callOnWamp(procedure, options, params, paramsKw, callback);
+      };
+      
+      kHAPI.subscribe = function(method, nickname, callback) {
+        var topic = "com.sonycsl.kadecot."
+          + kHAPI.dev.findDeviceByNickname(nickname).protocol;
+          + ".topic." + method;
+          
+          var options = {"nickname": nickname};
+          
+          this.net.subscribeOnWamp(options, topic, callback);
+      }
+
+      kHAPI.startIRemoconLearning = function(args, callback) {
+        this.net.callServerFunc('set', [args[0],
+            ['learning', ['on', args[1], args[2], args[3]]]]);
+      };
+      kHAPI.cancelIRemoconLearning = function(args, callback) {
+        this.net.callServerFunc('set', [args[0], ['learning', ['off']]]);
+      };
+      // args = [iRemoconNickname,'light' or 'aircon']
+      kHAPI.addIRemoconDefaultDevice = function(args, callback) {
+        this.net.callServerFunc('set', [args[0], ['defaultDevice', args[1]]]);
       };
 
       kHAPI.readManifests = function(callback) {
