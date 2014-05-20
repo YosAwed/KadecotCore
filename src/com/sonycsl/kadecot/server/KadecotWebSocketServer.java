@@ -12,7 +12,6 @@ import com.sonycsl.kadecot.call.KadecotCall;
 import com.sonycsl.kadecot.call.NotificationProcessor;
 import com.sonycsl.kadecot.call.RequestProcessor;
 import com.sonycsl.kadecot.core.Dbg;
-import com.sonycsl.kadecot.core.KadecotCoreApplication;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.kadecot.wamp.KadecotWebSocketClient;
 import com.sonycsl.wamp.WampClient;
@@ -137,22 +136,9 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-
-            // origin
-            String origin = handshake.getFieldValue("origin");
-            KadecotCoreApplication app = (KadecotCoreApplication) mContext.getApplicationContext();
-            if (app.getModifiableObject().acceptWebSocketOrigin(origin)) {
-                /** KadecotCall **/
-
-                /** WAMP **/
-                WampClient client = new KadecotWebSocketClient(conn);
-                client.connect(mRouter);
-                mClients.put(conn, client);
-
-            } else {
-                conn.close();
-            }
-
+            WampClient client = new KadecotWebSocketClient(conn);
+            client.connect(mRouter);
+            mClients.put(conn, client);
         }
 
         @Override
