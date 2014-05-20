@@ -25,8 +25,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KadecotWebSocketServer {
 
@@ -115,7 +115,7 @@ public class KadecotWebSocketServer {
 
     public class WebSocketServerImpl extends WebSocketServer {
 
-        private Map<WebSocket, WampClient> mClients = new HashMap<WebSocket, WampClient>();
+        private Map<WebSocket, WampClient> mClients = new ConcurrentHashMap<WebSocket, WampClient>();
 
         public WebSocketServerImpl(InetSocketAddress address) {
             super(address);
@@ -130,7 +130,7 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            /** WAMP has no method for onClose **/
+            mClients.remove(conn);
         }
 
         @Override
