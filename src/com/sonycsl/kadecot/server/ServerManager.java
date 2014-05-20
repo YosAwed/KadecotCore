@@ -267,7 +267,7 @@ public class ServerManager {
 
     private KadecotWebSocketServer getWebSocketServer() {
         if (mWebSocketServer == null) {
-            mWebSocketServer = KadecotWebSocketServer.getInstance(mContext);
+            mWebSocketServer = KadecotWebSocketServer.getInstance();
         }
         return mWebSocketServer;
     }

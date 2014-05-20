@@ -5,13 +5,8 @@
 
 package com.sonycsl.kadecot.server;
 
-import android.content.Context;
 import android.os.Build;
 
-import com.sonycsl.kadecot.call.KadecotCall;
-import com.sonycsl.kadecot.call.NotificationProcessor;
-import com.sonycsl.kadecot.call.RequestProcessor;
-import com.sonycsl.kadecot.core.Dbg;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.kadecot.wamp.KadecotWebSocketClient;
 import com.sonycsl.wamp.WampClient;
@@ -34,14 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class KadecotWebSocketServer {
-    @SuppressWarnings("unused")
-    private static final String TAG = KadecotWebSocketServer.class.getSimpleName();
 
     private final KadecotWebSocketServer self = this;
 
     private static final int portno = 41314;
-
-    private Context mContext;
 
     protected static KadecotWebSocketServer sInstance = null;
 
@@ -51,20 +42,18 @@ public class KadecotWebSocketServer {
 
     private KadecotWampRouter mRouter;
 
-    public synchronized static KadecotWebSocketServer getInstance(Context context) {
+    public synchronized static KadecotWebSocketServer getInstance() {
         if (sInstance == null) {
-            sInstance = new KadecotWebSocketServer(context);
+            sInstance = new KadecotWebSocketServer();
         }
         return sInstance;
     }
 
-    private KadecotWebSocketServer(Context context) {
+    private KadecotWebSocketServer() {
         if (Build.PRODUCT.startsWith("sdk")) {
             java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
             java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
         }
-
-        mContext = context.getApplicationContext();
 
         mRouter = new KadecotWampRouter();
 
@@ -126,8 +115,6 @@ public class KadecotWebSocketServer {
 
     public class WebSocketServerImpl extends WebSocketServer {
 
-        private Map<WebSocket, KadecotCall> mKadecotCalls = new HashMap<WebSocket, KadecotCall>();
-
         private Map<WebSocket, WampClient> mClients = new HashMap<WebSocket, WampClient>();
 
         public WebSocketServerImpl(InetSocketAddress address) {
@@ -143,31 +130,11 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            /** KadecotCall **/
-            if (mKadecotCalls.containsKey(conn)) {
-                KadecotCall kc = mKadecotCalls.get(conn);
-                mKadecotCalls.remove(conn);
-                kc.stop();
-            }
-
             /** WAMP has no method for onClose **/
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
-
-            /** KadecotCall **/
-            Dbg.print(message);
-            if (mKadecotCalls.containsKey(conn)) {
-                try {
-                    mKadecotCalls.get(conn).receive(new JSONObject(message));
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-
-            /** WAMP **/
             if (mClients.containsKey(conn)) {
                 try {
                     WampMessage msg = WampMessageFactory.create(new JSONArray(message));
@@ -180,24 +147,12 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onError(WebSocket conn, Exception ex) {
-            // if (mKadecotCalls.containsKey(conn)) {
-            // KadecotCall kc = mKadecotCalls.get(conn);
-            // kc.stop();
-            // mKadecotCalls.remove(conn);
-            // }
         }
 
         @Override
         public synchronized void stop(int timeout) throws IOException, InterruptedException {
             super.stop(timeout);
 
-            /** KadecotCalls **/
-            for (WebSocket ws : mKadecotCalls.keySet()) {
-                mKadecotCalls.get(ws).stop();
-            }
-            mKadecotCalls.clear();
-
-            /** WAMP **/
             mClients.clear();
 
             self.mWebSocketServer = null;
@@ -207,23 +162,5 @@ public class KadecotWebSocketServer {
             }
 
         }
-    }
-
-    public class WebSocketCall extends KadecotCall {
-
-        private WebSocket ws;
-
-        public WebSocketCall(Context context, WebSocket ws) {
-            super(context, 1, new RequestProcessor(context, 1), new NotificationProcessor(context,
-                    1));
-            // TODO Auto-generated constructor stub
-            this.ws = ws;
-        }
-
-        @Override
-        public void send(JSONObject obj) {
-            ws.send(obj.toString());
-        }
-
     }
 }
