@@ -855,7 +855,8 @@ var onAppSettingPageOpen = function(index) {
     var selected_value = "none";
     for (var j = 0; j < real_devices.length; j++) {
       var rv = real_devices[j];
-      if (rv.deviceType === dev.deviceType && rv.protocol === dev.protocol
+      if (rv.deviceType.toLowerCase() === dev.deviceType.toLowerCase()
+              && rv.protocol.toLowerCase() === dev.protocol.toLowerCase()
               && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
           value: rv.nickname,
@@ -1290,6 +1291,13 @@ var myget = function(args, callback, with_out_queue) {
     access_queuing(nickname);
   }
   access_count[nickname]++;
+
+  // set null as get argument
+  // TODO : set correct argument
+  var i;
+  for (i = 1; i < args.length; i++) {
+    args[i] = [args[i], null];
+  }
 
   kHAPI.get(args, function(ret, success) {
     access_count[nickname]--;

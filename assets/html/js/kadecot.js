@@ -179,13 +179,19 @@
  * そのうちきちんと説明します。ごめんなさい。
  */
 
-
 var kadecot = {
-  init : function( manif , initcb ){ return this._wa.init( manif,initcb ) ; }
 
-  ,_wa : {
+  init : function( manif , initcb ){ 
+    return this._wa.init( manif,initcb );
+  }
+
+  ,
+_wa : {
     init : function( manif ,init_callback ){
-      if( this.isInited !== undefined ){ console.log('Cannot initialize twice.') ; return false; }
+      if (this.isInited !== undefined) {
+        console.log('Cannot initialize twice.');
+        return false;
+      }
       var wa = kadecot._wa ; // === this
       wa.isOnAndroid = ( 'MyPageCall' in window ) ;
 
@@ -202,7 +208,12 @@ var kadecot = {
 	// console.log( 'message by addEventListener_message : ' +
   // JSON.stringify(arguments) ) ;
         // 全てのサーバーからのメソッド呼び出しのルート
-	if( json_rpc.method === 'onGetSetValue' || json_rpc.method === 'onQueryLog' ){
+
+        if (json_rpc.method === 'onGetValue'
+                || json_rpc.method === 'onSetValue'
+                || json_rpc.method === 'onQueryLog'
+                || json_rpc.method === 'onInvoke'
+                || json_rpc.method === 'onEvent') {
 	  if( wa.invokeWaitList[ json_rpc.id ] === undefined ){
 	    console.log('No matching getsetValue call found for onGetSetValue/onQueryLog') ;
 	  } else {
@@ -212,134 +223,161 @@ var kadecot = {
 		var method = wa.myPageAPI[json_rpc.method] ;
 		if( method === undefined )
 			console.log('No method named '+json_rpc.method) ;
-		else method.apply( wa , [origin].concat(json_rpc.params) ) ;
+		else 
+          method.apply( wa , [origin].concat(json_rpc.params) ) ;
 	}
       }
 
       if( wa.isOnAndroid ){
         wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
       } else {
-        window.addEventListener(
-                "message",function(e){ kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data)); }, false);
+        window.addEventListener("message",function(e){
+          kadecot._wa.onMsgFromServer(e.origin,JSON.parse(e.data));
+        }, false);
 
 
         wa.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(manif)] );
       return true ;
     } // kadecot._wa.init end
 
-    , genRandStr : function (){
-	if( typeof this.getRandStrSS === 'undefined' ){
-	  this.getRandStrSS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-	}
-	var ret = '';
-	for (var i = 0; i < 30; i++) {
-	  ret += this.getRandStrSS[Math.floor(Math.random() * this.getRandStrSS.length)];
-	}
+    ,
+    genRandStr : function (){
+	  if( typeof this.getRandStrSS === 'undefined' ){
+	    this.getRandStrSS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+	  }
+	  var ret = '';
+	  for (var i = 0; i < 30; i++) {
+	    ret += this.getRandStrSS[Math.floor(Math.random() * this.getRandStrSS.length)];
+	  }
 	return ret;
+    },
+    invokeGetValue: function(devname, propname, args_for_get, cbfunc) {
+      var key = this.genRandStr();
+      this.invokeWaitList[key] = cbfunc;
+      this.postMsgToMyPage('getValue', (args_for_get === undefined ? [devname,
+          propname] : [devname, propname, args_for_get]), key);
+    },
+    invokeSetValue: function(devname, propname, args_for_set, cbfunc) {
+      var key = this.genRandStr();
+      this.invokeWaitList[key] = cbfunc;
+      this.postMsgToMyPage('setValue', (args_for_set === undefined ? [devname,
+          propname] : [devname, propname, args_for_set]), key);
+    },
+    invoke: function(devname, methodName, args, cbfunc) {
+	  var key = this.genRandStr() ;
+	  this.invokeWaitList[key] = cbfunc ;
+      console.log('invoke: device=' + devname + ", methodName=" + methodName
+              + ", args=" + args + ", key=" + key);
+      this.postMsgToMyPageNew('invoke', devname, methodName, args, key);
+    },
+    subscribe: function(devname, methodName, cbfunc) {
+      var key = this.genRandStr();
+      this.invokeWaitList[key] = cbfunc;
+      console.log('invoke: device=' + devname + ", methodName=" + methodName
+              + ", key=" + key);
+      this.postMsgToMyPageNew('subscribe', devname, methodName, key);
+    },
+    invokeQueryLog: function(starttime, endtime, cbfunc) {
+      var key = this.genRandStr();
+      this.invokeWaitList[key] = cbfunc;
+      this.postMsgToMyPage('queryLog', [starttime, endtime], key);
+    },
+    postMsgToMyPage: function(methodName, argsarray, key) {
+      var msgToPost = JSON.stringify({
+        'method': methodName,
+        'params': (argsarray instanceof Array ? argsarray : null),
+        'id': key
+      });
+      if (kadecot._wa.isOnAndroid) {
+        MyPageCall.postMessage(msgToPost);
+      } else {
+        this.myPageWnd.postMessage(msgToPost, kadecot.myPageURL.substring(0,
+        　　　　　　　　kadecot.myPageURL.lastIndexOf('/') + 1));
+      }
+    },
+    postMsgToMyPageNew: function(method, deviceName, apiName, argsObj, key) {
+      var msgToPost = JSON.stringify({
+        'method': method,
+        'deviceName': deviceName,
+        'apiName': apiName,
+        'params': argsObj,
+        'id': key
+      });
+      if (kadecot._wa.isOnAndroid) {
+        MyPageCall.postMessage(msgToPost);
+      } else {
+        // console.log('postMsgToMyPage : '+JSON.stringify( {'method':methodName
+        // , 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key
+        // } )) ;
+
+        this.myPageWnd.postMessage(msgToPost, kadecot.myPageURL.substring(0,
+        　　　　　　　 kadecot.myPageURL.lastIndexOf('/') + 1));
+      }
     }
-    , invokeGetSetValue : function( devname,propname , args_for_set , cbfunc ){
-	var key = this.genRandStr() ;
-	this.invokeWaitList[key] = cbfunc ;
-	this.postMsgToMyPage( 'getsetValue'
-		,(args_for_set===undefined ? [devname,propname] : [devname,propname,args_for_set])
-		,key ) ;
-    }
-    , invokeQueryLog : function( starttime , endtime , cbfunc ){
-	var key = this.genRandStr() ;
-	this.invokeWaitList[key] = cbfunc ;
-	this.postMsgToMyPage( 'queryLog'
-		,[starttime , endtime] ,key ) ;
-    }
-    , postMsgToMyPage : function( methodName,argsarray,key ){
-	var msgToPost = JSON.stringify( {'method':methodName , 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } );
-        if( kadecot._wa.isOnAndroid ){
-		MyPageCall.postMessage(msgToPost) ;
-	} else {
-		// console.log('postMsgToMyPage : '+JSON.stringify( {'method':methodName ,
-    // 'params':(argsarray instanceof Array ? argsarray : null) , 'id':key } ))
-    // ;
-		this.myPageWnd.postMessage( msgToPost		,kadecot.myPageURL.substring(0 , kadecot.myPageURL.lastIndexOf('/')+1)) ;
-	}
-    }
 
-    , myPageAPI : { // this is kadecot._wa
-	// Call from MyPage
-	onMyPageConnected : function( origin , aosrc ){
-		// Setup setter/getter etc.
-		var memval = {} ;
-		var ao = {} ;
-		for( var devname in aosrc ){
-			if( typeof devname !== 'string' ) continue ;
-			(function(){
-				var dname = devname ;
+    ,
+    myPageAPI: { // this is kadecot._wa
+      // Call from MyPage
+      onMyPageConnected: function(origin, aosrc) {
+        // Setup setter/getter etc.
+        var memval = {};
+        var ao = {};
+        for ( var devname in aosrc) {
+          if (typeof devname !== 'string') continue;
+          (function() {
+            var dname = devname;
 
-				var mv = memval[dname] = {active:true} ;
-				var av = ao[dname] = {} ;
+            var mv = memval[dname] = {
+              active: true
+            };
+            var av = ao[dname] = {};
 
-				av.__defineGetter__('active',function(){
-					return mv.active ;
-				}) ;
-				// set prohibited.(nothing happens)
-				av.__defineSetter__('active',function(){}) ;
+            av.__defineGetter__('active', function() {
+              return mv.active;
+            });
+            // set prohibited.(nothing happens)
+            av.__defineSetter__('active', function() {});
 
-				for( var propname in aosrc[dname] ){
-					if( propname === 'active' ){
-						// delete av.active ;
-						continue ;
-					}
-					(function(){
-						var pname = propname ;
-						mv[pname] = aosrc[dname][pname] ; // Initialize
-						av['get'+pname ] = function(onsuccessfunc, bCallChangePower){
-							kadecot._wa.invokeGetSetValue( dname,pname,undefined,function(newVal){
-								var oldVal = mv[pname] ;
-								// var newVal = Array.prototype.slice.call(arguments) ;
-								mv[pname] = newVal ;
+            for ( var propname in aosrc[dname]) {
+              if (propname === 'active') {
+                // delete av.active ;
+                continue;
+              }
+              (function() {
+                var pname = propname;
+                mv[pname] = aosrc[dname][pname]; // Initialize
 
-								if(typeof onsuccessfunc === 'function')
-									onsuccessfunc.call(kadecot._wa,newVal) ;
+                ao[dname][pname] = function(args, callback) {
+                  console.log("Call ao: dname=" + dname + ", pname=" + pname);
+                  kadecot._wa.invoke(dname, pname, args, function(newVal) {
+                    callback.call(kadecot._wa, newVal);
+                  });
+                }
 
-								var onChangeFunc = av['onChange'+pname] ;
+                ao[dname]['on' + pname] = function(callback) {
+                  console.log("Subscribe ao: dname=" + dname + ", pname="
+                          + pname);
+                  kadecot._wa.subscribe(dname, pname, function(newVal) {
+                    callback.call(kadecot._wa, newVal);
+                  });
+                }
+              })();
+            }
+          })();
+        }
 
-								if( bCallChangePower && typeof onChangeFunc === 'function'
-									&& JSON.stringify(oldVal) !== JSON.stringify(newVal) ){
-									onChangeFunc.call(av,newVal) ;
-								}
-							} ) ;
-						} ;
-						av['set'+pname ] = function(newvalue, onsuccessfunc, bCallChangePower){
-							kadecot._wa.invokeGetSetValue( dname,pname,newvalue,function(newVal){
-								var oldVal = mv[pname] ;
-								mv[pname] = newVal ;
-
-								if(typeof onsuccessfunc === 'function')
-									onsuccessfunc.call(kadecot._wa,newVal) ;
-
-								var onChangeFunc = av['onChange'+pname] ;
-
-								if( bCallChangePower && typeof onChangeFunc === 'function'
-									&& JSON.stringify(oldVal) !== JSON.stringify(newVal) ){
-									onChangeFunc.call(av,newVal) ;
-								}
-							} ) ;
-						} ;
-
-						av.__defineGetter__( pname , function(){ return mv[pname] ; } ) ;
-						av.__defineSetter__( pname , function(newval){ av['set'+pname](newval) ; } ) ;
-					})() ;
-				}
-			})() ;
-		}
-
-		kadecot._wa.myPageAPI.onPropertyChanged = function( origin , devicename , propname , newval ){
-			if( memval[devicename]===undefined || memval[devicename][propname]===undefined ){
+		kadecot._wa.myPageAPI.onPropertyChanged = function(origin, devicename,
+                propname, newval){
+			if(memval[devicename] === undefined
+                   || memval[devicename][propname]===undefined ){
 				console.log('Undefined property change is notified') ;// Never happens?
 				return ;
 			}
 			var oldVal = memval[devicename][propname] ;
 			memval[devicename][propname] = newval ;
 			var onChangeFunc = ao[devicename]['onChange'+propname] ;
-			if( typeof onChangeFunc === 'function' && JSON.stringify(oldVal) !== JSON.stringify(newval))
+			if( typeof onChangeFunc === 'function' 
+                    && JSON.stringify(oldVal) !== JSON.stringify(newval))
 				onChangeFunc.call(ao[devicename] , newval) ;
 		} ;
 
@@ -347,17 +385,18 @@ var kadecot = {
 			kadecot._wa.postMsgToMyPage('cleanup',[bWinClose] );
 		} ;
 
-		ao.queryLog = function(){ kadecot._wa.invokeQueryLog.apply(kadecot._wa,arguments) ; } ;
-
-
+		ao.queryLog = function(){
+          kadecot._wa.invokeQueryLog.apply(kadecot._wa,arguments);
+        };
 
 		this.initcb( ao );
 	}
 
-	, onMyPageReady : function(){
-		this.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(this.manif)] );
-	}
-	, showMessage : function( origin,msgStr ){
+	,
+    onMyPageReady: function(){
+		this.postMsgToMyPage('reqMyPageConnected',[JSON.stringify(this.manif)]);
+	},
+    showMessage : function( origin,msgStr ){
 		if( typeof msgStr !== 'string' || msgStr.length <= 0 ){
 			if( this.showMessageDiv !== undefined ){
 				this.showMessageDiv.parentNode.removeChild(this.showMessageDiv) ;
@@ -380,9 +419,12 @@ var kadecot = {
 	}
 
 	// Dummy function. overwritten in onMyPageConnected
-	, onPropertyChanged : function(){}
+	,
+    onPropertyChanged : function(){}
 
-    } // myPageAPI end.
+    }
+ // myPageAPI end.
 
-  } // kadecot._wa end.
+  }
+// kadecot._wa end.
 } ; // kadecot end.
