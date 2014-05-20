@@ -11,7 +11,7 @@ kHAPI.net = {
   // Internal object to achieve invoke-oninvoke match
   ,
   callServerFunc_invokeMatch: {},
-  id: -1
+  id: 0
   // Home panel -> Server
   ,
   callServerFunc: function(method, argObject, callbackfunc) {
@@ -118,7 +118,7 @@ kHAPI.net = {
   ,
   genId: function() {
     if (this.id >= Number.MAX_VALUE - 1) {
-      this.id = -1;
+      this.id = 0;
     }
 
     return ++this.id;
