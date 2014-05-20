@@ -1326,7 +1326,7 @@ var myset = function(args, callback) {
   });
 };
 
-var myexec = function(nickname, params, paramsKw, callback) {
+var myinvoke = function(method, nickname, params, paramsKw, callback) {
   var dev = kHAPI.findDeviceByNickname(nickname);
   if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
   if (!(nickname in access_count)) {
@@ -1336,7 +1336,7 @@ var myexec = function(nickname, params, paramsKw, callback) {
   }
   access_count[nickname]++;
 
-  kHAPI.invoke("exec", nickname, params, paramsKw, function(ret, success) {
+  kHAPI.invoke(method, nickname, params, paramsKw, function(ret, success) {
     if (callback !== undefined) {
       callback(ret, success);
     }
