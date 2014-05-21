@@ -17,7 +17,7 @@ public enum KadecotECHONETLiteProcedure {
         this.procedure = procedure;
     }
 
-    public String getString() {
+    public String toString() {
         return procedure;
     }
 
@@ -25,7 +25,7 @@ public enum KadecotECHONETLiteProcedure {
         KadecotECHONETLiteProcedure enumArray[] = KadecotECHONETLiteProcedure.values();
 
         for (KadecotECHONETLiteProcedure enumElement : enumArray) {
-            if (procedure.equals(enumElement.getString()))
+            if (procedure.equals(enumElement.toString()))
                 return enumElement;
         }
 
