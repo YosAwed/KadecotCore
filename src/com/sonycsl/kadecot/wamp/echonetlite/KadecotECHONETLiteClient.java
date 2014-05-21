@@ -33,14 +33,18 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KadecotECHONETLiteClient extends WampClient {
 
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
 
     private int mSubscriptionId;
-    private List<Integer> mRegistrationIds;
+    // Map<registeredId, procedure>
+    private Map<Integer, String> mRequestIdProcedureMap;
+    private Map<Integer, String> mRegistrationIds;
 
     private ECHONETLiteWampCallee mCallee;
     private ECHONETLiteWampSubscriber mSubscriber;
@@ -53,7 +57,8 @@ public class KadecotECHONETLiteClient extends WampClient {
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
         mManager = EchoManager.getInstance(context);
         mManager.setListener(pListener, dListener);
-        mRegistrationIds = new ArrayList<Integer>();
+        mRequestIdProcedureMap = new ConcurrentHashMap<Integer, String>();
+        mRegistrationIds = new ConcurrentHashMap<Integer, String>();
     }
 
     private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
@@ -103,14 +108,18 @@ public class KadecotECHONETLiteClient extends WampClient {
 
     @Override
     protected void OnReceived(WampMessage msg) {
+        Log.d(TAG, "OnReceived : " + msg.toString());
         if (msg.isWelcomeMessage()) {
             // TODO : don't do self-registration and subscription
             transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
                     new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_SEARCH));
 
             for (KadecotECHONETLiteProcedure procedure : KadecotECHONETLiteProcedure.values()) {
-                transmit(WampMessageFactory.createRegister(WampRequestIdGenerator.getId(),
-                        new JSONObject(), procedure.toString()));
+                int requestId = WampRequestIdGenerator.getId();
+                mRequestIdProcedureMap.put(requestId, procedure.toString());
+                Log.i(TAG, "register procedure : " + requestId + ", " + procedure.toString());
+                transmit(WampMessageFactory.createRegister(requestId, new JSONObject(),
+                        procedure.toString()));
             }
 
             /**
@@ -121,9 +130,11 @@ public class KadecotECHONETLiteClient extends WampClient {
         } else if (msg.isSubscribedMessage()) {
             mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
         } else if (msg.isRegisteredMessage()) {
-            synchronized (mRegistrationIds) {
-                mRegistrationIds.add(msg.asRegisteredMessage().getRegistrationId());
-            }
+            int requestId = msg.asRegisteredMessage().getRequestId();
+            String procedure = mRequestIdProcedureMap.get(requestId);
+            int registerdId = msg.asRegisteredMessage().getRegistrationId();
+            mRegistrationIds.put(registerdId, procedure);
+            Log.i(TAG, "registered : " + requestId + " <-> " + registerdId + ", " + procedure);
         } else if (msg.isGoodbyeMessage()) {
             // TODO : don't do self-unregistration and unsubscription
 
