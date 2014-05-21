@@ -187,7 +187,6 @@ var kHAPI = {
       kHAPI.addIRemoconDefaultDevice = function(args, callback) {
         this.net.callServerFunc('set', [args[0], ['defaultDevice', args[1]]]);
       };
-
       kHAPI.readManifests = function(callback) {
         this.app.readManifests(callback);
       };

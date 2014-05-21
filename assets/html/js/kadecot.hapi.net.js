@@ -456,10 +456,6 @@ kHAPI.net.ServerCall = {
     }
   },
   get: function(args, cbfunc) {
-    var i;
-    for (i = 1; i < args.length; i++) {
-      args[i] = [args[i], null];
-    }
     var d = kHAPI.dev.findDeviceByNickname(args[0]);
     if (d === undefined) {
       console.log(d + " not found");
@@ -473,8 +469,8 @@ kHAPI.net.ServerCall = {
       };
       for (var ai = 1; ai < args.length; ++ai) {
         ret.property.push({
-          name: args[ai],
-          value: d.access[args[ai]],
+          name: args[ai][0],
+          value: d.access[args[ai][0]],
           sucess: true
         });
       }
