@@ -224,7 +224,7 @@ public class KadecotECHONETLiteClient extends WampClient {
                     response = callSet(data, params);
                     break;
                 default:
-                    throw new UnsupportedOperationException(procedure.getString());
+                    throw new UnsupportedOperationException(procedure.toString());
             }
             return propertyListToJSONArray(response);
         }
