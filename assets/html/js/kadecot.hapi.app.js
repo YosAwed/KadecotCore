@@ -86,42 +86,68 @@ kHAPI.app = {
                 // JSON.stringify(arguments) ) ;
                 // console.log( 'json_rpc : ' + JSON.stringify(json_rpc) ) ;
                 // クライアントアプリからの全てのメソッド呼び出しのルート
-                if (json_rpc.method === 'getsetValue') {
+                if (json_rpc.method === 'getValue') {
                   var vnm = kHAPI.app.running.manifest.varNameMap[json_rpc.params[0]][json_rpc.params[1]];
                   var option = vnm[2];
-                  if (json_rpc.params.length == 2) { // get
-                    kHAPI.get([vnm[0], vnm[1]], function(result, success) {
-                      if (!success) return;
-                      result = result.property[0].value;
-                      if (option !== undefined) {
-                        if (option === 'echotemperature')
-                          result = [getTempFromECHONETLite2ByteArray(result)];
-                        else if (option === 'echomultibyteint')
-                          result = [echoByteArrayToInt(result)];
-                      } else
-                        result = [result];
-
-                      kHAPI.app.postMsgToApp('onGetSetValue', result,
-                              json_rpc.id);
-                    });
-                  } else { // set
-                    var newval = json_rpc.params[2];
-
+                  var args;
+                  // if json_rpc.params has args for get, set it as args
+                  if (json_rpc.params.length == 3) {
+                    args = [vnm[0], [vnm[1], json_rpc.params[2]]];
+                  } else {
+                    args = [vnm[0], [vnm[1], null]];
+                  }
+                  kHAPI.get(args, function(result, success) {
+                    if (!success) return;
+                    result = result.property[0].value;
                     if (option !== undefined) {
                       if (option === 'echotemperature')
-                        newval = TwoByteArrayFromECHONETLiteTemp(newval);
+                        result = [getTempFromECHONETLite2ByteArray(result)];
                       else if (option === 'echomultibyteint')
-                        newval = intToEchoByteArray(newval, 4); // to 4 bytes
-                    }
+                        result = [echoByteArrayToInt(result)];
+                    } else
+                      result = [result];
 
-                    kHAPI.set([vnm[0], [vnm[1], newval]], function(result,
-                            success) {
-                      if (!success) return;
-                      result = result.property[0].value;
-                      kHAPI.app.postMsgToApp('onGetSetValue', [result],
-                              json_rpc.id);
-                    });
+                    kHAPI.app.postMsgToApp('onGetValue', result, json_rpc.id);
+                  });
+                } else if (json_rpc.method === 'setValue') {
+                  var vnm = kHAPI.app.running.manifest.varNameMap[json_rpc.params[0]][json_rpc.params[1]];
+                  var option = vnm[2];
+                  var newval = json_rpc.params[2];
+
+                  if (option !== undefined) {
+                    if (option === 'echotemperature')
+                      newval = TwoByteArrayFromECHONETLiteTemp(newval);
+                    else if (option === 'echomultibyteint')
+                      newval = intToEchoByteArray(newval, 4); // to 4 bytes
                   }
+                  kHAPI.set([vnm[0], [vnm[1], newval]],
+                          function(result, success) {
+                            if (!success) return;
+                            result = result.property[0].value;
+                            kHAPI.app.postMsgToApp('onSetValue', [result],
+                                    json_rpc.id);
+                          });
+                } else if (json_rpc.method === 'invoke'){
+                  var vnm = kHAPI.app.running.manifest.varNameMap[json_rpc.deviceName][json_rpc.apiName];
+                  
+                  var nickname = vnm[0];
+                  var apiName = vnm[1];
+                  var paramsKw = json_rpc.params;
+                  
+                  kHAPI.invoke(apiName, nickname, [], paramsKw, function(result, success) {
+                    if (!success) return;
+                    result = result.property[0].value;
+                    kHAPI.app.postMsgToApp('onInvoke', result, json_rpc.id);
+                  });
+                } else if (json_rpc.method === 'subscribe'){
+                  var vnm = kHAPI.app.running.manifest.varNameMap[json_rpc.deviceName][json_rpc.apiName];
+                  
+                  var nickname = vnm[0];
+                  var apiName = vnm[1];
+                  
+                  kHAPI.subscribe(apiName, nickname, function(args, argsKw) {
+                    kHAPI.app.postMsgToApp('onEvent', argsKw, json_rpc.id);
+                  });
                 } else if (json_rpc.method === 'queryLog') {
                   kHAPI.queryLog(json_rpc.params, function(dat) {
                     kHAPI.app.postMsgToApp('onQueryLog', [dat], json_rpc.id);
@@ -345,88 +371,101 @@ kHAPI.app = {
 
               var _prop = prop;
               var d_access_prop = d.access[_prop];
+              var prop_arg = null;
+              if (d_access_prop.arg != undefined) {
+                prop_arg = d_access_prop.arg;
+              }
+              
               var option = d_access_prop.option;
               if (option !== undefined) option = option.toLowerCase();
               manif.varNameMap[d.name][d_access_prop.name] = (option === undefined
                       ? [rd.nickname, _prop] : [rd.nickname, _prop, option]);
+
               getcalls.push(function() {
-
-                kHAPI.app.postMsgToApp('showMessage', ['Accessing '
-                        + rd.nickname + ' for ' + _prop]);
-
-                kHAPI.get([rd.nickname, _prop], function(result, success) {
-                  if (!success) {
-                    kHAPI.app.postMsgToApp('showMessage', ['Failed : '
-                            + rd.nickname + '.' + _prop]);
-                    ao[d.name][d_access_prop.name] = null;
+                if (kHAPI.isOnAndroid) {
+                  kHAPI.app.postMsgToApp('showMessage', ['Accessing '
+                                                         + rd.nickname + ' for ' + _prop]);
+                  kHAPI.get([rd.nickname, [_prop, prop_arg]], function(result,
+                          success) {
+                    if (!success) {
+                      kHAPI.app.postMsgToApp('showMessage', ['Failed : '
+                                                             + rd.nickname + '.' + _prop]);
+                      ao[d.name][d_access_prop.name] = null;
+                      if (--get_total == 0) {
+                        kHAPI.app.postMsgToApp('showMessage', []);
+                        kHAPI.app.postMsgToApp('onMyPageConnected', [ao]);
+                      }
+                      return;
+                    }
+                    kHAPI.app.postMsgToApp('showMessage', [rd.nickname + '.'
+                                                           + _prop + ' successfully obtained']);
+                    
+                    result = result.property[0].value;
+                    
+                    var varname = d_access_prop.name;
+                    if (typeof varname !== 'string') {
+                      --get_total;
+                      return;
+                    }
+                    
+                    if (option !== undefined) {
+                      if (option === 'echotemperature')
+                        result = getTempFromECHONETLite2ByteArray(result);
+                      else if (option === 'echomultibyteint')
+                        result = echoByteArrayToInt(result);
+                    }
+                    
+                    ao[d.name][varname] = (result === undefined ? null : result);
+                    
                     if (--get_total == 0) {
                       kHAPI.app.postMsgToApp('showMessage', []);
                       kHAPI.app.postMsgToApp('onMyPageConnected', [ao]);
                     }
-                    return;
-                  }
-                  kHAPI.app.postMsgToApp('showMessage', [rd.nickname + '.'
-                          + _prop + ' successfully obtained']);
-
-                  result = result.property[0].value;
-
-                  var varname = d_access_prop.name;
-                  if (typeof varname !== 'string') {
-                    --get_total;
-                    return;
-                  }
-
-                  if (option !== undefined) {
-                    if (option === 'echotemperature')
-                      result = getTempFromECHONETLite2ByteArray(result);
-                    else if (option === 'echomultibyteint')
-                      result = echoByteArrayToInt(result);
-                  }
-
-                  ao[d.name][varname] = (result === undefined ? null : result);
-
-                  if (--get_total == 0) {
-                    kHAPI.app.postMsgToApp('showMessage', []);
-                    kHAPI.app.postMsgToApp('onMyPageConnected', [ao]);
-                  }
-                });
-              });
-
-              // ポーリング設定
-              if (typeof d_access_prop.polling === 'number') {
-                var poll_stopper = false;
-                stopPollFuncs.push(function() {
-                  poll_stopper = true;
-                });
-
-                var varName = d_access_prop.name;
-                var poll_time = d_access_prop.polling * 1000;
-                var poll_func = function() {
-                  if (poll_stopper) return;
-
-                  kHAPI.get([rd.nickname, _prop], function(result, success) {
-                    if (success) {
-                      result = result.property[0].value;
-                      if (poll_stopper) return;
-
-                      if (option !== undefined) {
-                        if (option === 'echotemperature')
-                          result = [getTempFromECHONETLite2ByteArray(result)];
-                        else if (option === 'echomultibyteint')
-                          result = [echoByteArrayToInt(result)];
-                      } // else result = [result] ;
-
-                      kHAPI.app.postMsgToApp('onPropertyChanged', [d.name,
-                          varName, result]);
-                    }
-                    setTimeout(poll_func, poll_time);
                   });
-                };
-
-                setTimeout(poll_func, poll_time);
-              }
+                  
+                  // ポーリング設定
+                  if (typeof d_access_prop.polling === 'number') {
+                    var poll_stopper = false;
+                    stopPollFuncs.push(function() {
+                      poll_stopper = true;
+                    });
+                    
+                    var varName = d_access_prop.name;
+                    var poll_time = d_access_prop.polling * 1000;
+                    
+                    var poll_func = function() {
+                      if (poll_stopper) return;
+                      
+                      kHAPI.get([rd.nickname, [_prop, prop_arg]], function(result,
+                              success) {
+                        if (success) {
+                          result = result.property[0].value;
+                          if (poll_stopper) return;
+                          
+                          if (option !== undefined) {
+                            if (option === 'echotemperature')
+                              result = [getTempFromECHONETLite2ByteArray(result)];
+                            else if (option === 'echomultibyteint')
+                              result = [echoByteArrayToInt(result)];
+                          } // else result = [result] ;
+                          
+                          kHAPI.app.postMsgToApp('onPropertyChanged', [d.name,
+                                                                       varName, result]);
+                        }
+                        setTimeout(poll_func, poll_time);
+                      });
+                    };
+                    
+                    setTimeout(poll_func, poll_time);
+                  }
+                  
+                  return;
+                }
+                
+                //TODO: get all procedures from kadecot server
+                ao[d.name][d_access_prop.name] = null;
+              });
             })();
-
           }
         })();
       }
@@ -473,6 +512,9 @@ kHAPI.app = {
       else
         for (var gi = 0; gi < getcalls.length; ++gi)
           getcalls[gi]();
+
+      kHAPI.app.postMsgToApp('showMessage', []);
+      kHAPI.app.postMsgToApp('onMyPageConnected', [ao]);
     }
     ;
 

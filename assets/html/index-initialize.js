@@ -855,7 +855,8 @@ var onAppSettingPageOpen = function(index) {
     var selected_value = "none";
     for (var j = 0; j < real_devices.length; j++) {
       var rv = real_devices[j];
-      if (rv.deviceType === dev.deviceType && rv.protocol === dev.protocol
+      if (rv.deviceType.toLowerCase() === dev.deviceType.toLowerCase()
+              && rv.protocol.toLowerCase() === dev.protocol.toLowerCase()
               && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
           value: rv.nickname,
@@ -1291,6 +1292,13 @@ var myget = function(args, callback, with_out_queue) {
   }
   access_count[nickname]++;
 
+  // set null as get argument
+  // TODO : set correct argument
+  var i;
+  for (i = 1; i < args.length; i++) {
+    args[i] = [args[i], null];
+  }
+
   kHAPI.get(args, function(ret, success) {
     access_count[nickname]--;
 
@@ -1326,7 +1334,7 @@ var myset = function(args, callback) {
   });
 };
 
-var myexec = function(nickname, params, paramsKw, callback) {
+var myinvoke = function(method, nickname, params, paramsKw, callback) {
   var dev = kHAPI.findDeviceByNickname(nickname);
   if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
   if (!(nickname in access_count)) {
@@ -1336,7 +1344,7 @@ var myexec = function(nickname, params, paramsKw, callback) {
   }
   access_count[nickname]++;
 
-  kHAPI.invoke("exec", nickname, params, paramsKw, function(ret, success) {
+  kHAPI.invoke(method, nickname, params, paramsKw, function(ret, success) {
     if (callback !== undefined) {
       callback(ret, success);
     }
