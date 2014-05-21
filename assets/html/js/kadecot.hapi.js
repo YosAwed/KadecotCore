@@ -98,8 +98,7 @@ var kHAPI = {
                 t: send_args.length - 1
               });
             }
-            var get_callback = function(recv_args,
-                    success) {
+            var get_callback = function(recv_args, success) {
               for (var i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] !== undefined) {
                   if (!success) {
@@ -115,14 +114,16 @@ var kHAPI = {
                 }
               }
             };
-            
+
             if (kHAPI.isOnAndroid) {
               kHAPI.net.callServerFunc("get", send_args, get_callback);
               return;
             }
-            
-            //XXX: Call only first property
-            kHAPI.invoke('get', nickname, [], {"propertyName":props[0]}, callback);
+
+            // XXX: Call only first property
+            kHAPI.invoke('get', nickname, [], {
+              "propertyName": props[0]
+            }, callback);
           }, waitingTimeForQueue);
         } else {
           deviceAccessQueue[nickname].push({
@@ -139,33 +140,40 @@ var kHAPI = {
           this.net.callServerFunc('set', args, callback);
           return;
         }
-        
+
         var nickname = args[0];
         var propertyName = args[1][0];
         var propertyValue = args[1][1];
 
-        //XXX: Call only first property
-        kHAPI.invoke('set', nickname, [], {"propertyName":propertyName, "propertyValue":propertyValue}, callback);
+        // XXX: Call only first property
+        kHAPI.invoke('set', nickname, [], {
+          "propertyName": propertyName,
+          "propertyValue": propertyValue
+        }, callback);
       };
 
       kHAPI.invoke = function(method, nickname, params, paramsKw, callback) {
         var procedure = "com.sonycsl.kadecot."
                 + kHAPI.dev.findDeviceByNickname(nickname).protocol
                 + ".procedure." + method;
-        
-        var options = {"nickname": nickname};
-        
+
+        var options = {
+          "nickname": nickname
+        };
+
         this.net.callOnWamp(procedure, options, params, paramsKw, callback);
       };
-      
+
       kHAPI.subscribe = function(method, nickname, callback) {
         var topic = "com.sonycsl.kadecot."
-          + kHAPI.dev.findDeviceByNickname(nickname).protocol;
-          + ".topic." + method;
-          
-          var options = {"nickname": nickname};
-          
-          this.net.subscribeOnWamp(options, topic, callback);
+                + kHAPI.dev.findDeviceByNickname(nickname).protocol;
+        +".topic." + method;
+
+        var options = {
+          "nickname": nickname
+        };
+
+        this.net.subscribeOnWamp(options, topic, callback);
       }
 
       kHAPI.startIRemoconLearning = function(args, callback) {
