@@ -238,11 +238,6 @@ public class KadecotECHONETLiteClient extends WampClient {
                     throw new UnsupportedOperationException(procedure.toString());
             }
 
-            Log.i(TAG, "response : " + response.size());
-            for (int i = 0; i < response.size(); i++) {
-                DeviceProperty dp = response.get(i);
-                Log.i(TAG, dp.name + " : " + dp.value);
-            }
             return createResponseArgumentsKw(response);
         }
 
