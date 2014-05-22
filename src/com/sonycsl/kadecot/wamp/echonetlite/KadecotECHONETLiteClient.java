@@ -203,9 +203,9 @@ public class KadecotECHONETLiteClient extends WampClient {
                         new JSONObject(), WampError.NO_SUCH_PROCEDURE);
             }
 
-            JSONArray arguments = new JSONArray();
+            JSONObject argumentKw = new JSONObject();
             try {
-                arguments = resolveInvocationMsg(enumProcedure, invMsg);
+                argumentKw = resolveInvocationMsg(enumProcedure, invMsg);
             } catch (JSONException e) {
                 e.printStackTrace();
                 return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
@@ -217,14 +217,14 @@ public class KadecotECHONETLiteClient extends WampClient {
             }
 
             return WampMessageFactory.createYield(invMsg.getRequestId(), new JSONObject(),
-                    arguments);
+                    new JSONArray(), argumentKw);
         }
 
-        private JSONArray resolveInvocationMsg(KadecotECHONETLiteProcedure procedure,
+        private JSONObject resolveInvocationMsg(KadecotECHONETLiteProcedure procedure,
                 WampInvocationMessage msg) throws JSONException, AccessException {
             String nickname = msg.getDetails().getString("nickname");
             EchoDeviceData data = mManager.getDeviceData(nickname);
-            JSONArray params = msg.getArguments();
+            JSONObject params = msg.getArgumentsKw();
             List<DeviceProperty> response = new ArrayList<DeviceProperty>();
 
             switch (procedure) {
@@ -237,20 +237,30 @@ public class KadecotECHONETLiteClient extends WampClient {
                 default:
                     throw new UnsupportedOperationException(procedure.toString());
             }
-            return propertyListToJSONArray(response);
+
+            Log.i(TAG, "response : " + response.size());
+            for (int i = 0; i < response.size(); i++) {
+                DeviceProperty dp = response.get(i);
+                Log.i(TAG, dp.name + " : " + dp.value);
+            }
+            return createResponseArgumentsKw(response);
         }
 
-        private JSONArray propertyListToJSONArray(List<DeviceProperty> list) throws JSONException {
-            JSONArray jArray = new JSONArray();
-
-            for (DeviceProperty dp : list) {
-                JSONArray j = new JSONArray();
-                j.put(dp.name);
-                j.put(dp.value);
-                jArray.put(j);
-            }
-
-            return jArray;
+        /**
+         * @param list size must be one.
+         * @return
+         * @throws JSONException
+         */
+        private JSONObject createResponseArgumentsKw(List<DeviceProperty> list)
+                throws JSONException {
+            JSONObject json = new JSONObject();
+            DeviceProperty dp = list.get(0);
+            String propName = ECHONETLitePropertyName.translate(dp.name);
+            int val = ((JSONArray) dp.value).getInt(0);
+            json.put(KadecotWampECHONETLiteUtil.PROPERTY_NAME_KEY, propName);
+            json.put(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY, val);
+            Log.i(TAG, "return property : " + json.toString());
+            return json;
         }
 
         /**
@@ -258,21 +268,9 @@ public class KadecotECHONETLiteClient extends WampClient {
          * @param params [propName1, propName2, ...]
          * @return
          */
-        private List<DeviceProperty> callGet(EchoDeviceData data, JSONArray params)
+        private List<DeviceProperty> callGet(EchoDeviceData data, JSONObject params)
                 throws JSONException, AccessException {
-
-            /**
-             * TODO: After refactoring DeviceProtocol, cancel comment out of
-             * below codes and delete propList and makePropertyListForGet
-             * method.
-             */
-
-            /**
-             * List<String> propertyNameList = makePropertyNameList(data,
-             * params); return mManager.get(data.deviceId, propertyNameList);
-             */
-
-            List<DeviceProperty> propList = makePropertyListForGet(data, params);
+            List<DeviceProperty> propList = makePropertyList(data, params);
             return mManager.get(data.deviceId, propList);
         }
 
@@ -281,9 +279,9 @@ public class KadecotECHONETLiteClient extends WampClient {
          * @param params [[propName1, propValue1], [propName2, propValue2], ...]
          * @return
          */
-        private List<DeviceProperty> callSet(EchoDeviceData data, JSONArray params)
+        private List<DeviceProperty> callSet(EchoDeviceData data, JSONObject params)
                 throws JSONException, AccessException {
-            List<DeviceProperty> propertyList = makePropertyListForSet(data, params);
+            List<DeviceProperty> propertyList = makePropertyList(data, params);
             return mManager.set(data.deviceId, propertyList);
         }
 
@@ -292,38 +290,29 @@ public class KadecotECHONETLiteClient extends WampClient {
          * this method must be deleted.
          * 
          * @param data
-         * @param params [propName1, propName2, ...]
+         * @param param {"propertyName" : name}
          * @return
          */
-        private List<DeviceProperty> makePropertyListForGet(EchoDeviceData data, JSONArray params)
+        private List<DeviceProperty> makePropertyList(EchoDeviceData data, JSONObject param)
                 throws JSONException {
             ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
 
-            // make propertyList
-            for (int i = 0; i < params.length(); i++) {
-                DeviceProperty dp = new DeviceProperty(params.getString(i), null);
-                propertyList.add(dp);
+            String propName = ECHONETLitePropertyName.translate(param
+                    .getString(KadecotWampECHONETLiteUtil.PROPERTY_NAME_KEY));
+
+            Object propValue = null;
+
+            // for set
+            if (param.has(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY)) {
+                String paramValue = param.getString(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY);
+                JSONArray jarray = new JSONArray();
+                String val = ECHONETLitePropertyValue.getPropertyValue(paramValue).toString();
+                jarray.put(Integer.decode(val));
+                propValue = jarray;
             }
 
-            return propertyList;
-        }
-
-        /**
-         * @param data
-         * @param params [[propName1, propValue1], [propName2, propValue2], ...]
-         * @return
-         */
-        private List<DeviceProperty> makePropertyListForSet(EchoDeviceData data, JSONArray params)
-                throws JSONException {
-            ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
-
-            // make propertyList
-            for (int i = 0; i < params.length(); i++) {
-                JSONArray propElemArray = params.getJSONArray(i);
-                DeviceProperty dp = new DeviceProperty(propElemArray.getString(0),
-                        propElemArray.get(1));
-                propertyList.add(dp);
-            }
+            DeviceProperty dp = new DeviceProperty(propName, propValue);
+            propertyList.add(dp);
 
             return propertyList;
         }
