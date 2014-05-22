@@ -30,11 +30,11 @@
  * 
  * {"title":"かっこいいアプリ" ,"subtitle":"かっこよさに気を失いそうなアプリです。"
  * ,"description":"かっこよさとは何かについて、まじめに考えてみたアプリです。" ,"icon":"./icon.png"
- * ,"devices":[ { "name" : "Aircon", "protocol" : "ECHONET Lite", "deviceType" :
+ * ,"devices":[ { "name" : "Aircon", "protocol" : "echonetlite", "deviceType" :
  * "0x0130", "description":"エアコン" ,"access":{
  * "0x80":{"name":"Power","polling":15} ,"0xb0":{"name":"Mode","polling":16}
  * ,"0xb3":{"name":"Temp","polling":17} } } ,{ "name" : "Light", "protocol" :
- * "ECHONET Lite", "deviceType" : "0x0290", "description":"室内の照明"
+ * "echonetlite", "deviceType" : "0x0290", "description":"室内の照明"
  * ,"access":{"0x80":{"name":"Power","polling":10}} } ] }
  * 
  * ※日本語で与える場合は、文字コードがutf8nであることをご確認ください。
@@ -68,7 +68,7 @@
  * 
  * 前項でのmanifestオブジェクト例では、devicesの二つ目の機器は照明で、accessとして
  * "0x80"というメンバを含んでいました。その部分を抜き出してみます。 ,{ "name" : "Light", "protocol" :
- * "ECHONET Lite", "deviceType" : "0x0290", "description":"室内の照明"
+ * "echonetlite", "deviceType" : "0x0290", "description":"室内の照明"
  * ,"access":{"0x80":{"name":"Power","polling":10}} }
  * 
  * これは、アクセスオブジェクトaoの中に、"Light"という名前の照明を表すオブジェクトが作られ、その中に

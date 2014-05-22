@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class EchoManager implements DeviceProtocol {
 
-    public static final String PROTOCOL_TYPE_ECHO = "ECHONET Lite";
+    public static final String PROTOCOL_TYPE_ECHO = "echonetlite";
 
     private static EchoManager sInstance = null;
 

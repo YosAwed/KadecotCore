@@ -85,7 +85,7 @@ kHAPI.dev = {
       var t = null;
       if (d.isEmulation === true)
         t = r3;
-      else if (d.protocol === 'ECHONET Lite') {
+      else if (d.protocol === 'echonetlite') {
         if (typeof d.iRemoconDevice !== 'string') {
           // not iRemocon-connected device
           if (d.deviceType.substring(0, 4) === '0x00') // sensors
@@ -103,7 +103,7 @@ kHAPI.dev = {
   ,
   'emulation_devices': [{
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": true,
     "deviceName": "HomeAirConditioner",
@@ -121,7 +121,7 @@ kHAPI.dev = {
     }
   }, {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": true,
     "deviceName": "WaterHeater",
@@ -141,7 +141,7 @@ kHAPI.dev = {
   // 分電盤
   , {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": true,
     "deviceName": "PowerDistributionBoardMetering",
@@ -175,7 +175,7 @@ kHAPI.dev = {
     }
   }, {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOGeneralILighting",
@@ -188,7 +188,7 @@ kHAPI.dev = {
     }
   }, {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOBlind",
@@ -203,7 +203,7 @@ kHAPI.dev = {
     }
   }, {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOCurtain",
@@ -220,7 +220,7 @@ kHAPI.dev = {
 
   , {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOController",
@@ -232,11 +232,11 @@ kHAPI.dev = {
     // 0x30:On , 0x31:Off
     }
   }
-  // ,{"active":true,"protocol":"ECHONET Lite",
+  // ,{"active":true,"protocol":"echonetlite",
   // isEmulation:true,"isRemote":false,"deviceName":"ECHOAirSpeedSensor","isLoggable":false,"nickname":"AirSpeedSensor_Emu","deviceType":"0x001f"}
   , {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOHumiditySensor",
@@ -251,7 +251,7 @@ kHAPI.dev = {
     }
   }, {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHORainSensor",
@@ -265,11 +265,11 @@ kHAPI.dev = {
     /* 0x41:raining , 0x42:not raining */
     }
   }
-  // ,{"active":true,"protocol":"ECHONET Lite",
+  // ,{"active":true,"protocol":"echonetlite",
   // isEmulation:true,"isRemote":false,"deviceName":"ECHOSnowSensor","isLoggable":false,"nickname":"SnowSensor_Emu","deviceType":"0x002c"}
   , {
     "active": true,
-    "protocol": "ECHONET Lite",
+    "protocol": "echonetlite",
     isEmulation: true,
     "isRemote": false,
     "deviceName": "ECHOTemperatureSensor",
