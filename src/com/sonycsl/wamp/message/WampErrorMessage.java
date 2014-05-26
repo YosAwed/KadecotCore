@@ -17,7 +17,11 @@ public interface WampErrorMessage {
 
     public String getUri();
 
+    public boolean hasArguments();
+
     public JSONArray getArguments();
+
+    public boolean hasArgumentsKw();
 
     public JSONObject getArgumentsKw();
 }
