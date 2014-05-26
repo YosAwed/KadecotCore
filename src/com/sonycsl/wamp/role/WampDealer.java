@@ -8,8 +8,10 @@ package com.sonycsl.wamp.role;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampCallMessage;
+import com.sonycsl.wamp.message.WampErrorMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampRegisterMessage;
 import com.sonycsl.wamp.message.WampUnregisterMessage;
 import com.sonycsl.wamp.message.WampYieldMessage;
@@ -55,6 +57,10 @@ abstract public class WampDealer extends WampRole {
 
         if (msg.isYieldMessage()) {
             return resolveYieldMessage(transmitter, msg, listener);
+        }
+
+        if (msg.isErrorMessage()) {
+            return resolveErrorMessage(transmitter, msg, listener);
         }
 
         return false;
@@ -201,5 +207,40 @@ abstract public class WampDealer extends WampRole {
         }
 
         return WampMessageFactory.createResult(requestId, new JSONObject());
+    }
+
+    private boolean resolveErrorMessage(WampPeer transmitter, WampMessage msg,
+            OnReplyListener listener) {
+        WampErrorMessage errorMsg = msg.asErrorMessage();
+        int callRequestId = errorMsg.getRequestId();
+
+        if (!mCallers.containsKey(callRequestId)) {
+            return false;
+        }
+
+        if (errorMsg.getRequestType() != WampMessageType.INVOCATION) {
+            return false;
+        }
+
+        CallInfo info = mCallers.get(callRequestId);
+        listener.onReply(info.getCaller(), createErrorMessage(info.getRequestId(), errorMsg));
+        mCallers.remove(callRequestId);
+
+        return true;
+    }
+
+    private WampMessage createErrorMessage(int requestId, WampErrorMessage msg) {
+        if (msg.hasArgumentsKw()) {
+            return WampMessageFactory.createError(WampMessageType.CALL, requestId,
+                    new JSONObject(), msg.getUri(), msg.getArguments(), msg.getArgumentsKw());
+        }
+
+        if (msg.hasArguments()) {
+            return WampMessageFactory.createError(WampMessageType.CALL, requestId,
+                    new JSONObject(), msg.getUri(), msg.getArguments());
+        }
+
+        return WampMessageFactory.createError(WampMessageType.CALL, requestId,
+                new JSONObject(), msg.getUri());
     }
 }

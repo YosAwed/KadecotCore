@@ -6,9 +6,11 @@
 package com.sonycsl.test.wamp.role;
 
 import com.sonycsl.test.wamp.mock.MockWampPeer;
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
@@ -69,5 +71,27 @@ public class WampCallerTestCase extends TestCase {
                 }
             }));
         }
+    }
+
+    public void testRxCallError() {
+        assertTrue(mCaller.resolveRxMessage(mPeer, WampMessageFactory.createError(
+                WampMessageType.CALL, WampRequestIdGenerator.getId(), new JSONObject(),
+                WampError.NO_SUCH_PROCEDURE), new OnReplyListener() {
+
+            @Override
+            public void onReply(WampPeer receiver, WampMessage reply) {
+                fail();
+            }
+        }));
+
+        assertFalse(mCaller.resolveRxMessage(mPeer, WampMessageFactory.createError(
+                WampMessageType.INVOCATION, WampRequestIdGenerator.getId(), new JSONObject(),
+                WampError.NO_SUCH_PROCEDURE), new OnReplyListener() {
+
+            @Override
+            public void onReply(WampPeer receiver, WampMessage reply) {
+                fail();
+            }
+        }));
     }
 }
