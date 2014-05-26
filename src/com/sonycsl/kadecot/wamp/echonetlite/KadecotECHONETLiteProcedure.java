@@ -7,12 +7,8 @@ package com.sonycsl.kadecot.wamp.echonetlite;
 
 public enum KadecotECHONETLiteProcedure {
 
-    CHANGE_NICK_NAME("com.sonycsl.kadecot.echonetlite.procedure.changeNickname"),
-    DELETE_DEVICE_DATA("com.sonycsl.kadecot.echonetlite.procedure.deleteDeviceData"),
-    DELETE_INACTIVE_DEVICES("com.sonycsl.kadecot.echonetlite.procedure.deleteinactivedevices"),
     GET("com.sonycsl.kadecot.echonetlite.procedure.get"),
     SET("com.sonycsl.kadecot.echonetlite.procedure.set"),
-    GET_DEVICE_LIST("com.sonycsl.kadecot.echonetlite.procedure.getdevicelist"),
     NOT_PROCEDURE("not.procedure");
 
     private String procedure;
@@ -21,7 +17,7 @@ public enum KadecotECHONETLiteProcedure {
         this.procedure = procedure;
     }
 
-    public String getString() {
+    public String toString() {
         return procedure;
     }
 
@@ -29,7 +25,7 @@ public enum KadecotECHONETLiteProcedure {
         KadecotECHONETLiteProcedure enumArray[] = KadecotECHONETLiteProcedure.values();
 
         for (KadecotECHONETLiteProcedure enumElement : enumArray) {
-            if (procedure.equals(enumElement.getString()))
+            if (procedure.equals(enumElement.toString()))
                 return enumElement;
         }
 
