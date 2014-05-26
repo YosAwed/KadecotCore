@@ -10,6 +10,7 @@ import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampDealer;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
@@ -311,5 +312,73 @@ public class WampDealerTestCase extends TestCase {
         } catch (InterruptedException e) {
             fail();
         }
+    }
+
+    public void testRxError() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        assertTrue(mDealer.resolveRxMessage(mPeer1, WampMessageFactory.createRegister(
+                WampRequestIdGenerator.getId(), new JSONObject(), PROCEDURE1),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        if (reply.isRegisteredMessage()) {
+                            assertEquals(mPeer1, receiver);
+                            latch.countDown();
+                            return;
+                        }
+                        fail();
+                    }
+                }));
+        try {
+            assertTrue(latch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
+
+        final CountDownLatch callLatch = new CountDownLatch(1);
+        final AtomicInteger requestId = new AtomicInteger(-1);
+        assertTrue(mDealer.resolveRxMessage(mPeer2,
+                WampMessageFactory.createCall(WampRequestIdGenerator.getId(), new JSONObject(),
+                        PROCEDURE1), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        if (reply.isInvocationMessage()) {
+                            assertEquals(mPeer1, receiver);
+                            requestId.set(reply.asInvocationMessage().getRequestId());
+                            assertTrue(requestId.get() > 0);
+                            callLatch.countDown();
+                            return;
+                        }
+                        fail();
+                    }
+                }));
+        try {
+            assertTrue(callLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
+
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+        assertTrue(mDealer.resolveRxMessage(mPeer1, WampMessageFactory.createError(
+                WampMessageType.INVOCATION, requestId.get(), new JSONObject(),
+                WampError.INVALID_ARGUMENT),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        if (reply.isErrorMessage()) {
+                            assertEquals(receiver, mPeer2);
+                            if (reply.asErrorMessage().getRequestType() == WampMessageType.CALL) {
+                                errorLatch.countDown();
+                                return;
+                            }
+                        }
+                    }
+                }));
+        try {
+            assertTrue(errorLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
+
     }
 }
