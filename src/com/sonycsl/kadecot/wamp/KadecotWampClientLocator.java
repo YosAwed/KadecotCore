@@ -1,10 +1,5 @@
 
-package com.sonycsl.kadecot.server;
-
-import com.sonycsl.kadecot.wamp.KadecotDeviceObserver;
-import com.sonycsl.kadecot.wamp.KadecotTopicTimer;
-import com.sonycsl.kadecot.wamp.KadecotWampTopic;
-import com.sonycsl.wamp.WampClient;
+package com.sonycsl.kadecot.wamp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +13,21 @@ public final class KadecotWampClientLocator {
         instance = locator;
     }
 
-    public static WampClient[] getClients() {
-        return instance.mClients.toArray(new WampClient[instance.mClients.size()]);
+    public static KadecotWampClient[] getClients() {
+        return instance.mClients.toArray(new KadecotWampClient[instance.mClients.size()]);
     }
 
-    private List<WampClient> mClients;
+    private List<KadecotWampClient> mClients;
 
     public KadecotWampClientLocator() {
-        mClients = new ArrayList<WampClient>();
+        mClients = new ArrayList<KadecotWampClient>();
 
         mClients.add(new KadecotDeviceObserver());
         mClients.add(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
                 TimeUnit.SECONDS));
     }
 
-    public void loadClient(WampClient client) {
+    public void loadClient(KadecotWampClient client) {
         mClients.add(client);
     }
 

@@ -13,8 +13,8 @@ import com.sonycsl.kadecot.device.DeviceProperty;
 import com.sonycsl.kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.kadecot.device.echo.EchoDiscovery;
 import com.sonycsl.kadecot.device.echo.EchoManager;
+import com.sonycsl.kadecot.wamp.KadecotWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
-import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
@@ -33,18 +33,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class KadecotECHONETLiteClient extends WampClient {
+public class KadecotECHONETLiteClient extends KadecotWampClient {
 
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
-
-    private int mSubscriptionId;
-    // Map<registeredId, procedure>
-    private Map<Integer, String> mRequestIdProcedureMap;
-    private Map<Integer, String> mRegistrationIds;
 
     private ECHONETLiteWampCallee mCallee;
     private ECHONETLiteWampSubscriber mSubscriber;
@@ -57,8 +50,6 @@ public class KadecotECHONETLiteClient extends WampClient {
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
         mManager = EchoManager.getInstance(context);
         mManager.setListener(pListener, dListener);
-        mRequestIdProcedureMap = new ConcurrentHashMap<Integer, String>();
-        mRegistrationIds = new ConcurrentHashMap<Integer, String>();
     }
 
     private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
@@ -99,56 +90,41 @@ public class KadecotECHONETLiteClient extends WampClient {
     }
 
     @Override
-    protected void OnConnected(WampPeer peer) {
+    protected void onConnected(WampPeer peer) {
     }
 
     @Override
-    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    protected void onTransmitted(WampPeer peer, WampMessage msg) {
     }
 
     @Override
-    protected void OnReceived(WampMessage msg) {
+    public Set<String> getSubscribableTopics() {
+        Set<String> topics = new HashSet<String>();
+        topics.add(KadecotWampTopic.TOPIC_PRIVATE_SEARCH);
+        return topics;
+    }
+
+    @Override
+    public Set<String> getRegisterableProcedures() {
+        Set<String> procs = new HashSet<String>();
+        for (KadecotECHONETLiteProcedure procedure : KadecotECHONETLiteProcedure.values()) {
+            procs.add(procedure.toString());
+        }
+        return procs;
+    }
+
+    @Override
+    protected void onReceived(WampMessage msg) {
         Log.d(TAG, "OnReceived : " + msg.toString());
         if (msg.isWelcomeMessage()) {
-            // TODO : don't do self-registration and subscription
-            transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
-                    new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_SEARCH));
-
-            for (KadecotECHONETLiteProcedure procedure : KadecotECHONETLiteProcedure.values()) {
-                int requestId = WampRequestIdGenerator.getId();
-                mRequestIdProcedureMap.put(requestId, procedure.toString());
-                Log.i(TAG, "register procedure : " + requestId + ", " + procedure.toString());
-                transmit(WampMessageFactory.createRegister(requestId, new JSONObject(),
-                        procedure.toString()));
-            }
-
-            /**
-             * remove this comment out and stop comment out after remove
-             * DeviceManager.
-             */
+            // TODO : remove this comment out and stop comment out after remove
+            // DeviceManager.
             // startDiscovery();
-        } else if (msg.isSubscribedMessage()) {
-            mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
-        } else if (msg.isRegisteredMessage()) {
-            int requestId = msg.asRegisteredMessage().getRequestId();
-            String procedure = mRequestIdProcedureMap.get(requestId);
-            int registerdId = msg.asRegisteredMessage().getRegistrationId();
-            mRegistrationIds.put(registerdId, procedure);
-            Log.i(TAG, "registered : " + requestId + " <-> " + registerdId + ", " + procedure);
-        } else if (msg.isGoodbyeMessage()) {
-            // TODO : don't do self-unregistration and unsubscription
+        }
 
-            // TODO: manage registration
-            // synchronized (mRegistrationIds) {
-            // for (int id : mRegistrationIds) {
-            // transmit(WampMessageFactory
-            // .createUnregister(WampRequestIdGenerator.getId(), id));
-            // }
-            // mRegistrationIds.clear();
-            // }
-
-            transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
-                    mSubscriptionId));
+        if (msg.isGoodbyeMessage()) {
+            // TODO : remove this comment out and stop comment out after remove
+            // DeviceManager.
             // stopDiscovery();
         }
     }
