@@ -1,8 +1,8 @@
 
 package com.sonycsl.kadecot.wamp;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public final class KadecotWampClientLocator {
@@ -17,10 +17,10 @@ public final class KadecotWampClientLocator {
         return instance.mClients.toArray(new KadecotWampClient[instance.mClients.size()]);
     }
 
-    private List<KadecotWampClient> mClients;
+    private Set<KadecotWampClient> mClients;
 
     public KadecotWampClientLocator() {
-        mClients = new ArrayList<KadecotWampClient>();
+        mClients = new HashSet<KadecotWampClient>();
 
         mClients.add(new KadecotDeviceObserver());
         mClients.add(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
