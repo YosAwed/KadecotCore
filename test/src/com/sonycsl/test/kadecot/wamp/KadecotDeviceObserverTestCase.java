@@ -28,8 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -113,22 +111,8 @@ public class KadecotDeviceObserverTestCase extends TestCase {
         mDeviceObserver = new KadecotDeviceObserver();
         mLatch = new CountDownLatch(1);
         mDeviceObserver.setCallback(new SetupCallback(
-                Collections.unmodifiableSet(new HashSet<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
-                    {
-                        add(KadecotWampTopic.TOPIC_PRIVATE_DEVICE);
-                    }
-                }),
-                Collections.unmodifiableSet(new HashSet<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
-                    {
-                        add(KadecotDeviceObserver.DEVICE_LIST_PROCEDURE);
-                    }
-                }),
+                mDeviceObserver.getSubscribableTopics(),
+                mDeviceObserver.getRegisterableProcedures(),
                 new OnCompletionListener() {
                     @Override
                     public void onCompletion() {
