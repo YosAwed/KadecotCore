@@ -5,6 +5,8 @@
 
 package com.sonycsl.wamp;
 
+import android.util.Log;
+
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
@@ -81,6 +83,10 @@ abstract public class WampPeer {
     public void transmit(WampMessage msg) {
         if (msg == null) {
             throw new IllegalArgumentException("message should not be null");
+        }
+
+        if (mReceivers.size() == 0) {
+            return;
         }
 
         boolean transmitted = false;
