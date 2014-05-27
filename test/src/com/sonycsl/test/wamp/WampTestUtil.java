@@ -6,8 +6,10 @@
 package com.sonycsl.test.wamp;
 
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 
 import junit.framework.TestCase;
 
@@ -18,44 +20,52 @@ import java.util.concurrent.TimeUnit;
 
 public final class WampTestUtil {
 
-    public static WampMessage transmitMessage(Testable requester, WampMessage request,
-            Testable responder) {
-        requester.setCountDownLatch(new CountDownLatch(1));
-        responder.setCountDownLatch(new CountDownLatch(1));
+    public static WampMessage transmitMessage(WampPeer requester, WampMessage request,
+            WampPeer responder, int responseType) {
+
+        TestableCallback reqCallback = (TestableCallback) requester.getCallback();
+        TestableCallback resCallback = (TestableCallback) responder.getCallback();
+        reqCallback.setTargetMessageType(responseType, new CountDownLatch(1));
+        resCallback.setTargetMessageType(request.getMessageType(), new CountDownLatch(1));
 
         requester.transmit(request);
         try {
-            TestCase.assertTrue(responder.await(1, TimeUnit.SECONDS));
+            TestCase.assertTrue(resCallback.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             TestCase.fail();
         }
-        TestCase.assertEquals(request, responder.getLatestMessage());
+        TestCase.assertEquals(request, resCallback.getTargetMessage());
 
         try {
-            TestCase.assertTrue(requester.await(1, TimeUnit.SECONDS));
+            TestCase.assertTrue(reqCallback.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             TestCase.fail();
         }
-        return requester.getLatestMessage();
+
+        return reqCallback.getTargetMessage();
     }
 
-    public static WampMessage transmitHello(Testable requester, String realm, Testable responder) {
+    public static WampMessage transmitHello(WampPeer requester, String realm, WampPeer responder) {
+        return transmitMessage(requester, WampMessageFactory.createHello(realm, new JSONObject()),
+                responder, WampMessageType.WELCOME);
+    }
+
+    public static void transmitHelloSuccess(WampPeer requester, String realm, WampPeer responder) {
+        WampMessage msg = transmitHello(requester, realm, responder);
+        TestCase.assertTrue(msg.toString(), msg.isWelcomeMessage());
+    }
+
+    public static WampMessage transmitGoodbye(WampPeer requester, String reason, WampPeer responder) {
         return transmitMessage(requester,
-                WampMessageFactory.createHello(realm, new JSONObject()), responder);
+                WampMessageFactory.createGoodbye(new JSONObject(), reason), responder,
+                WampMessageType.GOODBYE);
+
     }
 
-    public static void transmitHelloSuccess(Testable requester, String realm, Testable responder) {
-        TestCase.assertTrue(transmitHello(requester, realm, responder).isWelcomeMessage());
-    }
-
-    public static WampMessage transmitGoodbye(Testable requester, String reason, Testable responder) {
-        return transmitMessage(requester,
-                WampMessageFactory.createGoodbye(new JSONObject(), reason), responder);
-    }
-
-    public static void transmitGoodbyeSuccess(Testable requester, String reason, Testable responder) {
+    public static void transmitGoodbyeSuccess(WampPeer requester, String reason, WampPeer responder) {
         WampMessage reply = transmitGoodbye(requester, reason, responder);
-        TestCase.assertTrue(reply.isGoodbyeMessage());
+        TestCase.assertTrue(reply.toString(), reply.isGoodbyeMessage());
         TestCase.assertEquals(WampError.GOODBYE_AND_OUT, reply.asGoodbyeMessage().getReason());
     }
+
 }

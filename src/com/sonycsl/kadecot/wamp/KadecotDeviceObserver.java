@@ -5,7 +5,6 @@
 
 package com.sonycsl.kadecot.wamp;
 
-import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
@@ -14,7 +13,6 @@ import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampPublisher;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampSubscriber;
-import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,15 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class KadecotDeviceObserver extends WampClient {
+public class KadecotDeviceObserver extends KadecotWampClient {
 
     public static final String DEVICE_LIST_PROCEDURE = "com.sonycsl.kadecot.procedure.deviceList";
 
     private int mRequestId = 0;
     private DeviceObserverWampCallee mCallee;
     private DeviceObserverWampSubscriber mSubscriber;
-    private int mSubscriptionId;
-    private int mRegistrationId;
 
     private void publishDeviceInfo(JSONObject deviceInfo) {
         transmit(WampMessageFactory.
@@ -74,43 +70,29 @@ public class KadecotDeviceObserver extends WampClient {
     }
 
     @Override
-    protected void OnConnected(WampPeer peer) {
+    protected void onConnected(WampPeer peer) {
     }
 
     @Override
-    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    protected void onTransmitted(WampPeer peer, WampMessage msg) {
     }
 
     @Override
-    protected void OnReceived(WampMessage msg) {
-        if (msg.isWelcomeMessage()) {
-            // TODO : don't do self-registration and subscription
-            transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
-                    new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_DEVICE));
-            transmit(WampMessageFactory.createRegister(WampRequestIdGenerator.getId(),
-                    new JSONObject(), DEVICE_LIST_PROCEDURE));
-            return;
-        }
+    protected void onReceived(WampMessage msg) {
+    }
 
-        if (msg.isSubscribedMessage()) {
-            mSubscriptionId = msg.asSubscribedMessage().getSubscriptionId();
-            return;
+    @Override
+    public Set<String> getSubscribableTopics() {
+        Set<String> topics = new HashSet<String>();
+        topics.add(KadecotWampTopic.TOPIC_PRIVATE_DEVICE);
+        return topics;
+    }
 
-        }
-
-        if (msg.isRegisteredMessage()) {
-            mRegistrationId = msg.asRegisteredMessage().getRegistrationId();
-            return;
-        }
-
-        if (msg.isGoodbyeMessage()) {
-            // TODO : don't do self-unregistration and unsubscription
-            transmit(WampMessageFactory.createUnregister(WampRequestIdGenerator.getId(),
-                    mRegistrationId));
-            transmit(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
-                    mSubscriptionId));
-            return;
-        }
+    @Override
+    public Set<String> getRegisterableProcedures() {
+        Set<String> procs = new HashSet<String>();
+        procs.add(KadecotDeviceObserver.DEVICE_LIST_PROCEDURE);
+        return procs;
     }
 
     private static class DeviceObserverWampCallee extends WampCallee {
