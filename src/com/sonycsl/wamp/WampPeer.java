@@ -83,9 +83,11 @@ abstract public class WampPeer {
             throw new IllegalArgumentException("message should not be null");
         }
 
+        boolean transmitted = false;
         for (WampPeer receiver : mReceivers) {
             for (WampRole role : mRoleSet) {
                 if (role.resolveTxMessage(receiver, msg)) {
+                    transmitted = true;
                     if (mCallback != null) {
                         mCallback.preTransmit(WampPeer.this, msg);
                     }
@@ -100,6 +102,10 @@ abstract public class WampPeer {
         }
 
         // TODO: Throw transmit exception not to handle message
+        if (!transmitted) {
+            throw new UnsupportedOperationException(msg.toString() + ", " + this.toString()
+                    + ", roleSet=" + mRoleSet);
+        }
     }
 
     private void onReceive(final WampPeer transmitter, final WampMessage msg) {
