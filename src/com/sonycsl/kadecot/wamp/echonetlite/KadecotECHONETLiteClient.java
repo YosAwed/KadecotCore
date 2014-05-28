@@ -139,11 +139,6 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
     protected void publishDeviceInfo(EchoDeviceData deviceInfo) {
         Log.i(TAG, "publish deviceinfo : " + deviceInfo.nickname);
-
-        transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
-                new JSONObject(),
-                KadecotWampTopic.TOPIC_PRIVATE_DEVICE, new JSONArray(),
-                deviceInfo.toJSONObject()));
     }
 
     protected void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {

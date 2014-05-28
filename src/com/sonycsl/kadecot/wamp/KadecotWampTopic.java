@@ -7,10 +7,6 @@ package com.sonycsl.kadecot.wamp;
 
 public class KadecotWampTopic {
 
-    public static final String TOPIC_DEVICE = "com.sonycsl.kadecot.topic.device";
-
-    public static final String TOPIC_PRIVATE_DEVICE = "com.sonycsl.kadecot.topic.private.device";
-
     public static final String TOPIC_PRIVATE_SEARCH = "com.sonycsl.kadecot.topic.private.search";
 
 }
