@@ -7,7 +7,6 @@ package com.sonycsl.kadecot.core;
 
 import android.app.Application;
 
-import com.sonycsl.kadecot.wamp.KadecotDeviceObserver;
 import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotTopicTimer;
 import com.sonycsl.kadecot.wamp.KadecotWampClientLocator;
@@ -28,7 +27,6 @@ public class KadecotCoreApplication extends Application {
 
         KadecotWampClientLocator locator = new KadecotWampClientLocator();
         locator.loadClient(new KadecotProviderWampClient(this));
-        locator.loadClient(new KadecotDeviceObserver());
         locator.loadClient(new KadecotECHONETLiteClient(this));
         locator.loadClient(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
                 TimeUnit.SECONDS));
