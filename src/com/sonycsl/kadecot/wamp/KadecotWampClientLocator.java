@@ -3,7 +3,6 @@ package com.sonycsl.kadecot.wamp;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public final class KadecotWampClientLocator {
 
@@ -21,10 +20,6 @@ public final class KadecotWampClientLocator {
 
     public KadecotWampClientLocator() {
         mClients = new HashSet<KadecotWampClient>();
-
-        mClients.add(new KadecotDeviceObserver());
-        mClients.add(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
-                TimeUnit.SECONDS));
     }
 
     public void loadClient(KadecotWampClient client) {

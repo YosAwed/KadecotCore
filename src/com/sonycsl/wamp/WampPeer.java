@@ -5,8 +5,6 @@
 
 package com.sonycsl.wamp;
 
-import android.util.Log;
-
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
