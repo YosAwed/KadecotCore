@@ -1,13 +1,29 @@
 
-package com.sonycsl.test.wamp;
+package com.sonycsl.test.util;
 
+import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class TestableCallback implements WampPeer.Callback {
+public class TestableCallback extends KadecotWampClientSetupCallback {
+
+    public TestableCallback() {
+        super(new HashSet<String>(), new HashSet<String>(), new OnCompletionListener() {
+            @Override
+            public void onCompletion() {
+            }
+        });
+    }
+
+    public TestableCallback(Set<String> topics, Set<String> procedures,
+            OnCompletionListener listener) {
+        super(topics, procedures, listener);
+    }
 
     private CountDownLatch mLatch;
     private int mType;
@@ -27,28 +43,10 @@ public class TestableCallback implements WampPeer.Callback {
     }
 
     @Override
-    public void preConnect(WampPeer connecter, WampPeer connectee) {
-    }
-
-    @Override
-    public void postConnect(WampPeer connecter, WampPeer connectee) {
-    }
-
-    @Override
-    public void preTransmit(WampPeer transmitter, WampMessage msg) {
-    }
-
-    @Override
-    public void postTransmit(WampPeer transmitter, WampMessage msg) {
-    }
-
-    @Override
-    public void preReceive(WampPeer receiver, WampMessage msg) {
-    }
-
-    @Override
     public void postReceive(WampPeer receiver, WampMessage msg) {
+
         if (mType != msg.getMessageType()) {
+            super.postReceive(receiver, msg);
             return;
         }
 
@@ -56,5 +54,7 @@ public class TestableCallback implements WampPeer.Callback {
         if (mLatch != null) {
             mLatch.countDown();
         }
+
+        super.postReceive(receiver, msg);
     }
 }

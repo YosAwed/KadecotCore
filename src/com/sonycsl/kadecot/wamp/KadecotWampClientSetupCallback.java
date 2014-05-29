@@ -9,6 +9,7 @@ import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,8 +29,8 @@ public class KadecotWampClientSetupCallback implements Callback {
             OnCompletionListener listener) {
         mTopics = topics;
         mProcedures = procedures;
-        mSubscriptionIds = new HashSet<Integer>(mTopics.size());
-        mRegistrationIds = new HashSet<Integer>(mProcedures.size());
+        mSubscriptionIds = Collections.synchronizedSet(new HashSet<Integer>(mTopics.size()));
+        mRegistrationIds = Collections.synchronizedSet(new HashSet<Integer>(mProcedures.size()));
         mListener = listener;
     }
 
@@ -45,17 +46,21 @@ public class KadecotWampClientSetupCallback implements Callback {
     public void preTransmit(WampPeer transmitter, WampMessage msg) {
         if (msg.isGoodbyeMessage()) {
 
-            for (int id : mSubscriptionIds) {
-                transmitter.transmit(WampMessageFactory.createUnsubscribe(
-                        WampRequestIdGenerator.getId(), id));
+            synchronized (mSubscriptionIds) {
+                for (int id : mSubscriptionIds) {
+                    transmitter.transmit(WampMessageFactory.createUnsubscribe(
+                            WampRequestIdGenerator.getId(), id));
+                }
+                mSubscriptionIds.clear();
             }
-            mSubscriptionIds.clear();
 
-            for (int id : mRegistrationIds) {
-                transmitter.transmit(WampMessageFactory.createUnregister(
-                        WampRequestIdGenerator.getId(), id));
+            synchronized (mRegistrationIds) {
+                for (int id : mRegistrationIds) {
+                    transmitter.transmit(WampMessageFactory.createUnregister(
+                            WampRequestIdGenerator.getId(), id));
+                }
+                mRegistrationIds.clear();
             }
-            mRegistrationIds.clear();
 
             return;
         }

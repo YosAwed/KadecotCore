@@ -24,45 +24,75 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public final class KadecotProviderWampClient extends KadecotWampClient {
 
     private static final String PREFIX = "com.sonycsl.kadecot.provider";
 
-    public static final class Topics {
+    public static enum Topic {
+        DEVICE("device");
 
-        public static final String DEVICE = PREFIX + ".topic.device";
+        private final String mUri;
 
+        Topic(String name) {
+            mUri = PREFIX + ".topic." + name;
+        }
+
+        public String getUri() {
+            return mUri;
+        }
     }
 
-    public static final class Procedures {
+    public static enum Procedure {
+        PUT_DEVICE("putDevice"),
+        REMOVE_DEVICE("removeDevice"),
+        GET_DEVICE_LIST("getDeviceList"),
+        CHANGE_NICKNAME("changeNickname"),
+        PUT_TOPIC("putTopic"),
+        REMOVE_TOPIC("removeTopic"),
+        GET_TOPIC_LIST("getTopicList"),
+        PUT_PROCEDURE("putProcedure"),
+        REMOVE_PROCEDURE("removeProcedure"),
+        GET_PROCEDURE_LIST("getProcedureList");
 
-        private static final String PROCEDURE_PREFIX = PREFIX + ".procedure";
+        private final String mMethod;
+        private final String mUri;
 
-        public static final String PUT_DEVICE = PROCEDURE_PREFIX + ".putDevice";
+        Procedure(String method) {
+            mMethod = method;
+            mUri = PREFIX + ".procedure." + method;
+        }
 
-        public static final String REMOVE_DEVICE = PROCEDURE_PREFIX + ".removeDevice";
+        public String getUri() {
+            return mUri;
+        }
 
-        public static final String GET_DEVICE_LIST = PROCEDURE_PREFIX + ".getDeviceList";
+        public String getMethod() {
+            return mMethod;
+        }
 
-        public static final String CHANGE_NICKNAME = PROCEDURE_PREFIX + ".changeNickname";
+        public static Procedure getEnum(String procedure) {
+            for (Procedure p : Procedure.values()) {
+                if (p.getUri().equals(procedure)) {
+                    return p;
+                }
+            }
+            return null;
+        }
+    }
 
-        public static final String PUT_TOPIC = PROCEDURE_PREFIX + ".putTopic";
-
-        public static final String REMOVE_TOPIC = PROCEDURE_PREFIX + ".removeTopic";
-
-        public static final String PUT_PROCEDURE = PROCEDURE_PREFIX + ".putProcedure";
-
-        public static final String REMOVE_PROCEDURE = PROCEDURE_PREFIX + ".removeProcedure";
-
-        public static final String GET_TOPIC_LIST = PROCEDURE_PREFIX + ".getTopicList";
-
-        public static final String GET_PROCEDURE_LIST = PROCEDURE_PREFIX + ".getProcedureList";
-
+    public static JSONObject createPutDeviceArgsKw(String protocol, String uuid, String deviceType,
+            String description, boolean status) throws JSONException {
+        JSONObject info = new JSONObject();
+        info.put(KadecotDAO.DEVICE_PROTOCOL, protocol);
+        info.put(KadecotDAO.DEVICE_UUID, uuid);
+        info.put(KadecotDAO.DEVICE_TYPE, deviceType);
+        info.put(KadecotDAO.DEVICE_DESCRIPTION, description);
+        info.put(KadecotDAO.DEVICE_STATUS, status);
+        return info;
     }
 
     private final KadecotDAO mDao;
@@ -77,7 +107,6 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
         Set<WampRole> roles = new HashSet<WampRole>();
         roles.add(new WampPublisher());
         roles.add(new ProviderCallee(mDao));
-
         return roles;
     }
 
@@ -116,106 +145,25 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
     @Override
     public Set<String> getRegisterableProcedures() {
         Set<String> procs = new HashSet<String>();
-        procs.add(Procedures.PUT_DEVICE);
-        procs.add(Procedures.REMOVE_DEVICE);
-        procs.add(Procedures.GET_DEVICE_LIST);
-        procs.add(Procedures.CHANGE_NICKNAME);
-        procs.add(Procedures.PUT_TOPIC);
-        procs.add(Procedures.REMOVE_TOPIC);
-        procs.add(Procedures.PUT_PROCEDURE);
-        procs.add(Procedures.REMOVE_PROCEDURE);
-        procs.add(Procedures.GET_TOPIC_LIST);
-        procs.add(Procedures.GET_PROCEDURE_LIST);
+
+        for (Procedure p : Procedure.values()) {
+            procs.add(p.getUri());
+        }
         return procs;
     }
 
     private void publishDevice(JSONObject deviceInfo) {
         transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
-                Topics.DEVICE, new JSONArray(),
+                Topic.DEVICE.getUri(), new JSONArray(),
                 deviceInfo));
     }
 
     private static class ProviderCallee extends WampCallee {
 
-        private interface InvocationMethod {
-            WampMessage invoke(WampInvocationMessage msg);
-        }
-
         private KadecotDAO mDao;
-        private Map<String, InvocationMethod> mMethods;
 
         public ProviderCallee(KadecotDAO dao) {
             mDao = dao;
-            mMethods = new HashMap<String, KadecotProviderWampClient.ProviderCallee.InvocationMethod>();
-            mMethods.put(KadecotProviderWampClient.Procedures.PUT_DEVICE, new InvocationMethod() {
-                @Override
-                public WampMessage invoke(WampInvocationMessage msg) {
-                    return putDevice(msg);
-                }
-            });
-            mMethods.put(KadecotProviderWampClient.Procedures.REMOVE_DEVICE,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return removeDevice(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.GET_DEVICE_LIST,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return getDeviceList(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.CHANGE_NICKNAME,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return changeNickname(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.PUT_TOPIC,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return putTopic(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.REMOVE_TOPIC,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return removeTopic(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.PUT_PROCEDURE,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return putProcedure(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.REMOVE_PROCEDURE,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return removeProcedure(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.GET_TOPIC_LIST,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return getTopicList(msg);
-                        }
-                    });
-            mMethods.put(KadecotProviderWampClient.Procedures.GET_PROCEDURE_LIST,
-                    new InvocationMethod() {
-                        @Override
-                        public WampMessage invoke(WampInvocationMessage msg) {
-                            return getProcedureList(msg);
-                        }
-                    });
         }
 
         @Override
@@ -226,26 +174,46 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
             }
 
             WampInvocationMessage iMsg = msg.asInvocationMessage();
-            InvocationMethod method = mMethods.get(procedure);
-            if (mMethods == null) {
-                return WampMessageFactory.createError(msg.getMessageType(),
-                        iMsg.getRequestId(), new JSONObject(), WampError.NO_SUCH_PROCEDURE);
+            Procedure proc = Procedure.getEnum(procedure);
+            if (proc == null) {
+                return createError(iMsg, WampError.NO_SUCH_PROCEDURE);
             }
 
-            return method.invoke(iMsg);
+            try {
+                return (WampMessage) ProviderCallee.this.getClass()
+                        .getDeclaredMethod(proc.getMethod(),
+                                WampInvocationMessage.class).invoke(ProviderCallee.this, msg);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+
+            return createError(iMsg, WampError.INVALID_ARGUMENT);
         }
 
-        private WampMessage createInvocationError(WampInvocationMessage msg) {
+        private WampMessage createError(WampInvocationMessage msg, String error) {
             return WampMessageFactory.createError(WampMessageType.INVOCATION,
-                    msg.getRequestId(), new JSONObject(), WampError.INVALID_ARGUMENT);
+                    msg.getRequestId(), new JSONObject(), error);
         }
 
+        @SuppressWarnings("unused")
         private WampMessage putDevice(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
-            JSONObject json = msg.getArgumentsKw();
+            JSONObject json;
+            try {
+                json = new JSONObject(msg.getArgumentsKw().toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return createError(msg, WampError.INVALID_ARGUMENT);
+            }
             long deviceId;
             try {
                 String protocol = json.getString(KadecotDAO.DEVICE_PROTOCOL);
@@ -256,33 +224,35 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 deviceId = mDao.putDevice(protocol, uuid, deviceType, description, status);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
                 return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject(),
-                        new JSONArray(), new JSONObject().put(KadecotDAO.DEVICE_ID, deviceId));
+                        new JSONArray(), json.put(KadecotDAO.DEVICE_ID, deviceId));
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
         }
 
+        @SuppressWarnings("unused")
         private WampMessage removeDevice(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
                 mDao.removeDevice(msg.getArgumentsKw().getLong(KadecotDAO.DEVICE_ID));
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage getDeviceList(WampInvocationMessage msg) {
             try {
                 return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject(),
@@ -290,13 +260,14 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                         new JSONObject().put("deviceList", mDao.getDeviceList()));
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
         }
 
+        @SuppressWarnings("unused")
         private WampMessage changeNickname(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
@@ -306,16 +277,16 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 mDao.changeNickname(deviceId, nickname);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
-
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage putTopic(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
             try {
                 JSONObject json = msg.getArgumentsKw();
@@ -324,15 +295,16 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 mDao.putTopic(topic, description);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage removeTopic(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
@@ -341,15 +313,16 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 mDao.removeTopic(topic);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage putProcedure(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
             try {
                 JSONObject json = msg.getArgumentsKw();
@@ -358,15 +331,16 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 mDao.putProcedure(procedure, description);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage removeProcedure(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
@@ -375,15 +349,16 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                 mDao.removeProcedure(procedure);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject());
         }
 
+        @SuppressWarnings("unused")
         private WampMessage getTopicList(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
@@ -397,13 +372,14 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                                         KadecotDAO.TOPIC_PROTOCOL))));
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
         }
 
+        @SuppressWarnings("unused")
         private WampMessage getProcedureList(WampInvocationMessage msg) {
             if (!msg.hasArgumentsKw()) {
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
 
             try {
@@ -417,7 +393,7 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
                                         KadecotDAO.PROCEDURE_PROTOCOL))));
             } catch (JSONException e) {
                 e.printStackTrace();
-                return createInvocationError(msg);
+                return createError(msg, WampError.INVALID_ARGUMENT);
             }
         }
     }

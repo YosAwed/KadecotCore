@@ -5,7 +5,9 @@
 
 package com.sonycsl.test.wamp;
 
-import com.sonycsl.test.wamp.mock.MockWampRouter;
+import com.sonycsl.test.mock.MockWampRouter;
+import com.sonycsl.test.util.TestableCallback;
+import com.sonycsl.test.util.WampTestUtil;
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
