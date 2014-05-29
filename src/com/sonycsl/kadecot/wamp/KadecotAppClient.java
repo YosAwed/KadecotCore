@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
- * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
- */
 
 package com.sonycsl.kadecot.wamp;
-
-import android.util.Log;
 
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampPeer;
@@ -14,21 +8,17 @@ import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampSubscriber;
 
-import org.java_websocket.WebSocket;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
-
 import java.util.HashSet;
 import java.util.Set;
 
-public class KadecotWebSocketClient extends WampClient {
+public class KadecotAppClient extends WampClient {
 
-    private static final String TAG = KadecotWebSocketClient.class.getSimpleName();
+    private static final String TAG = KadecotAppClient.class.getSimpleName();
 
-    private final WebSocket mWs;
+    private MessageListener mListener;
 
-    public KadecotWebSocketClient(WebSocket webSocket) {
-        super();
-        mWs = webSocket;
+    public interface MessageListener {
+        public void onMessage(WampMessage msg);
     }
 
     @Override
@@ -36,11 +26,16 @@ public class KadecotWebSocketClient extends WampClient {
         Set<WampRole> roleSet = new HashSet<WampRole>();
         roleSet.add(new WampCaller());
         roleSet.add(new WampSubscriber() {
+
             @Override
             protected void onEvent(String topic, WampMessage msg) {
             }
         });
         return roleSet;
+    }
+
+    public void setOnMessageListener(MessageListener listener) {
+        mListener = listener;
     }
 
     @Override
@@ -53,16 +48,8 @@ public class KadecotWebSocketClient extends WampClient {
 
     @Override
     protected void OnReceived(WampMessage msg) {
-        if (!mWs.isOpen()) {
-            Log.i(TAG, "OnReceived: WebSocket is already closed. msg=" + msg.toString());
-            return;
-        }
-
-        try {
-            mWs.send(msg.toString());
-        } catch (WebsocketNotConnectedException e) {
-            Log.i(TAG, "OnReceived: WebSocket is already closed. msg=" + msg.toString());
+        if (mListener != null) {
+            mListener.onMessage(msg);
         }
     }
-
 }

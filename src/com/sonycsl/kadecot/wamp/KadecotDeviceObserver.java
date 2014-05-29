@@ -179,7 +179,7 @@ public class KadecotDeviceObserver extends WampClient {
         }
 
         @Override
-        protected void event(String topic, WampMessage msg) {
+        protected void onEvent(String topic, WampMessage msg) {
             if (!topic.equals(KadecotWampTopic.TOPIC_PRIVATE_DEVICE)) {
                 return;
             }

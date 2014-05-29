@@ -316,7 +316,7 @@ public class KadecotECHONETLiteClient extends WampClient {
     private class ECHONETLiteWampSubscriber extends WampSubscriber {
 
         @Override
-        protected void event(String topic, WampMessage msg) {
+        protected void onEvent(String topic, WampMessage msg) {
             if (topic.equals(KadecotWampTopic.TOPIC_PRIVATE_SEARCH)) {
                 mManager.refreshDeviceList();
             }

@@ -35,7 +35,7 @@ public class WampSubscriberTestCase extends TestCase {
         }
 
         @Override
-        protected void event(String topic, WampMessage msg) {
+        protected void onEvent(String topic, WampMessage msg) {
             mTopic = topic;
             mMsg = msg;
         }
