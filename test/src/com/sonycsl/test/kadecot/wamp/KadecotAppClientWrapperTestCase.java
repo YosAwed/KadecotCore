@@ -1,0 +1,256 @@
+
+package com.sonycsl.test.kadecot.wamp;
+
+import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper;
+import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampCallListener;
+import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampSubscribeListener;
+import com.sonycsl.test.wamp.mock.MockWampPeer;
+import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
+
+import junit.framework.TestCase;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+public class KadecotAppClientWrapperTestCase extends TestCase {
+
+    private MockWampPeer mPeer;
+
+    private KadecotAppClientWrapper mClient;
+
+    @Override
+    protected void setUp() {
+        mPeer = new MockWampPeer();
+        mClient = new KadecotAppClientWrapper(mPeer);
+    }
+
+    public void testCall() {
+        final CountDownLatch mCallLatch = new CountDownLatch(1);
+        final CountDownLatch mResultLatch = new CountDownLatch(1);
+
+        mPeer.setCountDownLatch(mCallLatch);
+        mClient.call("testProcedure", new JSONObject(), new JSONObject(), new WampCallListener() {
+
+            @Override
+            public void onResult(JSONObject details, JSONObject argumentsKw) {
+                mResultLatch.countDown();
+            }
+
+            @Override
+            public void onError(JSONObject details, String error) {
+                fail();
+            }
+        });
+
+        try {
+            TestCase.assertTrue(mCallLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        WampMessage msg = mPeer.getLatestMessage();
+        TestCase.assertEquals(WampMessageType.CALL, msg.getMessageType());
+
+        final int requestId = msg.asCallMessage().getRequestId();
+
+        mPeer.transmit(WampMessageFactory.createResult(requestId, new JSONObject(),
+                new JSONArray(), new JSONObject()));
+
+        try {
+            TestCase.assertTrue(mResultLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+    }
+
+    public void testCallError() {
+        final CountDownLatch mCallLatch = new CountDownLatch(1);
+        final CountDownLatch mErrorLatch = new CountDownLatch(1);
+
+        mPeer.setCountDownLatch(mCallLatch);
+        mClient.call("testProcedure", new JSONObject(), new JSONObject(), new WampCallListener() {
+
+            @Override
+            public void onResult(JSONObject details, JSONObject argumentsKw) {
+                fail();
+            }
+
+            @Override
+            public void onError(JSONObject details, String error) {
+                mErrorLatch.countDown();
+            }
+        });
+
+        try {
+            TestCase.assertTrue(mCallLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        WampMessage msg = mPeer.getLatestMessage();
+        TestCase.assertEquals(WampMessageType.CALL, msg.getMessageType());
+
+        final int requestId = msg.asCallMessage().getRequestId();
+
+        mPeer.transmit(WampMessageFactory.createError(WampMessageType.CALL, requestId,
+                new JSONObject(), "testError", new JSONArray(), new JSONObject()));
+
+        try {
+            TestCase.assertTrue(mErrorLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+    }
+
+    public void testSubscribe() {
+        final CountDownLatch mSubscribeLatch = new CountDownLatch(1);
+        final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
+
+        mPeer.setCountDownLatch(mSubscribeLatch);
+        mClient.subscribe("testTopic", new JSONObject(), new WampSubscribeListener() {
+
+            @Override
+            public void onSubscribed(int subscriptionId) {
+                mSubscribedLatch.countDown();
+            }
+
+            @Override
+            public void onEvent(JSONObject details, JSONObject argumentsKw) {
+                fail();
+            }
+
+            @Override
+            public void onError(JSONObject details, String error) {
+                fail();
+            }
+        });
+
+        try {
+            TestCase.assertTrue(mSubscribeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        WampMessage msg = mPeer.getLatestMessage();
+        TestCase.assertEquals(WampMessageType.SUBSCRIBE, msg.getMessageType());
+
+        final int requestId = msg.asSubscribeMessage().getRequestId();
+
+        mPeer.transmit(WampMessageFactory.createSubscribed(requestId, 1));
+
+        try {
+            TestCase.assertTrue(mSubscribedLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+    }
+
+    public void testSubscribeError() {
+        final CountDownLatch mSubscribeLatch = new CountDownLatch(1);
+        final CountDownLatch mErrorLatch = new CountDownLatch(1);
+
+        mPeer.setCountDownLatch(mSubscribeLatch);
+        mClient.subscribe("testTopic", new JSONObject(), new WampSubscribeListener() {
+
+            @Override
+            public void onSubscribed(int subscriptionId) {
+                fail();
+            }
+
+            @Override
+            public void onEvent(JSONObject details, JSONObject argumentsKw) {
+                fail();
+            }
+
+            @Override
+            public void onError(JSONObject details, String error) {
+                mErrorLatch.countDown();
+            }
+        });
+
+        try {
+            TestCase.assertTrue(mSubscribeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        WampMessage msg = mPeer.getLatestMessage();
+        TestCase.assertEquals(WampMessageType.SUBSCRIBE, msg.getMessageType());
+
+        final int requestId = msg.asSubscribeMessage().getRequestId();
+
+        mPeer.transmit(WampMessageFactory.createError(WampMessageType.SUBSCRIBE, requestId,
+                new JSONObject(), "testError"));
+
+        try {
+            TestCase.assertTrue(mErrorLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+    }
+
+    private static class SubscriptionIdHolder {
+        public int mSubscriptionId;
+    }
+
+    public void testEvent() {
+        final CountDownLatch mSubscribeLatch = new CountDownLatch(1);
+        final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
+        final CountDownLatch mEventLatch = new CountDownLatch(1);
+
+        final SubscriptionIdHolder holder = new SubscriptionIdHolder();
+
+        mPeer.setCountDownLatch(mSubscribeLatch);
+        mClient.subscribe("testTopic", new JSONObject(), new WampSubscribeListener() {
+
+            @Override
+            public void onSubscribed(int subscriptionId) {
+                mSubscribedLatch.countDown();
+                holder.mSubscriptionId = subscriptionId;
+            }
+
+            @Override
+            public void onEvent(JSONObject details, JSONObject argumentsKw) {
+                mEventLatch.countDown();
+            }
+
+            @Override
+            public void onError(JSONObject details, String error) {
+                fail();
+            }
+        });
+
+        try {
+            TestCase.assertTrue(mSubscribeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        WampMessage msg = mPeer.getLatestMessage();
+        TestCase.assertEquals(WampMessageType.SUBSCRIBE, msg.getMessageType());
+
+        final int requestId = msg.asSubscribeMessage().getRequestId();
+
+        mPeer.transmit(WampMessageFactory.createSubscribed(requestId, 1));
+
+        try {
+            TestCase.assertTrue(mSubscribedLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+
+        mPeer.transmit(WampMessageFactory.createEvent(holder.mSubscriptionId, 1, new JSONObject(),
+                new JSONArray(), new JSONObject()));
+
+        try {
+            TestCase.assertTrue(mEventLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            TestCase.fail();
+        }
+    }
+}
