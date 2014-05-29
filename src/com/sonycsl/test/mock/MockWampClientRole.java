@@ -3,7 +3,7 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.test.wamp.mock;
+package com.sonycsl.test.mock;
 
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
@@ -34,11 +34,23 @@ public class MockWampClientRole extends WampRole {
             return true;
         }
 
-        if (msg.isCallMessage()) {
+        if (msg.isSubscribeMessage()) {
             return true;
         }
 
-        if (msg.isSubscribeMessage()) {
+        if (msg.isUnsubscribeMessage()) {
+            return true;
+        }
+
+        if (msg.isRegisterMessage()) {
+            return true;
+        }
+
+        if (msg.isUnregisterMessage()) {
+            return true;
+        }
+
+        if (msg.isCallMessage()) {
             return true;
         }
 
@@ -61,11 +73,23 @@ public class MockWampClientRole extends WampRole {
             return true;
         }
 
+        if (msg.isPublishedMessage()) {
+            return true;
+        }
+
         if (msg.isSubscribedMessage()) {
             return true;
         }
 
-        if (msg.isPublishedMessage()) {
+        if (msg.isUnsubscribedMessage()) {
+            return true;
+        }
+
+        if (msg.isRegisteredMessage()) {
+            return true;
+        }
+
+        if (msg.isUnregisteredMessage()) {
             return true;
         }
 

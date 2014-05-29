@@ -5,6 +5,8 @@
 
 package com.sonycsl.test.wamp;
 
+import com.sonycsl.test.util.TestableCallback;
+import com.sonycsl.test.util.TestablePeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;

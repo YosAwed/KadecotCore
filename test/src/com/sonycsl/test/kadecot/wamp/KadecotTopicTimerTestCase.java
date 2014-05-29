@@ -6,9 +6,9 @@
 package com.sonycsl.test.kadecot.wamp;
 
 import com.sonycsl.kadecot.wamp.KadecotTopicTimer;
-import com.sonycsl.test.wamp.TestableCallback;
-import com.sonycsl.test.wamp.mock.MockWampClient;
-import com.sonycsl.test.wamp.mock.MockWampRouter;
+import com.sonycsl.test.mock.MockWampClient;
+import com.sonycsl.test.mock.MockWampRouter;
+import com.sonycsl.test.util.TestableCallback;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;

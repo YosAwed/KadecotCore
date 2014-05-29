@@ -3,13 +3,14 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.test.wamp;
+package com.sonycsl.test.util;
 
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import junit.framework.TestCase;
 
@@ -68,4 +69,15 @@ public final class WampTestUtil {
         TestCase.assertEquals(WampError.GOODBYE_AND_OUT, reply.asGoodbyeMessage().getReason());
     }
 
+    public static WampMessage transmitSubscribe(WampPeer requester, String topic, WampPeer responder) {
+        return transmitMessage(requester, WampMessageFactory.createSubscribe(
+                WampRequestIdGenerator.getId(), new JSONObject(), topic), responder,
+                WampMessageType.SUBSCRIBED);
+    }
+
+    public static int transmitSubscribeSuccess(WampPeer requester, String topic, WampPeer responder) {
+        WampMessage msg = transmitSubscribe(requester, topic, responder);
+        TestCase.assertTrue(msg.toString(), msg.isSubscribedMessage());
+        return msg.asSubscribedMessage().getSubscriptionId();
+    }
 }

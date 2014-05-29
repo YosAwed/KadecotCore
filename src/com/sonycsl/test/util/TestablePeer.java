@@ -1,22 +1,29 @@
-/*
- * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
- * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
- */
 
-package com.sonycsl.test.wamp.mock;
+package com.sonycsl.test.util;
 
+import com.sonycsl.test.mock.MockWampRole;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class MockWampPeer extends WampPeer {
+public class TestablePeer extends WampPeer {
 
-    private List<WampMessage> mMsgs = new ArrayList<WampMessage>();
+    @Override
+    public void setCallback(WampPeer.Callback callback) {
+        if (!(callback instanceof TestableCallback)) {
+            throw new IllegalArgumentException();
+        }
+
+        super.setCallback(callback);
+    }
+
+    @Override
+    public TestableCallback getCallback() {
+        return (TestableCallback) super.getCallback();
+    }
 
     @Override
     protected Set<WampRole> getRoleSet() {
@@ -35,14 +42,6 @@ public class MockWampPeer extends WampPeer {
 
     @Override
     protected void onReceived(WampMessage msg) {
-        mMsgs.add(msg);
     }
 
-    public List<WampMessage> getAllMessages() {
-        return mMsgs;
-    }
-
-    public void clearMessages() {
-        mMsgs.clear();
-    }
 }
