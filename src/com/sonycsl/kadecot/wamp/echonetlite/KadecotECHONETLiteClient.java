@@ -8,11 +8,14 @@ package com.sonycsl.kadecot.wamp.echonetlite;
 import android.content.Context;
 import android.util.Log;
 
+import com.sonycsl.kadecot.database.KadecotDAO;
 import com.sonycsl.kadecot.device.AccessException;
+import com.sonycsl.kadecot.device.DeviceInfo;
 import com.sonycsl.kadecot.device.DeviceProperty;
 import com.sonycsl.kadecot.device.echo.EchoDeviceData;
 import com.sonycsl.kadecot.device.echo.EchoDiscovery;
 import com.sonycsl.kadecot.device.echo.EchoManager;
+import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.wamp.WampError;
@@ -20,8 +23,9 @@ import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampResultMessage;
 import com.sonycsl.wamp.role.WampCallee;
-import com.sonycsl.wamp.role.WampPublisher;
+import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampSubscriber;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
@@ -31,20 +35,34 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class KadecotECHONETLiteClient extends KadecotWampClient {
 
     private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
 
+    private final String LOCALE = "jp";
+
     private ECHONETLiteWampCallee mCallee;
+
     private ECHONETLiteWampSubscriber mSubscriber;
+
     private EchoManager mManager;
+
+    private Map<Long, ECHONETLiteDeviceData> mDeviceMap; // <deviceId,
+                                                         // deviceData>
+
+    private Map<String, String> mNoWampNicknameMap; // <uuid, noWampNickname>
 
     public KadecotECHONETLiteClient(Context context) {
         super();
+
+        mDeviceMap = new HashMap<Long, ECHONETLiteDeviceData>();
+        mNoWampNicknameMap = new HashMap<String, String>();
 
         EchoManager.EchoDevicePropertyChangedListener pListener = createPropetyChangedListener();
         EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
@@ -66,24 +84,23 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
         return new EchoDiscovery.OnEchoDeviceInfoListener() {
             @Override
             public void onDeviceStateChanged(EchoDeviceData deviceInfo) {
-                publishDeviceInfo(deviceInfo);
+                putDeviceInfo(deviceInfo);
             }
 
             @Override
             public void onDeviceAdded(EchoDeviceData deviceInfo) {
-                publishDeviceInfo(deviceInfo);
+                putDeviceInfo(deviceInfo);
             }
         };
     }
 
     @Override
     protected Set<WampRole> getClientRoleSet() {
-        WampRole publisher = new WampPublisher();
         mSubscriber = new ECHONETLiteWampSubscriber();
         mCallee = new ECHONETLiteWampCallee();
 
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(publisher);
+        roleSet.add(new WampCaller());
         roleSet.add(mSubscriber);
         roleSet.add(mCallee);
         return roleSet;
@@ -127,6 +144,27 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
             // DeviceManager.
             // stopDiscovery();
         }
+
+        if (msg.isResultMessage()) {
+            WampResultMessage result = msg.asResultMessage();
+            if (!result.hasArgumentsKw()) {
+                return;
+            }
+            JSONObject device = result.getArgumentKw();
+            try {
+                // get SonyBlurayRecorderData
+                String uuid = device.getString(KadecotDAO.DEVICE_UUID);
+                String noWampNickname = mNoWampNicknameMap.get(uuid);
+                EchoDeviceData echoData = mManager.getDeviceData(noWampNickname);
+
+                // add device data to data list
+                ECHONETLiteDeviceData data = new ECHONETLiteDeviceData(device, echoData);
+                data.rename(echoData.nickname);
+                mDeviceMap.put(data.getDeviceId(), data);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void startDiscovery() {
@@ -137,8 +175,27 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
         mManager.stop();
     }
 
-    protected void publishDeviceInfo(EchoDeviceData deviceInfo) {
-        Log.i(TAG, "publish deviceinfo : " + deviceInfo.nickname);
+    protected void putDeviceInfo(EchoDeviceData deviceData) {
+        Log.i(TAG, "publish deviceinfo : " + deviceData.nickname);
+        try {
+            DeviceInfo info = mManager.getDeviceInfo(deviceData.deviceId, LOCALE);
+            // TODO: add adequate uuid
+            String uuid = deviceData.address + ":" + deviceData.echoClassCode;
+            // TODO: make enum to get device type and device name
+            Log.i(TAG, "class code : " + deviceData.nickname + ", "
+                    + Short.toString(deviceData.echoClassCode));
+            String type = ECHONETLiteDeviceType.getType(deviceData.echoClassCode).getName();
+            JSONObject device = KadecotProviderWampClient.createPutDeviceArgsKw(
+                    deviceData.protocolName, uuid, type, type, info.active);
+            mNoWampNicknameMap.put(uuid, deviceData.nickname);
+            transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
+                    new JSONObject(),
+                    KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(), new JSONArray(),
+                    device));
+        } catch (JSONException e) {
+            Log.d(TAG, "class error");
+            e.printStackTrace();
+        }
     }
 
     protected void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
@@ -195,8 +252,9 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
         private JSONObject resolveInvocationMsg(KadecotECHONETLiteProcedure procedure,
                 WampInvocationMessage msg) throws JSONException, AccessException {
-            String nickname = msg.getDetails().getString("nickname");
-            EchoDeviceData data = mManager.getDeviceData(nickname);
+            long deviceId = msg.getDetails().getLong(KadecotDAO.DEVICE_ID);
+            String noWampNickname = mDeviceMap.get(deviceId).getNoWampNickname();
+            EchoDeviceData data = mManager.getDeviceData(noWampNickname);
             JSONObject params = msg.getArgumentsKw();
             List<DeviceProperty> response = new ArrayList<DeviceProperty>();
 
