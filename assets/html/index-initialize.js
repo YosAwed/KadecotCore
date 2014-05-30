@@ -302,6 +302,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
               kHAPI.enableServerNetwork({
                 enable: true
               });
+
               if (!isFirstConfirm) {
                 $("#register_android_button").val("Withdraw from " + SSID)
                         .button("refresh");
@@ -313,6 +314,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
     kHAPI.enableServerNetwork({
       enable: false
     });
+
     if (!isFirstConfirm) {
       $("#register_android_button").val("Join current network").button(
               "refresh");
@@ -859,10 +861,10 @@ var onAppSettingPageOpen = function(index) {
               && rv.protocol.toLowerCase() === dev.protocol.toLowerCase()
               && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
-          value: rv.nickname,
+          value: rv.deviceId,
           text: escapeHTML(rv.nickname)
         });
-        if (rv.nickname === dev.assignedDevName) {
+        if (rv.nickname === dev.assignedDevId) {
           selected_value = rv.nickname;
         }
       }
@@ -885,7 +887,7 @@ var onAppSettingPageOpen = function(index) {
     var changed_generator = function(manifest_index, index) {
       return function(event, ui) {
         // can overwrite?
-        manifests[manifest_index].devices[index].assignedDevName = $(this)
+        manifests[manifest_index].devices[index].assignedDevId = $(this)
                 .val();
         kHAPI.addManifest(manifests[manifest_index]);
       };

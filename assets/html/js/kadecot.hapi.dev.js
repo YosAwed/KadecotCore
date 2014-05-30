@@ -19,6 +19,18 @@ kHAPI.dev = {
   }
 
   ,
+  findDeviceByDeviceId: function(deviceId) {
+    if (typeof deviceId !== 'number') throw "Illegal argument: " + deviceId;
+    
+    for (var di = 0; di < this.devices.length; ++di) {
+      if (this.devices[di].deviceId === deviceId) {
+        return this.devices[di];
+      }
+    }
+    return;
+  }
+
+  ,
   findAssignableDevices: function(protocol, deviceType) {
     var ret = [];
     for (var di = 0; di < this.devices.length; ++di) {
@@ -43,9 +55,9 @@ kHAPI.dev = {
   // false if the adding device already exists
   ,
   addDevice: function(newdev) {
-    // check nickname duplication
+    // check id duplication
     for (var di = 0; di < this.devices.length; ++di) {
-      if (this.devices[di].nickname === newdev.nickname) {
+      if (this.devices[di].deviceId === newdev.deviceId) {
         this.devices[di] = newdev;
         return false;
       }

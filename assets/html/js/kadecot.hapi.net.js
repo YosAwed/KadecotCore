@@ -76,17 +76,20 @@ kHAPI.net = {
             + JSON.stringify(options) + ", params:" + JSON.stringify(params)
             + ", paramsKw:" + JSON.stringify(paramsKw));
 
-    this.WS.serverConnection.call(procedure, params, paramsKw, options).then(
-            function(result) {
-              console.log("CALL result: " + JSON.stringify(result));
-              kHAPI.net.callServerFunc_invokeMatch[id + '_'](result, true);
-            },
-            function(error) {
-              console.log("CALL error: " + "procedure=" + argObject.procedure
-                      + ", error=" + JSON.stringify(error));
-              kHAPI.net.callServerFunc_invokeMatch[id + '_'](error, false);
-            });
-
+    if (kHAPI.isOnAndroid) {
+      LocalInterface.call(procedure, JSON.stringify(options), JSON.stringify(paramsKw), "func", "func2");
+    } else {
+      this.WS.serverConnection.call(procedure, params, paramsKw, options).then(
+              function(result) {
+                console.log("CALL result: " + JSON.stringify(result));
+                kHAPI.net.callServerFunc_invokeMatch[id + '_'](result, true);
+              },
+              function(error) {
+                console.log("CALL error: " + "procedure=" + argObject.procedure
+                        + ", error=" + JSON.stringify(error));
+                kHAPI.net.callServerFunc_invokeMatch[id + '_'](error, false);
+              });
+    }
   }
 
   ,
@@ -97,18 +100,23 @@ kHAPI.net = {
     console.log("WAMP SUBSCRIBE, procedure:" + procedure + ", options:"
             + JSON.stringify(options) + ", topic:" + topic);
 
-    var onEvent = function(args, kwargs, details) {
-      console.log("onEvent: topic=" + topic + ", args" + args + ", kwargs"
-              + JSON.stringify(kwargs));
-      kHAPI.net.callServerFunc_invokeMatch[id + '_'](args, kwargs);
+    if (kHAPI.isOnAndroid) {
+      LocalInterface.subscribe(topic, JSON.stringify(options), "func1", "func2", "func3");
+    } else {
+      var onEvent = function(args, kwargs, details) {
+        console.log("onEvent: topic=" + topic + ", args" + args + ", kwargs"
+                + JSON.stringify(kwargs));
+        kHAPI.net.callServerFunc_invokeMatch[id + '_'](args, kwargs);
+      }
+
+      this.WS.serverConnection.subscribe(topic, onEvent, options).then(
+              function(subscription) {
+                console.log("subscribed: topic=" + subscription.topic);
+              }, function(error) {
+                console.log("subscribe error, error:" + error.error);
+              });
     }
 
-    this.WS.serverConnection.subscribe(topic, onEvent, options).then(
-            function(subscription) {
-              console.log("subscribed: topic=" + subscription.topic);
-            }, function(error) {
-              console.log("subscribe error, error:" + error.error);
-            });
 
   }
 
