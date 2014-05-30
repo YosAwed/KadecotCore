@@ -5,7 +5,6 @@
 
 package com.sonycsl.kadecot.wamp;
 
-import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -22,7 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class KadecotTopicTimer extends WampClient {
+public class KadecotTopicTimer extends KadecotWampClient {
 
     private final String mTopic;
     private final long mPollingTime;
@@ -44,15 +43,15 @@ public class KadecotTopicTimer extends WampClient {
     }
 
     @Override
-    protected void OnConnected(WampPeer peer) {
+    protected void onConnected(WampPeer peer) {
     }
 
     @Override
-    protected void OnTransmitted(WampPeer peer, WampMessage msg) {
+    protected void onTransmitted(WampPeer peer, WampMessage msg) {
     }
 
     @Override
-    protected void OnReceived(WampMessage msg) {
+    protected void onReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
             mPublsher.start(new Runnable() {
                 @Override
@@ -68,6 +67,16 @@ public class KadecotTopicTimer extends WampClient {
             mPublsher.stop();
             return;
         }
+    }
+
+    @Override
+    public Set<String> getSubscribableTopics() {
+        return new HashSet<String>();
+    }
+
+    @Override
+    public Set<String> getRegisterableProcedures() {
+        return new HashSet<String>();
     }
 
     private static class TimerPublisher extends WampPublisher {

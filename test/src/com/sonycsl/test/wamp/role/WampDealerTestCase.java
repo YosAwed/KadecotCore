@@ -5,7 +5,7 @@
 
 package com.sonycsl.test.wamp.role;
 
-import com.sonycsl.test.wamp.mock.MockWampPeer;
+import com.sonycsl.test.mock.MockWampPeer;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;

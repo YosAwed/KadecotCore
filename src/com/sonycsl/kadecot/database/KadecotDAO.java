@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
+ * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
+ */
 
 package com.sonycsl.kadecot.database;
 
@@ -10,19 +14,58 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class KadecotDAO {
+
+    public static final String DEVICE_ID = "deviceId";
+    public static final String DEVICE_PROTOCOL = "protocol";
+    public static final String DEVICE_UUID = "uuid";
+    public static final String DEVICE_TYPE = "deviceType";
+    public static final String DEVICE_DESCRIPTION = "description";
+    public static final String DEVICE_STATUS = "status";
+    public static final String DEVICE_NICKNAME = "nickname";
+
+    public static final String TOPIC_PROTOCOL = "protocol";
+    public static final String TOPIC_NAME = "name";
+    public static final String TOPIC_DESCRIPTION = "description";
+
+    public static final String PROCEDURE_PROTOCOL = "protocol";
+    public static final String PROCEDURE_NAME = "name";
+    public static final String PROCEDURE_DESCRIPTION = "description";
+
+    public interface OnDeviceTableUpdatedListener {
+        public void onDeviceAdded(JSONObject deviceInfo);
+
+        public void onDeviceStateChanged(JSONObject deviceInfo);
+    }
 
     private final KadecotSQLiteOpenHelper mHelper;
     private final SQLiteDatabase mWdb;
     private final SQLiteDatabase mRdb;
+    private OnDeviceTableUpdatedListener mListener;
 
     public KadecotDAO(Context context) {
         mHelper = new KadecotSQLiteOpenHelper(context);
         mWdb = mHelper.getWritableDatabase();
         mRdb = mHelper.getReadableDatabase();
+    }
+
+    public void setOnDeviceTableUpdatedListener(OnDeviceTableUpdatedListener listener) {
+        mListener = listener;
+    }
+
+    private JSONObject convertToJSONObject(ContentValues values) throws JSONException {
+        return new JSONObject()
+                .put("protocol",
+                        values.getAsString(KadecotSQLiteOpenHelper.DEVICE_PROTOCOL))
+                .put("deviceType",
+                        values.getAsString(KadecotSQLiteOpenHelper.DEVICE_TYPE))
+                .put("description",
+                        values.getAsString(KadecotSQLiteOpenHelper.DEVICE_DESCRIPTION))
+                .put("status",
+                        values.getAsInteger(KadecotSQLiteOpenHelper.DEVICE_STATUS) == 1 ? true
+                                : false)
+                .put("nickname",
+                        values.getAsString(KadecotSQLiteOpenHelper.DEVICE_NICKNAME));
     }
 
     public long putDevice(String protocol, String uuid, String deviceType, String description,
@@ -50,7 +93,15 @@ public class KadecotDAO {
         final int deviceCount = c.getCount();
         if (deviceCount == 0) {
             c.close();
-            return mWdb.insert(KadecotSQLiteOpenHelper.DEVICE_TABLE, null, values);
+            final long id = mWdb.insert(KadecotSQLiteOpenHelper.DEVICE_TABLE, null, values);
+            if (mListener != null) {
+                try {
+                    mListener.onDeviceAdded(convertToJSONObject(values).put("deviceId", id));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return id;
         }
 
         if (deviceCount > 1) {
@@ -58,15 +109,23 @@ public class KadecotDAO {
             throw new IllegalArgumentException("DEVICE_ID is not UNIQUE");
         }
 
-        final int deviceId = c.getInt(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_ID));
+        final long id = c.getLong(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_ID));
         c.close();
 
         mWdb.update(KadecotSQLiteOpenHelper.DEVICE_TABLE, values, KadecotSQLiteOpenHelper.DEVICE_ID
                 + "=?", new String[] {
-                String.valueOf(deviceId)
+                String.valueOf(id)
         });
 
-        return deviceId;
+        if (mListener != null) {
+            try {
+                mListener.onDeviceStateChanged(convertToJSONObject(values).put("deviceId", id));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return id;
     }
 
     public void removeDevice(long deviceId) {
@@ -107,19 +166,19 @@ public class KadecotDAO {
         do {
             JSONObject json = new JSONObject();
             try {
-                json.put(KadecotSQLiteOpenHelper.DEVICE_ID,
-                        c.getInt(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_ID)));
-                json.put(KadecotSQLiteOpenHelper.DEVICE_PROTOCOL,
+                json.put(DEVICE_ID,
+                        c.getLong(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_ID)));
+                json.put(DEVICE_PROTOCOL,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_PROTOCOL)));
-                json.put(KadecotSQLiteOpenHelper.DEVICE_TYPE,
+                json.put(DEVICE_TYPE,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_TYPE)));
-                json.put(KadecotSQLiteOpenHelper.DEVICE_DESCRIPTION,
+                json.put(DEVICE_DESCRIPTION,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_DESCRIPTION)));
                 json.put(
-                        KadecotSQLiteOpenHelper.DEVICE_STATUS,
-                        c.getInt(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_STATUS)) == 1 ? "on"
-                                : "off");
-                json.put(KadecotSQLiteOpenHelper.DEVICE_NICKNAME,
+                        DEVICE_STATUS,
+                        c.getInt(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_STATUS)) == 1 ? true
+                                : false);
+                json.put(DEVICE_NICKNAME,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_NICKNAME)));
             } catch (JSONException e) {
                 continue;
@@ -257,8 +316,8 @@ public class KadecotDAO {
                 });
     }
 
-    public List<String> getTopicList(String protocol) {
-        List<String> topics = new ArrayList<String>();
+    public JSONArray getTopicList(String protocol) {
+        JSONArray topics = new JSONArray();
 
         Cursor c = mRdb.query(KadecotSQLiteOpenHelper.TOPIC_TABLE,
                 new String[] {
@@ -275,15 +334,15 @@ public class KadecotDAO {
         }
 
         do {
-            topics.add(c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.TOPIC_NAME)));
+            topics.put(c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.TOPIC_NAME)));
         } while (c.moveToNext());
 
         c.close();
         return topics;
     }
 
-    public List<String> getProcedureList(String protocol) {
-        List<String> procs = new ArrayList<String>();
+    public JSONArray getProcedureList(String protocol) {
+        JSONArray procs = new JSONArray();
 
         Cursor c = mRdb.query(KadecotSQLiteOpenHelper.PROCEDURE_TABLE,
                 new String[] {
@@ -300,11 +359,10 @@ public class KadecotDAO {
         }
 
         do {
-            procs.add(c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.PROCEDURE_NAME)));
+            procs.put(c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.PROCEDURE_NAME)));
         } while (c.moveToNext());
 
         c.close();
         return procs;
     }
-
 }

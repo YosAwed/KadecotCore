@@ -3,7 +3,7 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.test.wamp.mock;
+package com.sonycsl.test.mock;
 
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
@@ -14,26 +14,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MockWampClient extends MockWampPeer {
+public class MockWampPeer extends WampPeer {
 
     private List<WampMessage> mMsgs = new ArrayList<WampMessage>();
 
     @Override
     protected Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new MockWampClientRole());
+        roleSet.add(new MockWampRole());
         return roleSet;
     }
 
     @Override
-    protected void OnConnected(WampPeer peer) {
-        super.OnConnected(peer);
+    protected void onConnected(WampPeer peer) {
     }
 
     @Override
-    protected void OnReceived(WampMessage msg) {
+    protected void onTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
+    protected void onReceived(WampMessage msg) {
         mMsgs.add(msg);
-        super.OnReceived(msg);
     }
 
     public List<WampMessage> getAllMessages() {
