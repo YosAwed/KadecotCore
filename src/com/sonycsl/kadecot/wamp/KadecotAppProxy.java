@@ -8,6 +8,7 @@ import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.role.WampRole;
 
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
@@ -17,14 +18,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class KadecotAppProxy extends WampPeer {
 
     private static final String TAG = KadecotAppProxy.class.getSimpleName();
 
     private static final String PROTOCOL = "ws://";
-
-    // private static final String PORT = "41314";
 
     private WebSocketClient mWsClient;
 
@@ -39,7 +40,19 @@ public class KadecotAppProxy extends WampPeer {
     protected void OnConnected(WampPeer peer) {
     }
 
-    void connect(String ipaddress, String port) {
+    public static class WebSocketNotConnectException extends Exception {
+
+        public WebSocketNotConnectException(String message) {
+            super(message);
+        }
+    }
+
+    public void open(String ipaddress, String port) throws WebSocketNotConnectException {
+        if (mWsClient != null && mWsClient.getReadyState() == READYSTATE.OPEN) {
+            Log.i(TAG, "WebSocket is already opened");
+            return;
+        }
+
         URI uri;
         try {
             uri = new URI(PROTOCOL + ipaddress + ":" + port);
@@ -48,11 +61,13 @@ public class KadecotAppProxy extends WampPeer {
             return;
         }
 
+        final CountDownLatch latch = new CountDownLatch(1);
         mWsClient = new WebSocketClient(uri) {
 
             @Override
             public void onOpen(ServerHandshake handshakedata) {
                 Log.d(TAG, "onOpen : " + handshakedata.getHttpStatusMessage());
+                latch.countDown();
             }
 
             @Override
@@ -77,10 +92,30 @@ public class KadecotAppProxy extends WampPeer {
             }
         };
         mWsClient.connect();
+
+        try {
+            if (!latch.await(1, TimeUnit.SECONDS)) {
+                throw new WebSocketNotConnectException("WebSocket connect timeout");
+            }
+        } catch (InterruptedException e) {
+            throw new WebSocketNotConnectException("WebSocket connect timeout");
+        }
     }
 
-    void disconnect() {
+    public void close() {
+        if (mWsClient == null || mWsClient.getReadyState() != READYSTATE.OPEN) {
+            Log.i(TAG, "WebSocket is already closed");
+            return;
+        }
+
         mWsClient.close();
+    }
+
+    public boolean isOpen() {
+        if (mWsClient == null) {
+            return false;
+        }
+        return mWsClient.getReadyState() == READYSTATE.OPEN;
     }
 
     @Override
@@ -91,9 +126,12 @@ public class KadecotAppProxy extends WampPeer {
     protected void OnReceived(WampMessage msg) {
         if (mWsClient == null) {
             Log.e(TAG, "msg: " + msg);
+            return;
         }
 
-        mWsClient.send(msg.toString());
+        if (mWsClient.getReadyState() == READYSTATE.OPEN) {
+            mWsClient.send(msg.toString());
+        }
     }
 
     private static class WampWebSocketClientProxy extends WampRole {

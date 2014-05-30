@@ -56,7 +56,7 @@ public class KadecotAppClientWrapper {
         public void onError(JSONObject details, String error);
     }
 
-    public KadecotAppClientWrapper(WampPeer target) {
+    public KadecotAppClientWrapper() {
         mAppClient = new KadecotAppClient();
         mAppClient.setOnMessageListener(new MessageListener() {
 
@@ -83,10 +83,6 @@ public class KadecotAppClientWrapper {
                 }
             }
         });
-
-        mAppClient.connect(target);
-        mAppClient.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
-                new JSONObject()));
     }
 
     private void respondError(WampErrorMessage msg) {
@@ -157,6 +153,18 @@ public class KadecotAppClientWrapper {
         }
 
         callback.onUnsubscribed();
+    }
+
+    public void connect(WampPeer peer) {
+        mAppClient.connect(peer);
+    }
+
+    public void hello(String realm) {
+        mAppClient.transmit(WampMessageFactory.createHello(realm, new JSONObject()));
+    }
+
+    public void goodbye(String reason) {
+        mAppClient.transmit(WampMessageFactory.createGoodbye(new JSONObject(), reason));
     }
 
     public void call(String procedure, JSONObject options, JSONObject paramsKw,
