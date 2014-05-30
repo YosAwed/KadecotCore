@@ -66,6 +66,8 @@ public class KadecotCoreActivity extends FragmentActivity {
 
     private ExitApp mExitApp;
 
+    private LocalInterface mLocalInterface;
+
     private ServerBinder mServerBinder;
 
     private ServiceConnection mServerConn = new ServiceConnection() {
@@ -196,6 +198,9 @@ public class KadecotCoreActivity extends FragmentActivity {
 
         mExitApp = new ExitApp(this);
         mKadecotMyPage.addJavascriptInterface(mExitApp, "ExitApp");
+
+        mLocalInterface = new LocalInterface(this);
+        mKadecotMyPage.addJavascriptInterface(mLocalInterface, "LocalInterface");
 
         mKadecotMyPage.loadUrl("file:///android_asset/boot.html");
 
