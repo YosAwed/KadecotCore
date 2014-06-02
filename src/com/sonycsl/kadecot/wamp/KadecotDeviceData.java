@@ -77,4 +77,30 @@ public class KadecotDeviceData {
     public String getNickname() {
         return nickname;
     }
+
+    /**
+     * This methods create JSONObject to inform device data to KadecotDAO. So,
+     * JSONObject this method creates has no device id.
+     * 
+     * @param protocol
+     * @param uuid
+     * @param description
+     * @param status
+     * @param nickname
+     * @return
+     * @throws JSONException
+     */
+    public static JSONObject createJSONObject(String protocol, String uuid, String description,
+            String deviceType, boolean status, String nickname) throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put(KadecotDAO.DEVICE_PROTOCOL, protocol);
+        json.put(KadecotDAO.DEVICE_UUID, uuid);
+        json.put(KadecotDAO.DEVICE_DESCRIPTION, description);
+        json.put(KadecotDAO.DEVICE_STATUS, status);
+        json.put(KadecotDAO.DEVICE_TYPE, deviceType);
+        json.put(KadecotDAO.DEVICE_NICKNAME, nickname);
+
+        return json;
+    }
 }
