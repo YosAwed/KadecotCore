@@ -6,6 +6,7 @@
 package com.sonycsl.wamp.role;
 
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.WampLog;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampCallMessage;
 import com.sonycsl.wamp.message.WampErrorMessage;
@@ -23,6 +24,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class WampDealer extends WampRole {
+
+    private static final String TAG = WampDealer.class.getSimpleName();
 
     private final Map<String, RegisterInfo> mCallees = new ConcurrentHashMap<String, WampDealer.RegisterInfo>();
     private final Map<Integer, CallInfo> mCallers = new ConcurrentHashMap<Integer, WampDealer.CallInfo>();
@@ -145,6 +148,7 @@ abstract public class WampDealer extends WampRole {
         WampCallMessage call = msg.asCallMessage();
 
         if (!mCallees.containsKey(call.getProcedure())) {
+            WampLog.e(TAG, "No such procedure: " + call.getProcedure());
             listener.onReply(transmitter,
                     WampMessageFactory.createError(msg.getMessageType(), call.getRequestId(),
                             new JSONObject(), WampError.NO_SUCH_PROCEDURE));
