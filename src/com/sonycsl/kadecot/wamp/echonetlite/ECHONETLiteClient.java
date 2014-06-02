@@ -8,13 +8,14 @@ package com.sonycsl.kadecot.wamp.echonetlite;
 import android.content.Context;
 import android.util.Log;
 
+import com.sonycsl.echo.Echo;
+import com.sonycsl.echo.eoj.EchoObject;
+import com.sonycsl.echo.node.EchoNode;
 import com.sonycsl.kadecot.database.KadecotDAO;
 import com.sonycsl.kadecot.device.AccessException;
-import com.sonycsl.kadecot.device.DeviceInfo;
 import com.sonycsl.kadecot.device.DeviceProperty;
-import com.sonycsl.kadecot.device.echo.EchoDeviceData;
-import com.sonycsl.kadecot.device.echo.EchoDiscovery;
-import com.sonycsl.kadecot.device.echo.EchoManager;
+import com.sonycsl.kadecot.device.echo.EchoDeviceDatabase;
+import com.sonycsl.kadecot.wamp.KadecotProperty;
 import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
@@ -34,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,9 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class KadecotECHONETLiteClient extends KadecotWampClient {
+public class ECHONETLiteClient extends KadecotWampClient {
 
-    private final String TAG = KadecotECHONETLiteClient.class.getSimpleName();
+    private final String TAG = ECHONETLiteClient.class.getSimpleName();
 
     private final String LOCALE = "jp";
 
@@ -51,45 +53,50 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
     private ECHONETLiteWampSubscriber mSubscriber;
 
-    private EchoManager mManager;
+    private ECHONETLiteManager mManager;
 
-    private Map<Long, ECHONETLiteDeviceData> mDeviceMap; // <deviceId,
-                                                         // deviceData>
+    // <deviceId, deviceData>
+    private Map<Long, ECHONETLiteDeviceData> mDeviceMap;
 
-    private Map<String, String> mNoWampNicknameMap; // <uuid, noWampNickname>
+    private Map<String, JSONObject> mTemporaryDeviceMap;
 
-    public KadecotECHONETLiteClient(Context context) {
+    public ECHONETLiteClient(Context context) {
         super();
 
         mDeviceMap = new HashMap<Long, ECHONETLiteDeviceData>();
-        mNoWampNicknameMap = new HashMap<String, String>();
+        mTemporaryDeviceMap = new HashMap<String, JSONObject>();
 
-        EchoManager.EchoDevicePropertyChangedListener pListener = createPropetyChangedListener();
-        EchoDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
-        mManager = EchoManager.getInstance(context);
+        ECHONETLiteManager.ECHONETLiteWampDevicePropertyChangedListener pListener = createPropetyChangedListener();
+        ECHONETLiteDiscovery.OnEchoDeviceInfoListener dListener = createDeviceInfoListener();
+        mManager = ECHONETLiteManager.getInstance();
+        mManager.setClient(this);
         mManager.setListener(pListener, dListener);
     }
 
-    private EchoManager.EchoDevicePropertyChangedListener createPropetyChangedListener() {
-        return new EchoManager.EchoDevicePropertyChangedListener() {
+    private ECHONETLiteManager.ECHONETLiteWampDevicePropertyChangedListener createPropetyChangedListener() {
+        return new ECHONETLiteManager.ECHONETLiteWampDevicePropertyChangedListener() {
+
             @Override
-            public void OnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
+            public void OnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
                 publishOnPropertyChanged(data, list);
+
             }
         };
-
     }
 
-    private EchoDiscovery.OnEchoDeviceInfoListener createDeviceInfoListener() {
-        return new EchoDiscovery.OnEchoDeviceInfoListener() {
+    private ECHONETLiteDiscovery.OnEchoDeviceInfoListener createDeviceInfoListener() {
+        return new ECHONETLiteDiscovery.OnEchoDeviceInfoListener() {
+
             @Override
-            public void onDeviceStateChanged(EchoDeviceData deviceInfo) {
-                putDeviceInfo(deviceInfo);
+            public void onDeviceStateChanged(JSONObject data) {
+                putDeviceInfo(data);
+
             }
 
             @Override
-            public void onDeviceAdded(EchoDeviceData deviceInfo) {
-                putDeviceInfo(deviceInfo);
+            public void onDeviceAdded(JSONObject data) {
+                putDeviceInfo(data);
+
             }
         };
     }
@@ -124,7 +131,7 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
     @Override
     public Set<String> getRegisterableProcedures() {
         Set<String> procs = new HashSet<String>();
-        for (KadecotECHONETLiteProcedure procedure : KadecotECHONETLiteProcedure.values()) {
+        for (ECHONETLiteProcedure procedure : ECHONETLiteProcedure.values()) {
             procs.add(procedure.toString());
         }
         return procs;
@@ -134,15 +141,11 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
     protected void onReceived(WampMessage msg) {
         Log.d(TAG, "OnReceived : " + msg.toString());
         if (msg.isWelcomeMessage()) {
-            // TODO : remove this comment out and stop comment out after remove
-            // DeviceManager.
-            // startDiscovery();
+            mManager.start();
         }
 
         if (msg.isGoodbyeMessage()) {
-            // TODO : remove this comment out and stop comment out after remove
-            // DeviceManager.
-            // stopDiscovery();
+            mManager.stop();
         }
 
         if (msg.isResultMessage()) {
@@ -152,14 +155,9 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
             }
             JSONObject device = result.getArgumentKw();
             try {
-                // get SonyBlurayRecorderData
-                String uuid = device.getString(KadecotDAO.DEVICE_UUID);
-                String noWampNickname = mNoWampNicknameMap.get(uuid);
-                EchoDeviceData echoData = mManager.getDeviceData(noWampNickname);
-
                 // add device data to data list
-                ECHONETLiteDeviceData data = new ECHONETLiteDeviceData(device, echoData);
-                data.rename(echoData.nickname);
+                ECHONETLiteDeviceData data = new ECHONETLiteDeviceData(device);
+                // data.rename(echoData.nickname);
                 mDeviceMap.put(data.getDeviceId(), data);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -175,41 +173,30 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
         mManager.stop();
     }
 
-    protected void putDeviceInfo(EchoDeviceData deviceData) {
-        Log.i(TAG, "publish deviceinfo : " + deviceData.nickname);
+    protected void putDeviceInfo(JSONObject data) {
+        Log.i(TAG, "publish deviceinfo : " + data.toString());
         try {
-            DeviceInfo info = mManager.getDeviceInfo(deviceData.deviceId, LOCALE);
-            // TODO: add adequate uuid
-            String uuid = deviceData.address + ":" + deviceData.echoClassCode;
-            // TODO: make enum to get device type and device name
-            Log.i(TAG, "class code : " + deviceData.nickname + ", "
-                    + Short.toString(deviceData.echoClassCode));
-            String type = ECHONETLiteDeviceType.getType(deviceData.echoClassCode).getName();
-            JSONObject device = KadecotProviderWampClient.createPutDeviceArgsKw(
-                    deviceData.protocolName, uuid, type, type, info.active);
-            mNoWampNicknameMap.put(uuid, deviceData.nickname);
-            transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                    new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(), new JSONArray(),
-                    device));
+            mTemporaryDeviceMap.put(data.getString(KadecotDAO.DEVICE_UUID), data);
         } catch (JSONException e) {
-            Log.d(TAG, "class error");
             e.printStackTrace();
         }
+        transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
+                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONArray(), data));
     }
 
-    protected void publishOnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list) {
+    protected void publishOnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
 
         try {
             for (DeviceProperty dp : list) {
                 JSONObject options = new JSONObject();
-                options.put("nickname", data.nickname);
+                options.put("nickname", data.getNickname());
                 /**
                  * exmaple : com.sonycsl.kadecot.echonetlite.aircon.power. TODO
                  * : now com.sonycsl.kadecot.echonetlite.80.power
                  */
-                String topic = "com.sonycsl.kadecot.echonetlite." + data.echoClassCode + "."
-                        + data.nickname + "." + dp.name;
+                String topic = "com.sonycsl.kadecot.echonetlite." + data.getClassCode() + "."
+                        + data.getNickname() + "." + dp.name;
                 JSONArray arguments = new JSONArray();
                 arguments.put(dp.value);
                 transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), options,
@@ -224,11 +211,11 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
 
         @Override
         protected WampMessage invocation(String procedure, WampMessage msg) {
-            KadecotECHONETLiteProcedure enumProcedure = KadecotECHONETLiteProcedure
+            ECHONETLiteProcedure enumProcedure = ECHONETLiteProcedure
                     .getEnum(procedure);
             WampInvocationMessage invMsg = msg.asInvocationMessage();
 
-            if (enumProcedure == KadecotECHONETLiteProcedure.NOT_PROCEDURE) {
+            if (enumProcedure == ECHONETLiteProcedure.NOT_PROCEDURE) {
                 return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
                         new JSONObject(), WampError.NO_SUCH_PROCEDURE);
             }
@@ -250,14 +237,12 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
                     new JSONArray(), argumentKw);
         }
 
-        private JSONObject resolveInvocationMsg(KadecotECHONETLiteProcedure procedure,
+        private JSONObject resolveInvocationMsg(ECHONETLiteProcedure procedure,
                 WampInvocationMessage msg) throws JSONException, AccessException {
             long deviceId = msg.getDetails().getLong(KadecotDAO.DEVICE_ID);
-            String noWampNickname = mDeviceMap.get(deviceId).getNoWampNickname();
-            EchoDeviceData data = mManager.getDeviceData(noWampNickname);
             JSONObject params = msg.getArgumentsKw();
             List<DeviceProperty> response = new ArrayList<DeviceProperty>();
-
+            ECHONETLiteDeviceData data = mDeviceMap.get(deviceId);
             switch (procedure) {
                 case GET:
                     response = callGet(data, params);
@@ -283,8 +268,8 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
             DeviceProperty dp = list.get(0);
             String propName = ECHONETLitePropertyName.translate(dp.name);
             int val = ((JSONArray) dp.value).getInt(0);
-            json.put(KadecotWampECHONETLiteUtil.PROPERTY_NAME_KEY, propName);
-            json.put(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY, val);
+            json.put(KadecotProperty.PROPERTY_NAME_KEY, propName);
+            json.put(KadecotProperty.PROPERTY_VALUE_KEY, val);
             Log.i(TAG, "return property : " + json.toString());
             return json;
         }
@@ -294,10 +279,16 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
          * @param params [propName1, propName2, ...]
          * @return
          */
-        private List<DeviceProperty> callGet(EchoDeviceData data, JSONObject params)
+        private List<DeviceProperty> callGet(ECHONETLiteDeviceData data, JSONObject params)
                 throws JSONException, AccessException {
-            List<DeviceProperty> propList = makePropertyList(data, params);
-            return mManager.get(data.deviceId, propList);
+            List<DeviceProperty> propList = makePropertyList(params);
+            EchoObject obj = null;
+            try {
+                obj = getEchoObject(data.getDeviceId());
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+            return mManager.get(obj, propList);
         }
 
         /**
@@ -305,10 +296,16 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
          * @param params [[propName1, propValue1], [propName2, propValue2], ...]
          * @return
          */
-        private List<DeviceProperty> callSet(EchoDeviceData data, JSONObject params)
+        private List<DeviceProperty> callSet(ECHONETLiteDeviceData data, JSONObject params)
                 throws JSONException, AccessException {
-            List<DeviceProperty> propertyList = makePropertyList(data, params);
-            return mManager.set(data.deviceId, propertyList);
+            List<DeviceProperty> propertyList = makePropertyList(params);
+            EchoObject obj = null;
+            try {
+                obj = getEchoObject(data.getDeviceId());
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+            return mManager.set(obj, propertyList);
         }
 
         /**
@@ -319,18 +316,18 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
          * @param param {"propertyName" : name}
          * @return
          */
-        private List<DeviceProperty> makePropertyList(EchoDeviceData data, JSONObject param)
+        private List<DeviceProperty> makePropertyList(JSONObject param)
                 throws JSONException {
             ArrayList<DeviceProperty> propertyList = new ArrayList<DeviceProperty>();
 
             String propName = ECHONETLitePropertyName.translate(param
-                    .getString(KadecotWampECHONETLiteUtil.PROPERTY_NAME_KEY));
+                    .getString(KadecotProperty.PROPERTY_NAME_KEY));
 
             Object propValue = null;
 
             // for set
-            if (param.has(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY)) {
-                String paramValue = param.getString(KadecotWampECHONETLiteUtil.PROPERTY_VALUE_KEY);
+            if (param.has(KadecotProperty.PROPERTY_VALUE_KEY)) {
+                String paramValue = param.getString(KadecotProperty.PROPERTY_VALUE_KEY);
                 JSONArray jarray = new JSONArray();
                 String val = ECHONETLitePropertyValue.getPropertyValue(paramValue).toString();
                 jarray.put(Integer.decode(val));
@@ -352,5 +349,32 @@ public class KadecotECHONETLiteClient extends KadecotWampClient {
                 mManager.refreshDeviceList();
             }
         }
+    }
+
+    public EchoObject getEchoObject(long deviceId) throws UnknownHostException {
+        ECHONETLiteDeviceData data = mDeviceMap.get(deviceId);
+        if (data == null) {
+            return null;
+        }
+
+        String address = null;
+
+        if (data.getAddress().equals(EchoDeviceDatabase.LOCAL_ADDRESS)) {
+            // local
+            address = Echo.getSelfNode().getAddressStr();
+        } else {
+            // remote
+            address = data.getAddress();
+        }
+
+        EchoNode ne = Echo.getNode(address);
+        if (ne == null)
+            return null;
+        EchoObject eoj = ne.getInstance(data.getClassCode(), data.getInstanceCode());
+        return eoj;
+    }
+
+    public Map<Long, ECHONETLiteDeviceData> getDeviceMap() {
+        return mDeviceMap;
     }
 }
