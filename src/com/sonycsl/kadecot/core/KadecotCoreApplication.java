@@ -11,7 +11,7 @@ import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotTopicTimer;
 import com.sonycsl.kadecot.wamp.KadecotWampClientLocator;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
-import com.sonycsl.kadecot.wamp.echonetlite.KadecotECHONETLiteClient;
+import com.sonycsl.kadecot.wamp.echonetlite.ECHONETLiteClient;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +27,7 @@ public class KadecotCoreApplication extends Application {
 
         KadecotWampClientLocator locator = new KadecotWampClientLocator();
         locator.loadClient(new KadecotProviderWampClient(this));
-        locator.loadClient(new KadecotECHONETLiteClient(this));
+        locator.loadClient(new ECHONETLiteClient(this));
         locator.loadClient(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
                 TimeUnit.SECONDS));
         KadecotWampClientLocator.load(locator);

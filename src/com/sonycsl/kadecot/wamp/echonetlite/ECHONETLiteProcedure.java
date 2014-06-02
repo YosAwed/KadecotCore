@@ -5,7 +5,7 @@
 
 package com.sonycsl.kadecot.wamp.echonetlite;
 
-public enum KadecotECHONETLiteProcedure {
+public enum ECHONETLiteProcedure {
 
     GET("com.sonycsl.kadecot.echonetlite.procedure.get"),
     SET("com.sonycsl.kadecot.echonetlite.procedure.set"),
@@ -13,7 +13,7 @@ public enum KadecotECHONETLiteProcedure {
 
     private String procedure;
 
-    KadecotECHONETLiteProcedure(String procedure) {
+    ECHONETLiteProcedure(String procedure) {
         this.procedure = procedure;
     }
 
@@ -21,10 +21,10 @@ public enum KadecotECHONETLiteProcedure {
         return procedure;
     }
 
-    public static KadecotECHONETLiteProcedure getEnum(String procedure) {
-        KadecotECHONETLiteProcedure enumArray[] = KadecotECHONETLiteProcedure.values();
+    public static ECHONETLiteProcedure getEnum(String procedure) {
+        ECHONETLiteProcedure enumArray[] = ECHONETLiteProcedure.values();
 
-        for (KadecotECHONETLiteProcedure enumElement : enumArray) {
+        for (ECHONETLiteProcedure enumElement : enumArray) {
             if (procedure.equals(enumElement.toString()))
                 return enumElement;
         }
