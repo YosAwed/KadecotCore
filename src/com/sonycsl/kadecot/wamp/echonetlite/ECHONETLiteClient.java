@@ -231,6 +231,14 @@ public class ECHONETLiteClient extends KadecotWampClient {
                 e.printStackTrace();
                 return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
                         new JSONObject(), e.getClass().getName());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
+                        new JSONObject(), WampError.INVALID_ARGUMENT);
+            } catch (UnsupportedOperationException e) {
+                e.printStackTrace();
+                return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
+                        new JSONObject(), WampError.NO_SUCH_PROCEDURE);
             }
 
             return WampMessageFactory.createYield(invMsg.getRequestId(), new JSONObject(),
@@ -238,11 +246,15 @@ public class ECHONETLiteClient extends KadecotWampClient {
         }
 
         private JSONObject resolveInvocationMsg(ECHONETLiteProcedure procedure,
-                WampInvocationMessage msg) throws JSONException, AccessException {
+                WampInvocationMessage msg) throws JSONException, AccessException,
+                IllegalArgumentException, UnsupportedOperationException {
             long deviceId = msg.getDetails().getLong(KadecotDAO.DEVICE_ID);
             JSONObject params = msg.getArgumentsKw();
             List<DeviceProperty> response = new ArrayList<DeviceProperty>();
             ECHONETLiteDeviceData data = mDeviceMap.get(deviceId);
+            if (data == null) {
+                throw new IllegalArgumentException("no such device : deviceId " + deviceId);
+            }
             switch (procedure) {
                 case GET:
                     response = callGet(data, params);
