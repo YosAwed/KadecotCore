@@ -117,7 +117,6 @@ public class KadecotAppClientWrapper {
     private void respondEvent(WampEventMessage msg) {
         WampSubscribeListener callback = (WampSubscribeListener) subIdSubscriberMap.get(msg
                 .getSubscriptionId());
-        Log.e(TAG, "msg:" + msg);
         if (callback == null) {
             Log.e(TAG, "Unknown Event message: " + msg);
             return;
