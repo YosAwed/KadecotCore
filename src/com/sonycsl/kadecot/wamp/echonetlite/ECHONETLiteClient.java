@@ -6,7 +6,6 @@
 package com.sonycsl.kadecot.wamp.echonetlite;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
@@ -141,7 +140,6 @@ public class ECHONETLiteClient extends KadecotWampClient {
 
     @Override
     protected void onReceived(WampMessage msg) {
-        Log.d(TAG, "OnReceived : " + msg.toString());
         if (msg.isWelcomeMessage()) {
             mManager.start();
         }
@@ -176,7 +174,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
     }
 
     protected void putDeviceInfo(JSONObject data) {
-        Log.i(TAG, "publish deviceinfo : " + data.toString());
+        // Log.i(TAG, "put deviceinfo : " + data.toString());
         try {
             mTemporaryDeviceMap.put(data.getString(KadecotDAO.DEVICE_UUID), data);
         } catch (JSONException e) {
@@ -284,7 +282,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
             int val = ((JSONArray) dp.value).getInt(0);
             json.put(KadecotProperty.PROPERTY_NAME_KEY, propName);
             json.put(KadecotProperty.PROPERTY_VALUE_KEY, val);
-            Log.i(TAG, "return property : " + json.toString());
+            // Log.i(TAG, "return property : " + json.toString());
             return json;
         }
 
@@ -323,9 +321,6 @@ public class ECHONETLiteClient extends KadecotWampClient {
         }
 
         /**
-         * This method is temporary. After DeviceProtocol delete its get method,
-         * this method must be deleted.
-         * 
          * @param data
          * @param param {"propertyName" : name}
          * @return
