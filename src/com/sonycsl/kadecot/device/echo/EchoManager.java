@@ -73,12 +73,6 @@ public class EchoManager implements DeviceProtocol {
 
     private final Map<InetAddress, Long> mLastAccessTimes;
 
-    private EchoDevicePropertyChangedListener mListener;
-
-    public interface EchoDevicePropertyChangedListener {
-        public void OnPropertyChanged(EchoDeviceData data, List<DeviceProperty> list);
-    }
-
     private EchoManager(Context context) {
         mContext = context.getApplicationContext();
 
@@ -101,12 +95,6 @@ public class EchoManager implements DeviceProtocol {
             sInstance = new EchoManager(context);
         }
         return sInstance;
-    }
-
-    public void setListener(EchoDevicePropertyChangedListener pListener,
-            EchoDiscovery.OnEchoDeviceInfoListener dListener) {
-        mListener = pListener;
-        mEchoDiscovery.setListener(dListener);
     }
 
     public static synchronized EchoManager getInstance() {
@@ -201,12 +189,7 @@ public class EchoManager implements DeviceProtocol {
                     list.add(prop);
                 }
 
-                // TODO: delete DeviceManager method
                 getDeviceManager().onPropertyChanged(data, list);
-
-                if (mListener != null) {
-                    mListener.OnPropertyChanged(data, list);
-                }
             }
 
             @Override
