@@ -27,6 +27,7 @@ import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampResultMessage;
 import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampCaller;
+import com.sonycsl.wamp.role.WampPublisher;
 import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampSubscriber;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
@@ -108,6 +109,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
 
         Set<WampRole> roleSet = new HashSet<WampRole>();
         roleSet.add(new WampCaller());
+        roleSet.add(new WampPublisher());
         roleSet.add(mSubscriber);
         roleSet.add(mCallee);
         return roleSet;
