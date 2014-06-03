@@ -118,15 +118,21 @@ public class ServerNetwork {
         }
 
         NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
-
-        if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI && info.isConnected()) {
-            WifiInfo wInfo = mWifiManager.getConnectionInfo();
-            if (wInfo != null && getSettings().getWifiBSSID().equalsIgnoreCase(wInfo.getBSSID())) {
-                return CONNECTED;
-            }
-        } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
-            return CONNECTED;
+        if (info == null) {
+            return UNCONNECTED;
         }
+
+        switch (info.getType()) {
+            case ConnectivityManager.TYPE_ETHERNET:
+                return CONNECTED;
+            case ConnectivityManager.TYPE_WIFI:
+                if (info.isConnected()) {
+                    return CONNECTED;
+                } else {
+                    return UNCONNECTED;
+                }
+        }
+
         return UNCONNECTED;
     }
 
