@@ -12,6 +12,7 @@ import com.sonycsl.kadecot.wamp.KadecotAppProxy;
 import com.sonycsl.kadecot.wamp.KadecotAppProxy.WebSocketNotConnectException;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.wamp.WampError;
+import com.sonycsl.wamp.util.JsonEscapeUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,14 +69,18 @@ public class LocalInterface {
 
                         @Override
                         public void onResult(JSONObject details, JSONObject argumentsKw) {
-                            mKadecot.callJsOnKadecotMyPage(resultListener + "(" + argumentsKw
-                                    + ", true);");
+                            mKadecot.callJsOnKadecotMyPage(resultListener
+                                    + "(JSON.parse(\"[]\"), JSON.parse("
+                                    + JsonEscapeUtil.escapeSlash(argumentsKw)
+                                    + ", true));");
                         }
 
                         @Override
                         public void onError(JSONObject details, String error) {
-                            mKadecot.callJsOnKadecotMyPage(errorListener + "(" + error
-                                    + ", false);");
+                            mKadecot.callJsOnKadecotMyPage(errorListener
+                                    + "(JSON.parse(\"[]\"), "
+                                    + "JSON.parse(\"{\\\"error\\\":\\\"" + error + "\\\"}\")"
+                                    + ");");
                         }
                     });
         } catch (JSONException e) {
@@ -105,12 +110,17 @@ public class LocalInterface {
 
                 @Override
                 public void onError(JSONObject details, String error) {
-                    mKadecot.callJsOnKadecotMyPage(subscribeErrorListener + "(" + error + ");");
+                    mKadecot.callJsOnKadecotMyPage(subscribeErrorListener
+                            + "(JSON.parse(\"[]\"), "
+                            + "JSON.parse(\"{\\\"error\\\":\\\"" + error + "\\\"}\")"
+                            + ");");
                 }
 
                 @Override
                 public void onEvent(JSONObject details, JSONObject argumentsKw) {
-                    mKadecot.callJsOnKadecotMyPage(eventListener + "(" + argumentsKw + ");");
+                    mKadecot.callJsOnKadecotMyPage(eventListener
+                            + "(JSON.parse(\"[]\"), JSON.parse("
+                            + JsonEscapeUtil.escapeSlash(argumentsKw) + "));");
                 }
             });
         } catch (JSONException e) {
