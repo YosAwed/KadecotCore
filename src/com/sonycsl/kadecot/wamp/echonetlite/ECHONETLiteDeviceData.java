@@ -55,7 +55,7 @@ public class ECHONETLiteDeviceData extends KadecotDeviceData {
             boolean status, String nickname, String address, short cCode, byte iCode, Long parentId)
             throws JSONException {
         JSONObject json = KadecotDeviceData.createJSONObject(protocol, uuid, description,
-                ECHONETLiteDeviceType.getType(cCode).toString(), status, nickname);
+                ECHONETLiteDeviceType.getType(cCode).getName(), status, nickname);
         json.put(ADDRESS_KEY, address);
         json.put(CLASS_CODE, cCode);
         json.put(INSTANCE_CODE, iCode);
