@@ -20,6 +20,9 @@ public enum ECHONETLitePropertyName {
     SET_TEMPERATURE_VALUE_IN_COOLING_MODE("SetTemperatureValueInCoolingMode", "0xb5"),
     SET_TEMPERATURE_VALUE_IN_HEATING_MODE("SetTemperatureValueInHeatingMode", "0xb6"),
 
+    // Temperature
+    MEASURED_TEMPERATURE_VALUE("MeasuredTemperatureValue", "0xe0"),
+
     UNKNOWN("UNKNOWN", "");
 
     private String name;
