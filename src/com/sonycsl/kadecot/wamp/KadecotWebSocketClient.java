@@ -10,9 +10,7 @@ import android.util.Log;
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
-import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampRole;
-import com.sonycsl.wamp.role.WampSubscriber;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -34,10 +32,22 @@ public class KadecotWebSocketClient extends WampClient {
     @Override
     protected Set<WampRole> getClientRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new WampCaller());
-        roleSet.add(new WampSubscriber() {
+        roleSet.add(new WampRole() {
+
             @Override
-            protected void onEvent(String topic, WampMessage msg) {
+            protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+                return true;
+            }
+
+            @Override
+            protected boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+                    OnReplyListener listener) {
+                return true;
+            }
+
+            @Override
+            public String getRoleName() {
+                return null;
             }
         });
         return roleSet;
