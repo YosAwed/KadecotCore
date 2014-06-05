@@ -221,7 +221,6 @@ public class Draft_10 extends Draft {
         if (seckey == null)
             throw new InvalidHandshakeException("missing Sec-WebSocket-Key");
         response.put("Sec-WebSocket-Accept", generateFinalKey(seckey));
-        response.put("Sec-WebSocket-Protocol", "wamp.2.json");
         return response;
     }
 

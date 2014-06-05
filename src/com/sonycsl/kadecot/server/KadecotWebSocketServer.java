@@ -21,6 +21,11 @@ import com.sonycsl.wamp.message.WampMessageFactory;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_75;
+import org.java_websocket.drafts.Draft_76;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
@@ -29,6 +34,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +44,8 @@ import java.util.concurrent.TimeUnit;
 public class KadecotWebSocketServer {
 
     private static final String TAG = KadecotWebSocketServer.class.getSimpleName();
+
+    private static final String WAMP_PROTOCOL = "wamp.2.json";
 
     private static final int portno = 41314;
 
@@ -90,7 +99,17 @@ public class KadecotWebSocketServer {
             return;
         }
         stop();
-        mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno));
+        List<Draft> draftList = new ArrayList<Draft>();
+        draftList.add(new Draft_17_Protocol(WAMP_PROTOCOL));
+        draftList.add(new Draft_17());
+        draftList.add(new Draft_10_Protocol(WAMP_PROTOCOL));
+        draftList.add(new Draft_10());
+        draftList.add(new Draft_76_Protocol(WAMP_PROTOCOL));
+        draftList.add(new Draft_76());
+        draftList.add(new Draft_75_Protocol(WAMP_PROTOCOL));
+        draftList.add(new Draft_75());
+
+        mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno), draftList);
         mWebSocketServer.start();
 
         for (KadecotWampClient client : KadecotWampClientLocator.getClients()) {
@@ -142,8 +161,8 @@ public class KadecotWebSocketServer {
 
         private Map<WebSocket, KadecotWebSocketClient> mClients = new ConcurrentHashMap<WebSocket, KadecotWebSocketClient>();
 
-        public WebSocketServerImpl(InetSocketAddress address) {
-            super(address);
+        public WebSocketServerImpl(InetSocketAddress address, List<Draft> draftList) {
+            super(address, draftList);
         }
 
         @Override
