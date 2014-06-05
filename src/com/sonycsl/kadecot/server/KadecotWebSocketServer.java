@@ -14,7 +14,6 @@ import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.kadecot.wamp.KadecotWebSocketClient;
-import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
@@ -141,7 +140,7 @@ public class KadecotWebSocketServer {
 
     public class WebSocketServerImpl extends WebSocketServer {
 
-        private Map<WebSocket, WampClient> mClients = new ConcurrentHashMap<WebSocket, WampClient>();
+        private Map<WebSocket, KadecotWebSocketClient> mClients = new ConcurrentHashMap<WebSocket, KadecotWebSocketClient>();
 
         public WebSocketServerImpl(InetSocketAddress address) {
             super(address);
@@ -149,7 +148,7 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            WampClient client = new KadecotWebSocketClient(conn);
+            KadecotWebSocketClient client = new KadecotWebSocketClient(conn);
             client.connect(mRouter);
             mClients.put(conn, client);
         }

@@ -7,7 +7,6 @@ package com.sonycsl.kadecot.wamp;
 
 import android.util.Log;
 
-import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampRole;
@@ -18,7 +17,7 @@ import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class KadecotWebSocketClient extends WampClient {
+public class KadecotWebSocketClient extends WampPeer {
 
     private static final String TAG = KadecotWebSocketClient.class.getSimpleName();
 
@@ -30,7 +29,7 @@ public class KadecotWebSocketClient extends WampClient {
     }
 
     @Override
-    protected Set<WampRole> getClientRoleSet() {
+    protected Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
         roleSet.add(new WampRole() {
 
