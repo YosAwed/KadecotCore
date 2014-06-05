@@ -69,12 +69,9 @@ public abstract class WampRouter extends WampPeer {
         @Override
         public boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
                 OnReplyListener listener) {
+
             if (msg.isHelloMessage()) {
                 return resolveHelloMessage(transmitter, msg, listener);
-            }
-
-            if (msg.isGoodbyeMessage()) {
-                return resolveGoodByeMessage(transmitter, msg, listener);
             }
 
             if (!mSessions.containsKey(transmitter)) {
@@ -84,13 +81,23 @@ public abstract class WampRouter extends WampPeer {
                 return true;
             }
 
+            if (msg.isGoodbyeMessage()) {
+                return resolveGoodByeMessage(transmitter, msg, listener);
+            }
+
             return false;
         }
 
         private boolean resolveHelloMessage(WampPeer transmitter, WampMessage msg,
                 OnReplyListener listener) {
-            int sessionId = ++mSessionId;
+            int sessionId;
+            if (mSessions.containsKey(transmitter)) {
+                sessionId = mSessions.get(transmitter);
+            } else {
+                sessionId = ++mSessionId;
+            }
             mSessions.put(transmitter, sessionId);
+
             try {
                 JSONObject roles = new JSONObject();
                 Iterator<WampRole> ite = mRoleSet.iterator();
