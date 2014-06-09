@@ -526,8 +526,10 @@ public class ECHONETLiteManager {
                     List<DeviceProperty> list = new ArrayList<DeviceProperty>();
 
                     for (EchoProperty p : callback.properties) {
-                        DeviceProperty prop = new DeviceProperty(toPropertyName(p.epc));
-
+                        String epc = toPropertyName(p.epc);
+                        ECHONETLitePropertyName name = ECHONETLitePropertyName
+                                .getPropertyNameFromEpc(epc);
+                        DeviceProperty prop = new DeviceProperty(name.toString());
                         if (p.edt != null) {
                             prop.value = toPropertyValue(p.edt);
                         } else {
