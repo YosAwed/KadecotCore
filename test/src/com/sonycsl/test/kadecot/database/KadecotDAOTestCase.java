@@ -9,6 +9,7 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 import com.sonycsl.kadecot.database.KadecotDAO;
+import com.sonycsl.kadecot.wamp.KadecotProviderUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -118,29 +119,33 @@ public class KadecotDAOTestCase extends AndroidTestCase {
         assertEquals(1, id[0]);
         assertEquals(2, id[1]);
 
-        final JSONArray deviceList = mDao.getDeviceList();
+        final JSONArray deviceList = mDao.getDeviceList(KadecotProviderUtil.DEVICE_ID,
+                KadecotProviderUtil.DEVICE_PROTOCOL, KadecotProviderUtil.DEVICE_TYPE,
+                KadecotProviderUtil.DEVICE_DESCRIPTION, KadecotProviderUtil.DEVICE_STATUS,
+                KadecotProviderUtil.DEVICE_NICKNAME);
         assertEquals(2, deviceList.length());
         for (int i = 0; i < deviceList.length(); i++) {
             try {
                 assertEquals(id[i],
-                        deviceList.getJSONObject(i).getInt(KadecotDAO.DEVICE_ID));
+                        deviceList.getJSONObject(i).getInt(KadecotProviderUtil.DEVICE_ID));
                 assertEquals(
                         TEST_PROTOCOLS[i],
                         deviceList.getJSONObject(i).getString(
-                                KadecotDAO.DEVICE_PROTOCOL));
+                                KadecotProviderUtil.DEVICE_PROTOCOL));
                 assertEquals(
                         TEST_DEVICE_TYPES[i],
                         deviceList.getJSONObject(i).getString(
-                                KadecotDAO.DEVICE_TYPE));
+                                KadecotProviderUtil.DEVICE_TYPE));
                 assertEquals(
                         TEST_DESCRIPTIONS[i],
                         deviceList.getJSONObject(i).getString(
-                                KadecotDAO.DEVICE_DESCRIPTION));
-                assertTrue(deviceList.getJSONObject(i).getBoolean(KadecotDAO.DEVICE_STATUS));
+                                KadecotProviderUtil.DEVICE_DESCRIPTION));
+                assertTrue(deviceList.getJSONObject(i)
+                        .getBoolean(KadecotProviderUtil.DEVICE_STATUS));
                 assertEquals(
                         TEST_DESCRIPTIONS[i],
                         deviceList.getJSONObject(i).getString(
-                                KadecotDAO.DEVICE_NICKNAME));
+                                KadecotProviderUtil.DEVICE_NICKNAME));
             } catch (JSONException e) {
                 fail(e.toString());
             }
@@ -165,16 +170,19 @@ public class KadecotDAOTestCase extends AndroidTestCase {
         mDao.changeNickname(id[0], nickname[0]);
         mDao.changeNickname(id[1], nickname[1]);
 
-        final JSONArray deviceList = mDao.getDeviceList();
+        final JSONArray deviceList = mDao.getDeviceList(KadecotProviderUtil.DEVICE_ID,
+                KadecotProviderUtil.DEVICE_PROTOCOL, KadecotProviderUtil.DEVICE_TYPE,
+                KadecotProviderUtil.DEVICE_DESCRIPTION, KadecotProviderUtil.DEVICE_STATUS,
+                KadecotProviderUtil.DEVICE_NICKNAME);
         assertEquals(2, deviceList.length());
         for (int i = 0; i < deviceList.length(); i++) {
             try {
                 assertEquals(id[i],
-                        deviceList.getJSONObject(i).getInt(KadecotDAO.DEVICE_ID));
+                        deviceList.getJSONObject(i).getInt(KadecotProviderUtil.DEVICE_ID));
                 assertEquals(
                         nickname[i],
                         deviceList.getJSONObject(i).getString(
-                                KadecotDAO.DEVICE_NICKNAME));
+                                KadecotProviderUtil.DEVICE_NICKNAME));
             } catch (JSONException e) {
                 fail(e.toString());
             }

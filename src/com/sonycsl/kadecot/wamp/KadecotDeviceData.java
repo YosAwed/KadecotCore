@@ -5,8 +5,6 @@
 
 package com.sonycsl.kadecot.wamp;
 
-import com.sonycsl.kadecot.database.KadecotDAO;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,14 +29,14 @@ public class KadecotDeviceData {
     }
 
     public KadecotDeviceData(JSONObject device) throws JSONException {
-        deviceId = device.getLong(KadecotDAO.DEVICE_ID);
-        protocol = device.getString(KadecotDAO.DEVICE_PROTOCOL);
-        uuid = device.getString(KadecotDAO.DEVICE_UUID);
-        deviceType = device.getString(KadecotDAO.DEVICE_TYPE);
-        description = device.getString(KadecotDAO.DEVICE_DESCRIPTION);
-        status = device.getBoolean(KadecotDAO.DEVICE_STATUS);
-        if (device.has(KadecotDAO.DEVICE_NICKNAME)) {
-            nickname = device.getString(KadecotDAO.DEVICE_NICKNAME);
+        deviceId = device.getLong(KadecotProviderUtil.DEVICE_ID);
+        protocol = device.getString(KadecotProviderUtil.DEVICE_PROTOCOL);
+        uuid = device.getString(KadecotProviderUtil.DEVICE_UUID);
+        deviceType = device.getString(KadecotProviderUtil.DEVICE_TYPE);
+        description = device.getString(KadecotProviderUtil.DEVICE_DESCRIPTION);
+        status = device.getBoolean(KadecotProviderUtil.DEVICE_STATUS);
+        if (device.has(KadecotProviderUtil.DEVICE_NICKNAME)) {
+            nickname = device.getString(KadecotProviderUtil.DEVICE_NICKNAME);
         }
     }
 
@@ -79,8 +77,8 @@ public class KadecotDeviceData {
     }
 
     /**
-     * This methods create JSONObject to inform device data to KadecotDAO. So,
-     * JSONObject this method creates has no device id.
+     * This methods create JSONObject to inform device data to
+     * KadecotProviderUtil. So, JSONObject this method creates has no device id.
      * 
      * @param protocol
      * @param uuid
@@ -94,12 +92,12 @@ public class KadecotDeviceData {
             String deviceType, boolean status, String nickname) throws JSONException {
         JSONObject json = new JSONObject();
 
-        json.put(KadecotDAO.DEVICE_PROTOCOL, protocol);
-        json.put(KadecotDAO.DEVICE_UUID, uuid);
-        json.put(KadecotDAO.DEVICE_DESCRIPTION, description);
-        json.put(KadecotDAO.DEVICE_STATUS, status);
-        json.put(KadecotDAO.DEVICE_TYPE, deviceType);
-        json.put(KadecotDAO.DEVICE_NICKNAME, nickname);
+        json.put(KadecotProviderUtil.DEVICE_PROTOCOL, protocol);
+        json.put(KadecotProviderUtil.DEVICE_UUID, uuid);
+        json.put(KadecotProviderUtil.DEVICE_DESCRIPTION, description);
+        json.put(KadecotProviderUtil.DEVICE_STATUS, status);
+        json.put(KadecotProviderUtil.DEVICE_TYPE, deviceType);
+        json.put(KadecotProviderUtil.DEVICE_NICKNAME, nickname);
 
         return json;
     }

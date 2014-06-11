@@ -16,14 +16,6 @@ import org.json.JSONObject;
 
 public class KadecotDAO {
 
-    public static final String DEVICE_ID = "deviceId";
-    public static final String DEVICE_PROTOCOL = "protocol";
-    public static final String DEVICE_UUID = "uuid";
-    public static final String DEVICE_TYPE = "deviceType";
-    public static final String DEVICE_DESCRIPTION = "description";
-    public static final String DEVICE_STATUS = "status";
-    public static final String DEVICE_NICKNAME = "nickname";
-
     public static final String TOPIC_PROTOCOL = "protocol";
     public static final String TOPIC_NAME = "name";
     public static final String TOPIC_DESCRIPTION = "description";
@@ -152,7 +144,9 @@ public class KadecotDAO {
                 });
     }
 
-    public JSONArray getDeviceList() {
+    public JSONArray getDeviceList(String deviceIdKey, String deviceProtocolKey,
+            String deviceTypeKey, String deviceDescriptionKey, String deviceStatusKey,
+            String deviceNicknameKey) {
         final JSONArray deviceList = new JSONArray();
 
         Cursor c = mRdb.query(KadecotSQLiteOpenHelper.DEVICE_TABLE,
@@ -166,19 +160,19 @@ public class KadecotDAO {
         do {
             JSONObject json = new JSONObject();
             try {
-                json.put(DEVICE_ID,
+                json.put(deviceIdKey,
                         c.getLong(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_ID)));
-                json.put(DEVICE_PROTOCOL,
+                json.put(deviceProtocolKey,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_PROTOCOL)));
-                json.put(DEVICE_TYPE,
+                json.put(deviceTypeKey,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_TYPE)));
-                json.put(DEVICE_DESCRIPTION,
+                json.put(deviceDescriptionKey,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_DESCRIPTION)));
                 json.put(
-                        DEVICE_STATUS,
+                        deviceStatusKey,
                         c.getInt(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_STATUS)) == 1 ? true
                                 : false);
-                json.put(DEVICE_NICKNAME,
+                json.put(deviceNicknameKey,
                         c.getString(c.getColumnIndex(KadecotSQLiteOpenHelper.DEVICE_NICKNAME)));
             } catch (JSONException e) {
                 continue;
