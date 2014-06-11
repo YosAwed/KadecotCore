@@ -131,6 +131,7 @@ public class ECHONETLiteManager {
                         }
 
                         // }
+                        onReceiveInformerFrame(eoj, properties);
                         break;
                     case EchoFrame.ESV_INF:
                     case EchoFrame.ESV_INF_SNA:
