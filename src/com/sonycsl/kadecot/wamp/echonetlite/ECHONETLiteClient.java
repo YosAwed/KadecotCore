@@ -44,10 +44,6 @@ import java.util.Set;
 
 public class ECHONETLiteClient extends KadecotWampClient {
 
-    private final String TAG = ECHONETLiteClient.class.getSimpleName();
-
-    private final String LOCALE = "jp";
-
     private ECHONETLiteWampCallee mCallee;
 
     private ECHONETLiteWampSubscriber mSubscriber;

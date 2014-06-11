@@ -43,8 +43,6 @@ public class ServerNetwork {
 
     private ServerManager mServerManager;
 
-    private ServerSettings mServerSettings;
-
     private final ConnectivityManager mConnectivityManager;
 
     private final WifiManager mWifiManager;
@@ -227,12 +225,5 @@ public class ServerNetwork {
             mServerManager = ServerManager.getInstance(mContext);
         }
         return mServerManager;
-    }
-
-    private ServerSettings getSettings() {
-        if (mServerSettings == null) {
-            mServerSettings = ServerSettings.getInstance(mContext);
-        }
-        return mServerSettings;
     }
 }

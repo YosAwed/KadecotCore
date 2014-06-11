@@ -13,8 +13,6 @@ import java.util.Set;
 
 public class KadecotAppClient extends WampClient {
 
-    private static final String TAG = KadecotAppClient.class.getSimpleName();
-
     private MessageListener mListener;
 
     public interface MessageListener {
