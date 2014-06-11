@@ -8,8 +8,8 @@ import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper;
 import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampCallListener;
 import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampSubscribeListener;
 import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampUnsubscribeListener;
-import com.sonycsl.kadecot.wamp.KadecotAppProxy;
-import com.sonycsl.kadecot.wamp.KadecotAppProxy.WebSocketNotConnectException;
+import com.sonycsl.kadecot.wamp.KadecotWebsocketClientProxy;
+import com.sonycsl.kadecot.wamp.KadecotWebsocketClientProxy.WebSocketNotConnectException;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.util.JsonEscapeUtil;
@@ -26,12 +26,12 @@ public class LocalInterface {
 
     private final KadecotCoreActivity mKadecot;
 
-    KadecotAppProxy mProxy;
+    KadecotWebsocketClientProxy mProxy;
     KadecotAppClientWrapper mClient;
 
     public LocalInterface(KadecotCoreActivity kadecot) {
         mKadecot = kadecot;
-        mProxy = new KadecotAppProxy();
+        mProxy = new KadecotWebsocketClientProxy();
         mClient = new KadecotAppClientWrapper();
 
         mClient.connect(mProxy);

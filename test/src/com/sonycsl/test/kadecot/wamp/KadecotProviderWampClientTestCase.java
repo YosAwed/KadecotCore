@@ -9,6 +9,7 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 import com.sonycsl.kadecot.database.KadecotDAO;
+import com.sonycsl.kadecot.wamp.KadecotProviderUtil;
 import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
@@ -37,11 +38,11 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
     private static JSONObject createTestDevice() {
         try {
             return new JSONObject()
-                    .put(KadecotDAO.DEVICE_PROTOCOL, "testprotocol")
-                    .put(KadecotDAO.DEVICE_UUID, "testuuid")
-                    .put(KadecotDAO.DEVICE_TYPE, "testdeviceType")
-                    .put(KadecotDAO.DEVICE_DESCRIPTION, "testdescription")
-                    .put(KadecotDAO.DEVICE_STATUS, true);
+                    .put(KadecotProviderUtil.DEVICE_PROTOCOL, "testprotocol")
+                    .put(KadecotProviderUtil.DEVICE_UUID, "testuuid")
+                    .put(KadecotProviderUtil.DEVICE_TYPE, "testdeviceType")
+                    .put(KadecotProviderUtil.DEVICE_DESCRIPTION, "testdescription")
+                    .put(KadecotProviderUtil.DEVICE_STATUS, true);
         } catch (JSONException e) {
             return null;
         }
@@ -159,7 +160,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         dlistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
 
         mDevice.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONObject(), KadecotProviderUtil.Procedure.PUT_DEVICE.getUri(),
                 new JSONArray(),
                 testDevice));
 
@@ -194,7 +195,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         dlistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
 
         mDevice.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONObject(), KadecotProviderUtil.Procedure.PUT_DEVICE.getUri(),
                 new JSONArray(),
                 testDevice));
 
@@ -224,7 +225,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         dlistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
         try {
             mDevice.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                    new JSONObject(), KadecotProviderWampClient.Procedure.REMOVE_DEVICE.getUri(),
+                    new JSONObject(), KadecotProviderUtil.Procedure.REMOVE_DEVICE.getUri(),
                     new JSONArray(), new JSONObject().put("deviceId", deviceId.getLong("deviceId"))));
         } catch (JSONException e) {
             fail();
@@ -258,7 +259,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         dlistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
 
         mDevice.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONObject(), KadecotProviderUtil.Procedure.PUT_DEVICE.getUri(),
                 new JSONArray(),
                 testDevice));
 
@@ -287,7 +288,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         plistener.setTargetMessageType(WampMessageType.INVOCATION, new CountDownLatch(1));
         alistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
         mApp.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.GET_DEVICE_LIST.getUri()));
+                new JSONObject(), KadecotProviderUtil.Procedure.GET_DEVICE_LIST.getUri()));
 
         try {
             assertTrue(plistener.await(1, TimeUnit.SECONDS));
@@ -314,15 +315,15 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         }
         try {
             assertEquals(deviceId.getLong("deviceId"),
-                    device.getLong(KadecotDAO.DEVICE_ID));
-            assertEquals(testDevice.getString(KadecotDAO.DEVICE_PROTOCOL),
-                    device.getString(KadecotDAO.DEVICE_PROTOCOL));
-            assertEquals(testDevice.getString(KadecotDAO.DEVICE_TYPE),
-                    device.getString(KadecotDAO.DEVICE_TYPE));
-            assertEquals(testDevice.getString(KadecotDAO.DEVICE_DESCRIPTION),
-                    device.getString(KadecotDAO.DEVICE_DESCRIPTION));
-            assertEquals(testDevice.getBoolean(KadecotDAO.DEVICE_STATUS),
-                    device.getBoolean(KadecotDAO.DEVICE_STATUS));
+                    device.getLong(KadecotProviderUtil.DEVICE_ID));
+            assertEquals(testDevice.getString(KadecotProviderUtil.DEVICE_PROTOCOL),
+                    device.getString(KadecotProviderUtil.DEVICE_PROTOCOL));
+            assertEquals(testDevice.getString(KadecotProviderUtil.DEVICE_TYPE),
+                    device.getString(KadecotProviderUtil.DEVICE_TYPE));
+            assertEquals(testDevice.getString(KadecotProviderUtil.DEVICE_DESCRIPTION),
+                    device.getString(KadecotProviderUtil.DEVICE_DESCRIPTION));
+            assertEquals(testDevice.getBoolean(KadecotProviderUtil.DEVICE_STATUS),
+                    device.getBoolean(KadecotProviderUtil.DEVICE_STATUS));
         } catch (JSONException e) {
             fail();
         }
@@ -339,7 +340,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
         dlistener.setTargetMessageType(WampMessageType.RESULT, new CountDownLatch(1));
 
         mDevice.transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONObject(), KadecotProviderUtil.Procedure.PUT_DEVICE.getUri(),
                 new JSONArray(),
                 testDevice));
 
@@ -371,10 +372,11 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mApp.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.CHANGE_NICKNAME.getUri(),
+                    KadecotProviderUtil.Procedure.CHANGE_NICKNAME.getUri(),
                     new JSONArray(),
-                    new JSONObject().put(KadecotDAO.DEVICE_ID, deviceId.getLong("deviceId")).put(
-                            KadecotDAO.DEVICE_NICKNAME, "testnickname")));
+                    new JSONObject().put(KadecotProviderUtil.DEVICE_ID,
+                            deviceId.getLong("deviceId")).put(
+                            KadecotProviderUtil.DEVICE_NICKNAME, "testnickname")));
         } catch (JSONException e) {
             fail();
         }
@@ -407,7 +409,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_TOPIC.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_TOPIC.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.TOPIC_NAME,
                             "com.sonycsl.kadecot.testprotocol.topic.test")
@@ -444,7 +446,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_TOPIC.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_TOPIC.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.TOPIC_NAME,
                             "com.sonycsl.kadecot.testprotocol.topic.test")
@@ -477,7 +479,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.REMOVE_TOPIC.getUri(),
+                    KadecotProviderUtil.Procedure.REMOVE_TOPIC.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.TOPIC_NAME,
                             "com.sonycsl.kadecot.testprotocol.topic.test")));
@@ -515,7 +517,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_TOPIC.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_TOPIC.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.TOPIC_NAME,
                             "com.sonycsl.kadecot.testprotocol.topic.test")
@@ -548,7 +550,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mApp.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.GET_TOPIC_LIST.getUri(),
+                    KadecotProviderUtil.Procedure.GET_TOPIC_LIST.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.TOPIC_PROTOCOL, "testprotocol")));
         } catch (JSONException e) {
@@ -593,7 +595,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_PROCEDURE.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_PROCEDURE.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.PROCEDURE_NAME,
                             "com.sonycsl.kadecot.testprotocol.procedure.test")
@@ -630,7 +632,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_PROCEDURE.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_PROCEDURE.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.PROCEDURE_NAME,
                             "com.sonycsl.kadecot.testprotocol.procedure.test")
@@ -663,7 +665,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.REMOVE_PROCEDURE.getUri(),
+                    KadecotProviderUtil.Procedure.REMOVE_PROCEDURE.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.PROCEDURE_NAME,
                             "com.sonycsl.kadecot.testprotocol.procedure.test")));
@@ -701,7 +703,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mDevice.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.PUT_PROCEDURE.getUri(),
+                    KadecotProviderUtil.Procedure.PUT_PROCEDURE.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.PROCEDURE_NAME,
                             "com.sonycsl.kadecot.testprotocol.procedure.test")
@@ -734,7 +736,7 @@ public class KadecotProviderWampClientTestCase extends AndroidTestCase {
             mApp.transmit(WampMessageFactory.createCall(
                     WampRequestIdGenerator.getId(),
                     new JSONObject(),
-                    KadecotProviderWampClient.Procedure.GET_PROCEDURE_LIST.getUri(),
+                    KadecotProviderUtil.Procedure.GET_PROCEDURE_LIST.getUri(),
                     new JSONArray(),
                     new JSONObject().put(KadecotDAO.PROCEDURE_PROTOCOL, "testprotocol")));
         } catch (JSONException e) {
