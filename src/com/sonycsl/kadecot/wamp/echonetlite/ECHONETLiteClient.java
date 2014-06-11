@@ -186,11 +186,10 @@ public class ECHONETLiteClient extends KadecotWampClient {
     }
 
     protected void publishOnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
-
         try {
             for (DeviceProperty dp : list) {
                 JSONObject options = new JSONObject();
-                options.put("nickname", data.getNickname());
+                options.put("deviceId", data.getDeviceId());
                 /**
                  * exmaple : com.sonycsl.kadecot.echonetlite.aircon.power. TODO
                  * : now com.sonycsl.kadecot.echonetlite.80.power
