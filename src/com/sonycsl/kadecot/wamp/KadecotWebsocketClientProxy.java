@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class KadecotWebsocketClientProxy extends WampPeer {
 
@@ -40,14 +41,7 @@ public class KadecotWebsocketClientProxy extends WampPeer {
     protected void onConnected(WampPeer peer) {
     }
 
-    public static class WebSocketNotConnectException extends Exception {
-
-        public WebSocketNotConnectException(String message) {
-            super(message);
-        }
-    }
-
-    public void open(String ipaddress, String port) throws WebSocketNotConnectException {
+    public void open(String ipaddress, String port) throws InterruptedException, TimeoutException {
         if (mWsClient != null && mWsClient.getReadyState() == READYSTATE.OPEN) {
             Log.i(TAG, "WebSocket is already opened");
             return;
@@ -93,13 +87,10 @@ public class KadecotWebsocketClientProxy extends WampPeer {
         };
         mWsClient.connect();
 
-        try {
-            if (!latch.await(1, TimeUnit.SECONDS)) {
-                throw new WebSocketNotConnectException("WebSocket connect timeout");
-            }
-        } catch (InterruptedException e) {
-            throw new WebSocketNotConnectException("WebSocket connect timeout");
+        if (!latch.await(1, TimeUnit.SECONDS)) {
+            throw new TimeoutException("WebSocket connect timeout");
         }
+
     }
 
     public void close() {

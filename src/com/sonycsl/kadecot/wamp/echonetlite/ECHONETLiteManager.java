@@ -15,7 +15,6 @@ import com.sonycsl.kadecot.device.AccessException;
 import com.sonycsl.kadecot.device.DeviceProperty;
 import com.sonycsl.kadecot.device.echo.MyController;
 import com.sonycsl.kadecot.device.echo.MyNodeProfile;
-import com.sonycsl.kadecot.log.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -200,9 +199,10 @@ public class ECHONETLiteManager {
                             }
                             ECHONETLiteDeviceData data = getDeviceData(eoj);
                             if (data != null) {
-                                long delay =
-                                        (Logger.DEFAULT_INTERVAL_MILLS)
-                                                - (System.currentTimeMillis() % (Logger.DEFAULT_INTERVAL_MILLS));
+                                // long delay =
+                                // (Logger.DEFAULT_INTERVAL_MILLS)
+                                // - (System.currentTimeMillis() %
+                                // (Logger.DEFAULT_INTERVAL_MILLS));
                                 // TODO: logger
                                 // Logger.getInstance(mContext).watch(data.nickname,
                                 // watchingPropertySet,
@@ -231,8 +231,9 @@ public class ECHONETLiteManager {
 
             for (String protocolName : mGenerators.keySet()) {
                 ECHONETLiteDeviceGenerator gen = mGenerators.get(protocolName);
-                List<ECHONETLiteDeviceData> agentDataList = new ArrayList(mClient.getDeviceMap()
-                        .values());
+                List<ECHONETLiteDeviceData> agentDataList = new ArrayList<ECHONETLiteDeviceData>(
+                        mClient.getDeviceMap()
+                                .values());
 
                 gen.onInitGenerator(agentDataList);
 
