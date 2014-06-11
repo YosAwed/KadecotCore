@@ -9,9 +9,9 @@ import android.os.Build;
 import android.util.Log;
 
 import com.sonycsl.kadecot.wamp.KadecotWampClient;
-import com.sonycsl.kadecot.wamp.KadecotWampClientLocator;
 import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
+import com.sonycsl.kadecot.wamp.KadecotWampPeerLocator;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.kadecot.wamp.KadecotWebSocketClient;
 import com.sonycsl.wamp.WampError;
@@ -72,10 +72,10 @@ public class KadecotWebSocketServer {
             java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
         }
 
-        mRouter = new KadecotWampRouter();
+        mRouter = KadecotWampPeerLocator.getRouter();
 
-        mSetupLatch = new CountDownLatch(KadecotWampClientLocator.getClients().length);
-        for (KadecotWampClient client : KadecotWampClientLocator.getClients()) {
+        mSetupLatch = new CountDownLatch(KadecotWampPeerLocator.getClients().length);
+        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
             client.connect(mRouter);
             client.setCallback(new KadecotWampClientSetupCallback(
                     client.getSubscribableTopics(), client.getRegisterableProcedures(),
@@ -112,7 +112,7 @@ public class KadecotWebSocketServer {
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno), draftList);
         mWebSocketServer.start();
 
-        for (KadecotWampClient client : KadecotWampClientLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
             client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
                     new JSONObject()));
         }
@@ -148,7 +148,7 @@ public class KadecotWebSocketServer {
             e.printStackTrace();
         }
 
-        for (KadecotWampClient client : KadecotWampClientLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
             client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
                     WampError.CLOSE_REALM));
         }

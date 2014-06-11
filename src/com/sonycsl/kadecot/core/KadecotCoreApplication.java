@@ -9,7 +9,8 @@ import android.app.Application;
 
 import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.kadecot.wamp.KadecotTopicTimer;
-import com.sonycsl.kadecot.wamp.KadecotWampClientLocator;
+import com.sonycsl.kadecot.wamp.KadecotWampPeerLocator;
+import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.kadecot.wamp.echonetlite.ECHONETLiteClient;
 
@@ -25,12 +26,13 @@ public class KadecotCoreApplication extends Application {
         super.onCreate();
         mModifiableCoreObject = new AppModifiableCoreObject(this);
 
-        KadecotWampClientLocator locator = new KadecotWampClientLocator();
+        KadecotWampPeerLocator locator = new KadecotWampPeerLocator();
+        locator.setRouter(new KadecotWampRouter());
         locator.loadClient(new KadecotProviderWampClient(this));
         locator.loadClient(new ECHONETLiteClient(this));
         locator.loadClient(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
                 TimeUnit.SECONDS));
-        KadecotWampClientLocator.load(locator);
+        KadecotWampPeerLocator.load(locator);
     }
 
     public AppModifiableCoreObject getModifiableObject() {
