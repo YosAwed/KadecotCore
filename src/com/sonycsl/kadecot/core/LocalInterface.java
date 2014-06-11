@@ -9,13 +9,14 @@ import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampCallListener;
 import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampSubscribeListener;
 import com.sonycsl.kadecot.wamp.KadecotAppClientWrapper.WampUnsubscribeListener;
 import com.sonycsl.kadecot.wamp.KadecotAppProxy;
-import com.sonycsl.kadecot.wamp.KadecotAppProxy.WebSocketNotConnectException;
 import com.sonycsl.kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.util.JsonEscapeUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.concurrent.TimeoutException;
 
 public class LocalInterface {
 
@@ -37,7 +38,7 @@ public class LocalInterface {
         mClient.connect(mProxy);
     }
 
-    public void open() throws WebSocketNotConnectException {
+    public void open() throws InterruptedException, TimeoutException {
         mProxy.open(LOCALHOST, WEBSOCKET_PORT);
         mClient.hello(KadecotWampRouter.REALM);
     }
@@ -54,13 +55,18 @@ public class LocalInterface {
                 + paramsKw + ", resultListener=" + resultListener + ", errorListener="
                 + errorListener);
 
-        try {
-            if (!mProxy.isOpen()) {
+        if (!mProxy.isOpen()) {
+            try {
                 open();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
             }
-        } catch (WebSocketNotConnectException e1) {
-            Log.e(TAG, "CALL, Can not open WebSocket");
-            return;
         }
 
         try {
@@ -91,13 +97,18 @@ public class LocalInterface {
     @JavascriptInterface
     public void subscribe(String topic, String options, final String subscribedListener,
             final String subscribeErrorListener, final String eventListener) {
-        try {
-            if (!mProxy.isOpen()) {
+        if (!mProxy.isOpen()) {
+            try {
                 open();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
             }
-        } catch (WebSocketNotConnectException e1) {
-            Log.e(TAG, "CALL, Can not open WebSocket");
-            return;
         }
 
         try {
@@ -131,13 +142,19 @@ public class LocalInterface {
     @JavascriptInterface
     public void subscribe(int subscriptionId, final String unsubscribedListener,
             final String unsubscribeErrorListener) {
-        try {
-            if (!mProxy.isOpen()) {
+
+        if (!mProxy.isOpen()) {
+            try {
                 open();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Log.e(TAG, "CALL, Can not open WebSocket");
+                return;
             }
-        } catch (WebSocketNotConnectException e1) {
-            Log.e(TAG, "CALL, Can not open WebSocket");
-            return;
         }
 
         mClient.unsubscribe(subscriptionId, new WampUnsubscribeListener() {
