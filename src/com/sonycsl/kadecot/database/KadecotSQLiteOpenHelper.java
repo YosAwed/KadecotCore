@@ -28,7 +28,7 @@ public class KadecotSQLiteOpenHelper extends SQLiteOpenHelper {
     public static final String PROCEDURE_NAME = "procedure_name";
     public static final String PROCEDURE_DESCRIPTION = "procedure_description";
 
-    private static final String DB_NAME = "kadecot.db";
+    private static final String DB_NAME = "kadecotcore.db";
     private static final int DB_VERSION = 1;
 
     public KadecotSQLiteOpenHelper(Context context) {
