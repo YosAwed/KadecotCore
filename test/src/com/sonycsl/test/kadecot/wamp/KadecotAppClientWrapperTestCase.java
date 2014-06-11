@@ -279,8 +279,8 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
 
             @Override
             public void onSubscribed(int subscriptionId) {
-                mSubscribedLatch.countDown();
                 holder.mSubscriptionId = subscriptionId;
+                mSubscribedLatch.countDown();
             }
 
             @Override
