@@ -9,6 +9,7 @@ import android.content.Context;
 
 import com.sonycsl.kadecot.database.KadecotDAO;
 import com.sonycsl.kadecot.database.KadecotDAO.OnDeviceTableUpdatedListener;
+import com.sonycsl.kadecot.wamp.KadecotProviderUtil.Procedure;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
@@ -29,71 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class KadecotProviderWampClient extends KadecotWampClient {
-
-    private static final String PREFIX = "com.sonycsl.kadecot.provider";
-
-    public static enum Topic {
-        DEVICE("device");
-
-        private final String mUri;
-
-        Topic(String name) {
-            mUri = PREFIX + ".topic." + name;
-        }
-
-        public String getUri() {
-            return mUri;
-        }
-    }
-
-    public static enum Procedure {
-        PUT_DEVICE("putDevice"),
-        REMOVE_DEVICE("removeDevice"),
-        GET_DEVICE_LIST("getDeviceList"),
-        CHANGE_NICKNAME("changeNickname"),
-        PUT_TOPIC("putTopic"),
-        REMOVE_TOPIC("removeTopic"),
-        GET_TOPIC_LIST("getTopicList"),
-        PUT_PROCEDURE("putProcedure"),
-        REMOVE_PROCEDURE("removeProcedure"),
-        GET_PROCEDURE_LIST("getProcedureList");
-
-        private final String mMethod;
-        private final String mUri;
-
-        Procedure(String method) {
-            mMethod = method;
-            mUri = PREFIX + ".procedure." + method;
-        }
-
-        public String getUri() {
-            return mUri;
-        }
-
-        public String getMethod() {
-            return mMethod;
-        }
-
-        public static Procedure getEnum(String procedure) {
-            for (Procedure p : Procedure.values()) {
-                if (p.getUri().equals(procedure)) {
-                    return p;
-                }
-            }
-            return null;
-        }
-    }
-
-    public static JSONObject createPutDeviceArgsKw(String protocol, String uuid, String deviceType,
-            String description, boolean status) throws JSONException {
-        JSONObject info = new JSONObject();
-        info.put(KadecotDAO.DEVICE_PROTOCOL, protocol);
-        info.put(KadecotDAO.DEVICE_UUID, uuid);
-        info.put(KadecotDAO.DEVICE_TYPE, deviceType);
-        info.put(KadecotDAO.DEVICE_DESCRIPTION, description);
-        info.put(KadecotDAO.DEVICE_STATUS, status);
-        return info;
-    }
 
     private final KadecotDAO mDao;
 
@@ -154,7 +90,7 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
 
     private void publishDevice(JSONObject deviceInfo) {
         transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
-                Topic.DEVICE.getUri(), new JSONArray(),
+                KadecotProviderUtil.Topic.DEVICE.getUri(), new JSONArray(),
                 deviceInfo));
     }
 
@@ -216,11 +152,11 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
             }
             long deviceId;
             try {
-                String protocol = json.getString(KadecotDAO.DEVICE_PROTOCOL);
-                String uuid = json.getString(KadecotDAO.DEVICE_UUID);
-                String deviceType = json.getString(KadecotDAO.DEVICE_TYPE);
-                String description = json.getString(KadecotDAO.DEVICE_DESCRIPTION);
-                boolean status = json.getBoolean(KadecotDAO.DEVICE_STATUS);
+                String protocol = json.getString(KadecotProviderUtil.DEVICE_PROTOCOL);
+                String uuid = json.getString(KadecotProviderUtil.DEVICE_UUID);
+                String deviceType = json.getString(KadecotProviderUtil.DEVICE_TYPE);
+                String description = json.getString(KadecotProviderUtil.DEVICE_DESCRIPTION);
+                boolean status = json.getBoolean(KadecotProviderUtil.DEVICE_STATUS);
                 deviceId = mDao.putDevice(protocol, uuid, deviceType, description, status);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -229,7 +165,7 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
 
             try {
                 return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject(),
-                        new JSONArray(), json.put(KadecotDAO.DEVICE_ID, deviceId));
+                        new JSONArray(), json.put(KadecotProviderUtil.DEVICE_ID, deviceId));
             } catch (JSONException e) {
                 e.printStackTrace();
                 return createError(msg, WampError.INVALID_ARGUMENT);
@@ -243,7 +179,7 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
             }
 
             try {
-                mDao.removeDevice(msg.getArgumentsKw().getLong(KadecotDAO.DEVICE_ID));
+                mDao.removeDevice(msg.getArgumentsKw().getLong(KadecotProviderUtil.DEVICE_ID));
             } catch (JSONException e) {
                 e.printStackTrace();
                 return createError(msg, WampError.INVALID_ARGUMENT);
@@ -257,7 +193,13 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
             try {
                 return WampMessageFactory.createYield(msg.getRequestId(), new JSONObject(),
                         new JSONArray(),
-                        new JSONObject().put("deviceList", mDao.getDeviceList()));
+                        new JSONObject().put("deviceList", mDao.getDeviceList(
+                                KadecotProviderUtil.DEVICE_ID,
+                                KadecotProviderUtil.DEVICE_PROTOCOL,
+                                KadecotProviderUtil.DEVICE_TYPE,
+                                KadecotProviderUtil.DEVICE_DESCRIPTION,
+                                KadecotProviderUtil.DEVICE_STATUS,
+                                KadecotProviderUtil.DEVICE_NICKNAME)));
             } catch (JSONException e) {
                 e.printStackTrace();
                 return createError(msg, WampError.INVALID_ARGUMENT);
@@ -272,8 +214,8 @@ public final class KadecotProviderWampClient extends KadecotWampClient {
 
             try {
                 JSONObject json = msg.getArgumentsKw();
-                long deviceId = json.getLong(KadecotDAO.DEVICE_ID);
-                String nickname = json.getString(KadecotDAO.DEVICE_NICKNAME);
+                long deviceId = json.getLong(KadecotProviderUtil.DEVICE_ID);
+                String nickname = json.getString(KadecotProviderUtil.DEVICE_NICKNAME);
                 mDao.changeNickname(deviceId, nickname);
             } catch (JSONException e) {
                 e.printStackTrace();

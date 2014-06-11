@@ -21,9 +21,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class KadecotAppProxy extends WampPeer {
+public class KadecotWebsocketClientProxy extends WampPeer {
 
-    private static final String TAG = KadecotAppProxy.class.getSimpleName();
+    private static final String TAG = KadecotWebsocketClientProxy.class.getSimpleName();
 
     private static final String PROTOCOL = "ws://";
 

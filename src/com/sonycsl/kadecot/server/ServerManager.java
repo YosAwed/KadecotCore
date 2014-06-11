@@ -6,6 +6,8 @@
 package com.sonycsl.kadecot.server;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 import com.sonycsl.kadecot.call.Notification;
 import com.sonycsl.kadecot.core.Dbg;
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 public class ServerManager {
+
+    private static final String TAG = ServerManager.class.getSimpleName();
 
     private static ServerManager sInstance = null;
 
@@ -144,6 +148,10 @@ public class ServerManager {
 
         if (getSettings().isEnabledWebSocketServer() && !isStartedWebSocketServer()) {
             startWebSocketServer();
+
+            Intent intent = new Intent("com.sonycsl.kadecot.plugin");
+            mContext.sendBroadcast(intent);
+            Log.d(TAG, "send broadcast" + intent);
         } else if (!getSettings().isEnabledWebSocketServer()) {
             stopWebSocketServer();
         }

@@ -10,12 +10,11 @@ import android.content.Context;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
 import com.sonycsl.echo.node.EchoNode;
-import com.sonycsl.kadecot.database.KadecotDAO;
 import com.sonycsl.kadecot.device.AccessException;
 import com.sonycsl.kadecot.device.DeviceProperty;
 import com.sonycsl.kadecot.device.echo.EchoDeviceDatabase;
 import com.sonycsl.kadecot.wamp.KadecotProperty;
-import com.sonycsl.kadecot.wamp.KadecotProviderWampClient;
+import com.sonycsl.kadecot.wamp.KadecotProviderUtil;
 import com.sonycsl.kadecot.wamp.KadecotWampClient;
 import com.sonycsl.kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.wamp.WampError;
@@ -176,12 +175,12 @@ public class ECHONETLiteClient extends KadecotWampClient {
     protected void putDeviceInfo(JSONObject data) {
         // Log.i(TAG, "put deviceinfo : " + data.toString());
         try {
-            mTemporaryDeviceMap.put(data.getString(KadecotDAO.DEVICE_UUID), data);
+            mTemporaryDeviceMap.put(data.getString(KadecotProviderUtil.DEVICE_UUID), data);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         transmit(WampMessageFactory.createCall(WampRequestIdGenerator.getId(),
-                new JSONObject(), KadecotProviderWampClient.Procedure.PUT_DEVICE.getUri(),
+                new JSONObject(), KadecotProviderUtil.Procedure.PUT_DEVICE.getUri(),
                 new JSONArray(), data));
     }
 
@@ -248,7 +247,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
         private JSONObject resolveInvocationMsg(ECHONETLiteProcedure procedure,
                 WampInvocationMessage msg) throws JSONException, AccessException,
                 IllegalArgumentException, UnsupportedOperationException {
-            long deviceId = msg.getDetails().getLong(KadecotDAO.DEVICE_ID);
+            long deviceId = msg.getDetails().getLong(KadecotProviderUtil.DEVICE_ID);
             JSONObject params = msg.getArgumentsKw();
             List<DeviceProperty> response = new ArrayList<DeviceProperty>();
             ECHONETLiteDeviceData data = mDeviceMap.get(deviceId);
