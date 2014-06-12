@@ -1,7 +1,7 @@
 
 package com.sonycsl.test.util;
 
-import com.sonycsl.kadecot.wamp.KadecotWampClientSetupCallback;
+import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 
