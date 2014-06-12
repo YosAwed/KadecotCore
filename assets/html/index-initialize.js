@@ -319,6 +319,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
               kHAPI.enableServerNetwork({
                 enable: true
               });
+
               if (!isFirstConfirm) {
                 $("#register_android_button").val("Withdraw from " + SSID)
                         .button("refresh");
@@ -330,6 +331,7 @@ var onClickRegisterButton = function(isFirstConfirm) {
     kHAPI.enableServerNetwork({
       enable: false
     });
+
     if (!isFirstConfirm) {
       $("#register_android_button").val("Join current network").button(
               "refresh");
@@ -523,7 +525,7 @@ var onDeviceDetailPageOpen = function(nickname, device) {
 
   // Power logger
   var powerLogerOptionEnabled = false;
-  if (device.protocol !== 'ECHONET Lite' || (device.deviceType !== '0x0130' // Aircon
+  if (device.protocol !== 'echonetlite' || (device.deviceType !== '0x0130' // Aircon
           && device.deviceType !== '0x03b7' // Refridge
   && device.deviceType !== '0x03c5' // Washer
   )) {
@@ -531,7 +533,7 @@ var onDeviceDetailPageOpen = function(nickname, device) {
     $("#device_power_logger").html('<option value="none">None</option>');
     $("#device_power_logger").selectmenu('refresh', true);
   } else {
-    var powerDists = kHAPI.dev.findAssignableDevices('ECHONET Lite', '0x0287');
+    var powerDists = kHAPI.dev.findAssignableDevices('echonetlite', '0x0287');
     var powerDevOpts = '<option value="none">None</option>';
     for (var pdi = 0; pdi < powerDists.length; ++pdi) {
       var powerDist = powerDists[pdi];
@@ -572,7 +574,7 @@ var onDeviceDetailPageOpen = function(nickname, device) {
     onClickRemoveDevice(nickname);
   });
   $("#property_table_body").html("");
-  if (device.protocol === 'ECHONET Lite') {
+  if (device.protocol === 'echonetlite') {
     var jsfnam = parseInt(device.deviceType).toString(16).toUpperCase();
     while (jsfnam.length < 4)
       jsfnam = '0' + jsfnam;
@@ -876,10 +878,10 @@ var onAppSettingPageOpen = function(index) {
               && rv.protocol.toLowerCase() === dev.protocol.toLowerCase()
               && (rv.active === true || rv.status === 2)) {
         output += template_option.format({
-          value: rv.nickname,
+          value: rv.deviceId,
           text: escapeHTML(rv.nickname)
         });
-        if (rv.nickname === dev.assignedDevName) {
+        if (rv.nickname === dev.assignedDevId) {
           selected_value = rv.nickname;
         }
       }
@@ -902,7 +904,7 @@ var onAppSettingPageOpen = function(index) {
     var changed_generator = function(manifest_index, index) {
       return function(event, ui) {
         // can overwrite?
-        manifests[manifest_index].devices[index].assignedDevName = $(this)
+        manifests[manifest_index].devices[index].assignedDevId = $(this)
                 .val();
         kHAPI.addManifest(manifests[manifest_index]);
       };
@@ -1023,7 +1025,7 @@ function refreshManifests(manifs) {
 
 // utility
 var isECHONETLite = function(device) {
-  return device.protocol === "ECHONET Lite";
+  return device.protocol === "echonetlite";
 };
 var isControler = function(device) {
   return isECHONETLite(device) && parseInt(device.deviceType) == 0x5ff;
@@ -1033,7 +1035,7 @@ var getImageUrl = function(device) {
   var imgurl = 'index_res/icons/' + device.deviceType + '.png';
   var bStatusRequested = false;
 
-  if (device.protocol === 'ECHONET Lite') {
+  if (device.protocol === 'echonetlite') {
     if (device.deviceType === '0x0011' || device.deviceType === '0x0012'
             || device.deviceType === '0x0262' || device.deviceType === '0x0290'
             || device.deviceType === "0x0260" || device.deviceType === "0x026b") {
@@ -1188,7 +1190,7 @@ var update_map = function(nickname) {
     return ret;
   };
 
-  if (d.protocol === 'ECHONET Lite') {
+  if (d.protocol === 'echonetlite') {
     var dtNum = parseInt(d.deviceType);
     // PowerDistributionBoardMetering
     if (dtNum == 0x0287) {
@@ -1248,7 +1250,7 @@ var onDeviceIconClick = function(nickname) {
 
   var bTogglePower = false;
   var newVal;
-  if (d.protocol === 'ECHONET Lite') {
+  if (d.protocol === 'echonetlite') {
     // Curtain or ElectricallyOperatedShade
     if (d.deviceType === '0x0262' || d.deviceType === "0x0260") {
       // Curtain open/close
@@ -1351,7 +1353,7 @@ var myset = function(args, callback) {
   });
 };
 
-var myexec = function(nickname, params, paramsKw, callback) {
+var myinvoke = function(method, nickname, params, paramsKw, callback) {
   var dev = kHAPI.findDeviceByNickname(nickname);
   if (dev === undefined || dev === null || !(dev.active || dev.status === 2)) { return; }
   if (!(nickname in access_count)) {
@@ -1361,7 +1363,7 @@ var myexec = function(nickname, params, paramsKw, callback) {
   }
   access_count[nickname]++;
 
-  kHAPI.exec(nickname, params, paramsKw, function(ret, success) {
+  kHAPI.invoke(method, nickname, params, paramsKw, function(ret, success) {
     if (callback !== undefined) {
       callback(ret, success);
     }

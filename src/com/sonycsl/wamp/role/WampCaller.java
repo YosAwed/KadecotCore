@@ -7,6 +7,7 @@ package com.sonycsl.wamp.role;
 
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
+import com.sonycsl.wamp.message.WampMessageType;
 
 public class WampCaller extends WampRole {
 
@@ -23,6 +24,15 @@ public class WampCaller extends WampRole {
     @Override
     public final boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
             OnReplyListener listener) {
-        return msg.isResultMessage();
+        if (msg.isResultMessage()) {
+            return true;
+        }
+
+        if (msg.isErrorMessage()) {
+            if (msg.asErrorMessage().getRequestType() == WampMessageType.CALL) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -129,10 +129,10 @@ abstract public class WampSubscriber extends WampRole {
             return true;
         }
 
-        event(topicMap.get(subId), msg);
+        onEvent(topicMap.get(subId), msg);
 
         return true;
     }
 
-    abstract protected void event(String topic, WampMessage msg);
+    abstract protected void onEvent(String topic, WampMessage msg);
 }

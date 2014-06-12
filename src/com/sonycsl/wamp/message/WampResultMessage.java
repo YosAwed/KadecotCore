@@ -13,7 +13,11 @@ public interface WampResultMessage {
 
     public JSONObject getDetails();
 
+    public boolean hasArguments();
+
     public JSONArray getArguments();
+
+    public boolean hasArgumentsKw();
 
     public JSONObject getArgumentKw();
 }

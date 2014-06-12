@@ -11,20 +11,18 @@ kHAPI.net = {
   // Internal object to achieve invoke-oninvoke match
   ,
   callServerFunc_invokeMatch: {},
-  id: -1
+  id: 0
   // Home panel -> Server
   ,
   callServerFunc: function(method, argObject, callbackfunc) {
-    // console.log('callServerFunc :
-    // '+JSON.stringify([arguments[0],arguments[1]]));
+    // change to JSON String.
+    if (argObject === undefined) argObject = {};
+    // arg = JSON.stringify(argObject);
+
     if (!(method in this.ServerCall)) {
       console.log('Unsupported server api : ' + '.' + method);
       return;
     }
-
-    // change to JSON String.
-    if (argObject === undefined) argObject = {};
-    // arg = JSON.stringify(argObject);
 
     var r = this.ServerCall[method].call(this.ServerCall, argObject,
             callbackfunc);
@@ -53,25 +51,7 @@ kHAPI.net = {
 
     if (r.next === 1
             && (kHAPI.isOnAndroid || this.WS.serverConnection !== undefined)) {
-      if (kHAPI.isOnAndroid) {
-        ServerCall.invoke(st);
-      } else {
-        console.log("WS request, procedure:" + argObject.procedure
-                + ", nickname:" + argObject.nickname + ", params:"
-                + argObject.params + ", paramsKw:"
-                + JSON.stringify(argObject.paramsKw));
-
-        this.WS.serverConnection.call(argObject.procedure, argObject.params,
-                argObject.paramsKw, {
-                  "nickname": argObject.nickname
-                }).then(function(result) {
-          console.log("CALL result: " + JSON.stringify(result));
-          kHAPI.net.callServerFunc_invokeMatch[id + '_'](result, true);
-        }, function(error) {
-          console.log("CALL error: " + JSON.stringify(error));
-          kHAPI.net.callServerFunc_invokeMatch[id + '_'](error, true);
-        });
-      }
+      ServerCall.invoke(st);
     } else if (r.next === 2 && kHAPI.isOnAndroid) {
       ServerCall.invoke(st);
     } else {
@@ -84,6 +64,60 @@ kHAPI.net = {
         method: r.method
       }));
     }
+
+  }
+
+  ,
+  callOnWamp: function(procedure, options, params, paramsKw, callbackfunc) {
+    var id = this.genId();
+    this.callServerFunc_invokeMatch[id + '_'] = callbackfunc;
+
+    console.log("WAMP CALL, procedure:" + procedure + ", options:"
+            + JSON.stringify(options) + ", params:" + JSON.stringify(params)
+            + ", paramsKw:" + JSON.stringify(paramsKw));
+
+    if (kHAPI.isOnAndroid) {
+      LocalInterface.call(procedure, JSON.stringify(options), JSON.stringify(paramsKw), "func", "func2");
+    } else {
+      this.WS.serverConnection.call(procedure, params, paramsKw, options).then(
+              function(result) {
+                console.log("CALL result: " + JSON.stringify(result));
+                kHAPI.net.callServerFunc_invokeMatch[id + '_'](result, true);
+              },
+              function(error) {
+                console.log("CALL error: " + "procedure=" + argObject.procedure
+                        + ", error=" + JSON.stringify(error));
+                kHAPI.net.callServerFunc_invokeMatch[id + '_'](error, false);
+              });
+    }
+  }
+
+  ,
+  subscribeOnWamp: function(options, topic, callbackfunc) {
+    var id = this.genId();
+    this.callServerFunc_invokeMatch[id + '_'] = callbackfunc;
+
+    console.log("WAMP SUBSCRIBE, procedure:" + procedure + ", options:"
+            + JSON.stringify(options) + ", topic:" + topic);
+
+    if (kHAPI.isOnAndroid) {
+      LocalInterface.subscribe(topic, JSON.stringify(options), "func1", "func2", "func3");
+    } else {
+      var onEvent = function(args, kwargs, details) {
+        console.log("onEvent: topic=" + topic + ", args" + args + ", kwargs"
+                + JSON.stringify(kwargs));
+        kHAPI.net.callServerFunc_invokeMatch[id + '_'](args, kwargs);
+      }
+
+      this.WS.serverConnection.subscribe(topic, onEvent, options).then(
+              function(subscription) {
+                console.log("subscribed: topic=" + subscription.topic);
+              }, function(error) {
+                console.log("subscribe error, error:" + error.error);
+              });
+    }
+
+
   }
 
   // Server -> Home panel
@@ -123,7 +157,7 @@ kHAPI.net = {
   ,
   genId: function() {
     if (this.id >= Number.MAX_VALUE - 1) {
-      this.id = -1;
+      this.id = 0;
     }
 
     return ++this.id;

@@ -5,7 +5,7 @@
 
 package com.sonycsl.test.wamp.role;
 
-import com.sonycsl.test.wamp.mock.MockWampPeer;
+import com.sonycsl.test.mock.MockWampPeer;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampEventMessage;
 import com.sonycsl.wamp.message.WampMessage;
@@ -35,7 +35,7 @@ public class WampSubscriberTestCase extends TestCase {
         }
 
         @Override
-        protected void event(String topic, WampMessage msg) {
+        protected void onEvent(String topic, WampMessage msg) {
             mTopic = topic;
             mMsg = msg;
         }

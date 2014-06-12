@@ -5,9 +5,11 @@
 
 package com.sonycsl.wamp.role;
 
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampPublishMessage;
 import com.sonycsl.wamp.message.WampSubscribeMessage;
 import com.sonycsl.wamp.message.WampUnsubscribeMessage;
@@ -96,7 +98,8 @@ public class WampBroker extends WampRole {
                 }
             }
         }
-
+        listener.onReply(transmitter, WampMessageFactory.createError(WampMessageType.UNSUBSCRIBE,
+                unsub.getRequestId(), new JSONObject(), WampError.NO_SUCH_SUBSCRIPTION));
         return false;
     }
 
