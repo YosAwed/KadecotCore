@@ -98,7 +98,8 @@ var kHAPI = {
                 t: send_args.length - 1
               });
             }
-            var get_callback = function(recv_args, success) {
+            kHAPI.net.callServerFunc("get", send_args, function(recv_args, 
+                    success) {
               for (var i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] !== undefined) {
                   if (!success) {
@@ -113,9 +114,13 @@ var kHAPI = {
                   }
                 }
               }
-            };
+            });
+            
+            if (kHAPI.isOnAndroid) {
+              kHAPI.net.callServerFunc("get", send_args, get_callback);
+              return;
+            }
 
-            // XXX: Call only first property
             kHAPI.invoke('get', deviceId, [], {
               "propertyName": props[0]
             }, callback);
@@ -131,15 +136,16 @@ var kHAPI = {
       // args = [nickname,[prop1,newval1],[prop2,newval2] ..],
       // result is the same as get.
       kHAPI.set = function(args, callback) {
-        var deviceId = args[0];
+        if (kHAPI.isOnAndroid) {
+          this.net.callServerFunc('set', args, callback);
+          return;
+        }
+        var nickname = args[0];
         var propertyName = args[1][0];
         var propertyValue = args[1][1];
-
-        // XXX: Call only first property
-        kHAPI.invoke('set', deviceId, [], {
-          "propertyName": propertyName,
-          "propertyValue": propertyValue
-        }, callback);
+        
+        //XXX: Call only first property
+        kHAPI.invoke('set', nickname, [], {"propertyName":propertyName, "propertyValue":propertyValue}, callback);
       };
 
       kHAPI.invoke = function(method, deviceId, params, paramsKw, callback) {
