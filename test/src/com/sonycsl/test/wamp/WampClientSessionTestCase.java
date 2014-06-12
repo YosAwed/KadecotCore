@@ -5,7 +5,9 @@
 
 package com.sonycsl.test.wamp;
 
-import com.sonycsl.test.wamp.mock.MockWampRouter;
+import com.sonycsl.test.mock.MockWampRouter;
+import com.sonycsl.test.util.TestableCallback;
+import com.sonycsl.test.util.WampTestUtil;
 import com.sonycsl.wamp.WampClient;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
@@ -16,57 +18,38 @@ import junit.framework.TestCase;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class WampClientSessionTestCase extends TestCase {
 
-    private static class TestWampClient extends WampClient implements Testable {
-
-        private CountDownLatch mLatch;
-        private WampMessage mMsg;
-
-        public void setCountDownLatch(CountDownLatch latch) {
-            mLatch = latch;
-        }
-
-        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
-            return mLatch.await(timeout, unit);
-        }
-
-        public WampMessage getLatestMessage() {
-            return mMsg;
-        }
-
-        @Override
-        protected Set<WampRole> getClientRoleSet() {
-            return new HashSet<WampRole>();
-        }
-
-        @Override
-        protected void OnConnected(WampPeer peer) {
-        }
-
-        @Override
-        protected void OnTransmitted(WampPeer peer, WampMessage msg) {
-        }
-
-        @Override
-        protected void OnReceived(WampMessage msg) {
-            mMsg = msg;
-            if (mLatch != null) {
-                mLatch.countDown();
-            }
-        }
-    }
-
-    private TestWampClient mClient;
+    private WampClient mClient;
     private MockWampRouter mRouter;
 
     @Override
     protected void setUp() {
-        mClient = new TestWampClient();
+        mClient = new WampClient() {
+
+            @Override
+            protected void onTransmitted(WampPeer peer, WampMessage msg) {
+            }
+
+            @Override
+            protected void onReceived(WampMessage msg) {
+            }
+
+            @Override
+            protected void onConnected(WampPeer peer) {
+            }
+
+            @Override
+            protected Set<WampRole> getClientRoleSet() {
+                return new HashSet<WampRole>();
+            }
+        };
+        mClient.setCallback(new TestableCallback());
+
         mRouter = new MockWampRouter();
+        mRouter.setCallback(new TestableCallback());
+
         mClient.connect(mRouter);
     }
 

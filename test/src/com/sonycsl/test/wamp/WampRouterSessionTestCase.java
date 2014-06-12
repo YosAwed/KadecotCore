@@ -5,7 +5,9 @@
 
 package com.sonycsl.test.wamp;
 
-import com.sonycsl.test.wamp.mock.MockWampClient;
+import com.sonycsl.test.mock.MockWampClient;
+import com.sonycsl.test.util.TestableCallback;
+import com.sonycsl.test.util.WampTestUtil;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
@@ -20,79 +22,57 @@ import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class WampRouterSessionTestCase extends TestCase {
 
-    private static class TestWampRouter extends WampRouter implements Testable {
-        private CountDownLatch mLatch;
-        private WampMessage mMsg;
-
-        @Override
-        protected Set<WampRole> getRouterRoleSet() {
-            Set<WampRole> roles = new HashSet<WampRole>();
-            WampRole role = new WampRole() {
-
-                @Override
-                protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
-                    return false;
-                }
-
-                @Override
-                protected boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
-                        OnReplyListener listener) {
-                    return false;
-                }
-
-                @Override
-                public String getRoleName() {
-                    return "testRole";
-                }
-            };
-            roles.add(role);
-            return roles;
-        }
-
-        @Override
-        protected void OnConnected(WampPeer peer) {
-        }
-
-        @Override
-        protected void OnTransmitted(WampPeer peer, WampMessage msg) {
-        }
-
-        @Override
-        protected void OnReceived(WampMessage msg) {
-            mMsg = msg;
-            if (mLatch != null) {
-                mLatch.countDown();
-            }
-        }
-
-        @Override
-        public void setCountDownLatch(CountDownLatch latch) {
-            mLatch = latch;
-        }
-
-        @Override
-        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
-            return mLatch.await(timeout, unit);
-        }
-
-        @Override
-        public WampMessage getLatestMessage() {
-            return mMsg;
-        }
-    }
-
-    private TestWampRouter mRouter;
+    private WampRouter mRouter;
     private MockWampClient mClient;
 
     @Override
     protected void setUp() {
-        mRouter = new TestWampRouter();
+        mRouter = new WampRouter() {
+            @Override
+            protected void onTransmitted(WampPeer peer, WampMessage msg) {
+            }
+
+            @Override
+            protected void onReceived(WampMessage msg) {
+            }
+
+            @Override
+            protected void onConnected(WampPeer peer) {
+            }
+
+            @Override
+            protected Set<WampRole> getRouterRoleSet() {
+                Set<WampRole> roles = new HashSet<WampRole>();
+                WampRole role = new WampRole() {
+
+                    @Override
+                    protected boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
+                        return false;
+                    }
+
+                    @Override
+                    protected boolean resolveRxMessageImpl(WampPeer transmitter, WampMessage msg,
+                            OnReplyListener listener) {
+                        return false;
+                    }
+
+                    @Override
+                    public String getRoleName() {
+                        return "testRole";
+                    }
+                };
+                roles.add(role);
+                return roles;
+            }
+        };
+        mRouter.setCallback(new TestableCallback());
+
         mClient = new MockWampClient();
+        mClient.setCallback(new TestableCallback());
+
         mRouter.connect(mClient);
     }
 

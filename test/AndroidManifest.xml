@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sonycsl.kadecotcore"
+    package="com.sonycsl.Kadecot.core"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -9,7 +9,7 @@
 
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="com.sonycsl.kadecotcore" />
+        android:targetPackage="com.sonycsl.Kadecot.core" />
 
     <uses-permission android:name="android.permission.INTERNET" />
 
