@@ -10,10 +10,10 @@ import android.util.Log;
 
 import com.sonycsl.Kadecot.wamp.KadecotWampClient;
 import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback;
+import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
 import com.sonycsl.Kadecot.wamp.KadecotWampPeerLocator;
 import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.Kadecot.wamp.KadecotWebSocketClient;
-import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
@@ -174,7 +174,8 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            mClients.remove(conn);
+            mClients.remove(conn).transmit(
+                    WampMessageFactory.createGoodbye(new JSONObject(), WampError.CLOSE_REALM));
         }
 
         @Override
