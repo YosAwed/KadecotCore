@@ -149,7 +149,7 @@ public class ServerManager {
         if (getSettings().isEnabledWebSocketServer() && !isStartedWebSocketServer()) {
             startWebSocketServer();
 
-            Intent intent = new Intent("com.sonycsl.kadecot.plugin");
+            Intent intent = new Intent("com.sonycsl.kadecot.intent.SERVER_STARTED");
             mContext.sendBroadcast(intent);
             Log.d(TAG, "send broadcast" + intent);
         } else if (!getSettings().isEnabledWebSocketServer()) {
