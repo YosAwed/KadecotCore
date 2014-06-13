@@ -87,6 +87,10 @@ public class KadecotAppClientWrapper {
 
     private void respondError(WampErrorMessage msg) {
         WampRequestListener callback = reqIdListenerMap.remove(msg.getRequestId());
+        if (callback == null) {
+            Log.e(TAG, "Unknown Response. msg=" + msg);
+            return;
+        }
 
         switch (msg.getRequestType()) {
             case WampMessageType.CALL:
