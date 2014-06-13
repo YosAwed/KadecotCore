@@ -76,7 +76,7 @@ public abstract class WampRouter extends WampPeer {
 
             if (!mSessions.containsKey(transmitter)) {
                 listener.onReply(transmitter,
-                        WampMessageFactory.createError(msg.getMessageType(), -1, null,
+                        WampMessageFactory.createError(msg.getMessageType(), -1, new JSONObject(),
                                 WampError.NOT_AUTHORIZED));
                 return true;
             }
@@ -121,7 +121,7 @@ public abstract class WampRouter extends WampPeer {
 
             if (!msg.asGoodbyeMessage().getReason().equals(WampError.CLOSE_REALM)) {
                 listener.onReply(transmitter,
-                        WampMessageFactory.createError(msg.getMessageType(), -1, null,
+                        WampMessageFactory.createError(msg.getMessageType(), -1, new JSONObject(),
                                 WampError.NOT_AUTHORIZED));
                 return true;
             }

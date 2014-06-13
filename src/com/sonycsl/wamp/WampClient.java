@@ -101,7 +101,7 @@ abstract public class WampClient extends WampPeer {
         private boolean resolveInvalidMessage(WampPeer transmitter, WampMessage msg,
                 OnReplyListener listener) {
             listener.onReply(transmitter,
-                    WampMessageFactory.createError(msg.getMessageType(), -1, null,
+                    WampMessageFactory.createError(msg.getMessageType(), -1, new JSONObject(),
                             WampError.NOT_AUTHORIZED));
             return true;
         }
