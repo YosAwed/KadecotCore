@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.wamp;
 
 import android.util.Log;
 
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -13,9 +14,11 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.channels.NotYetConnectedException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -78,6 +81,8 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
+                transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                        WampError.SYSTEM_SHUTDOWN));
             }
         };
         mWsClient.connect();
@@ -114,9 +119,18 @@ public class KadecotWebsocketClientProxy extends WampPeer {
             return;
         }
 
-        if (mWsClient.getReadyState() == READYSTATE.OPEN) {
-            mWsClient.send(msg.toString());
+        if (mWsClient.getReadyState() != READYSTATE.OPEN) {
+
+            Log.i(TAG, "OnReceived: WebSocket is already closed. msg=" + msg.toString());
+            return;
         }
+
+        try {
+            mWsClient.send(msg.toString());
+        } catch (NotYetConnectedException e) {
+            Log.i(TAG, "OnReceived: WebSocket is already closed. msg=" + msg.toString());
+        }
+
     }
 
     private static class WampWebSocketClientProxy extends WampRole {
