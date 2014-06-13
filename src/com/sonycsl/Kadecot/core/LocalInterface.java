@@ -5,11 +5,11 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.sonycsl.Kadecot.wamp.KadecotAppClientWrapper;
-import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
-import com.sonycsl.Kadecot.wamp.KadecotWebsocketClientProxy;
 import com.sonycsl.Kadecot.wamp.KadecotAppClientWrapper.WampCallListener;
 import com.sonycsl.Kadecot.wamp.KadecotAppClientWrapper.WampSubscribeListener;
 import com.sonycsl.Kadecot.wamp.KadecotAppClientWrapper.WampUnsubscribeListener;
+import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
+import com.sonycsl.Kadecot.wamp.KadecotWebsocketClientProxy;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.util.JsonEscapeUtil;
 
@@ -51,9 +51,6 @@ public class LocalInterface {
     @JavascriptInterface
     public void call(String procedure, String options, String paramsKw,
             final String resultListener, final String errorListener) {
-        Log.d(TAG, "call, procedure=" + procedure + ", options=" + options + ", paramsKw="
-                + paramsKw + ", resultListener=" + resultListener + ", errorListener="
-                + errorListener);
 
         if (!mProxy.isOpen()) {
             try {

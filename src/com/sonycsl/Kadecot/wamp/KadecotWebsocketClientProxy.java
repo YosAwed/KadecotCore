@@ -43,7 +43,6 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
     public void open(String ipaddress, String port) throws InterruptedException, TimeoutException {
         if (mWsClient != null && mWsClient.getReadyState() == READYSTATE.OPEN) {
-            Log.i(TAG, "WebSocket is already opened");
             return;
         }
 
@@ -60,13 +59,11 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
             @Override
             public void onOpen(ServerHandshake handshakedata) {
-                Log.d(TAG, "onOpen : " + handshakedata.getHttpStatusMessage());
                 latch.countDown();
             }
 
             @Override
             public void onMessage(String message) {
-                Log.d(TAG, "onMessage : " + message);
                 try {
                     transmit(WampMessageFactory.create(new JSONArray(message)));
                 } catch (JSONException e) {
@@ -76,13 +73,11 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
             @Override
             public void onError(Exception ex) {
-                Log.d(TAG, "onError : " + ex);
+                Log.e(TAG, "onError : " + ex);
             }
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                Log.d(TAG, "onClose : code : " + code + ", reason : " + reason +
-                        ", remote : " + remote);
             }
         };
         mWsClient.connect();
@@ -95,7 +90,6 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
     public void close() {
         if (mWsClient == null || mWsClient.getReadyState() != READYSTATE.OPEN) {
-            Log.i(TAG, "WebSocket is already closed");
             return;
         }
 
