@@ -33,6 +33,10 @@ public class WampPublisherTestCase extends TestCase {
         mPeer = new MockWampPeer();
     }
 
+    public void testCtor() {
+        assertNotNull(mPublisher);
+    }
+
     public void testTxPublish() {
         WampMessage[] msgs = {
                 WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
