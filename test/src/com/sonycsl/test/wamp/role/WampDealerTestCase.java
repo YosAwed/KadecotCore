@@ -379,6 +379,15 @@ public class WampDealerTestCase extends TestCase {
         } catch (InterruptedException e) {
             fail();
         }
+    }
 
+    public void testResolveTxMessage() {
+        try {
+            mDealer.resolveTxMessage(null, null);
+        } catch (UnsupportedOperationException e) {
+            return;
+        }
+
+        fail();
     }
 }
