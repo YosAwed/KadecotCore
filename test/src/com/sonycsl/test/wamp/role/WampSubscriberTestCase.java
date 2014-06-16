@@ -57,6 +57,10 @@ public class WampSubscriberTestCase extends TestCase {
         assertNotNull(mPeer);
     }
 
+    public void testGetRoleName() {
+        assertTrue(mSubscriber.getRoleName().equals("subscriber"));
+    }
+
     public void testTxSubscribe() {
         assertTrue(mSubscriber.resolveTxMessage(mPeer, WampMessageFactory.createSubscribe(
                 WampRequestIdGenerator.getId(), new JSONObject(), TOPIC)));
