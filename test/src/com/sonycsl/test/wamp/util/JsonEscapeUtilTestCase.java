@@ -9,6 +9,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JsonEscapeUtilTestCase extends TestCase {
+
+    public void testCtor() {
+        assertNotNull(new JsonEscapeUtil());
+    }
+
     public void testEscapeSlash() {
         JSONObject json = new JSONObject();
         try {
