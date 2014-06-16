@@ -41,6 +41,10 @@ public class WampCallerTestCase extends TestCase {
         assertNotNull(mPeer);
     }
 
+    public void testGetRoleName() {
+        assertTrue(mCaller.getRoleName().equals("caller"));
+    }
+
     public void testTxCall() {
         WampMessage[] msgs = {
                 WampMessageFactory.createCall(WampRequestIdGenerator.getId(), new JSONObject(),

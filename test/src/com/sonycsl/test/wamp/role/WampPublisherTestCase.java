@@ -33,6 +33,14 @@ public class WampPublisherTestCase extends TestCase {
         mPeer = new MockWampPeer();
     }
 
+    public void testCtor() {
+        assertNotNull(mPublisher);
+    }
+
+    public void testGetRoleName() {
+        assertTrue(mPublisher.getRoleName().equals("publisher"));
+    }
+
     public void testTxPublish() {
         WampMessage[] msgs = {
                 WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),

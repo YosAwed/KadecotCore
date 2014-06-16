@@ -97,6 +97,10 @@ public class WampCalleeTestCase extends TestCase {
         assertNotNull(mListener);
     }
 
+    public void testGetRoleName() {
+        assertTrue(mCallee.getRoleName().equals("callee"));
+    }
+
     public void testTxRegister() {
         assertTrue(mCallee.resolveTxMessage(mPeer, WampMessageFactory.createRegister(
                 WampRequestIdGenerator.getId(), new JSONObject(), PROCEDURE)));
