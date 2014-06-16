@@ -355,4 +355,13 @@ public class WampBrokerTestCase extends TestCase {
             }
         }
     }
+
+    public void testResolveTxMessage() {
+        try {
+            mBroker.resolveTxMessage(null, null);
+        } catch (UnsupportedOperationException e) {
+            return;
+        }
+        fail();
+    }
 }
