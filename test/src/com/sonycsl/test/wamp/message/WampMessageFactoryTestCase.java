@@ -4,11 +4,18 @@ package com.sonycsl.test.wamp.message;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.message.WampAbortMessage;
 import com.sonycsl.wamp.message.WampErrorMessage;
+import com.sonycsl.wamp.message.WampEventMessage;
 import com.sonycsl.wamp.message.WampGoodbyeMessage;
 import com.sonycsl.wamp.message.WampHelloMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.WampPublishMessage;
+import com.sonycsl.wamp.message.WampPublishedMessage;
+import com.sonycsl.wamp.message.WampSubscribeMessage;
+import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnsubscribeMessage;
+import com.sonycsl.wamp.message.WampUnsubscribedMessage;
 import com.sonycsl.wamp.message.WampWelcomeMessage;
 
 import junit.framework.TestCase;
@@ -294,6 +301,256 @@ public class WampMessageFactoryTestCase extends TestCase {
         try {
             WampMessage msg = WampMessageFactory.createError(requestType, 1, options, error,
                     new JSONArray(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreateSubscribe() {
+        int requestId = 1;
+        JSONObject options = new JSONObject();
+        WampMessage msg = WampMessageFactory.createSubscribe(requestId, options, TOPIC);
+
+        assertTrue(msg.isSubscribeMessage());
+
+        WampSubscribeMessage subscribe = msg.asSubscribeMessage();
+        assertTrue(subscribe.getRequestId() == requestId);
+        assertTrue(subscribe.getOptions() == options);
+        assertTrue(subscribe.getTopic().equals(TOPIC));
+    }
+
+    public void testCreateSubscribeAbnormal() {
+        boolean flag = false;
+        // options null check
+        try {
+            WampMessage msg = WampMessageFactory.createSubscribe(1, null, TOPIC);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        flag = false;
+        // topic null check
+        try {
+            WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreateSubscribed() {
+        int requestId = 1;
+        int subscriptionId = 2;
+        WampMessage msg = WampMessageFactory.createSubscribed(requestId, subscriptionId);
+
+        assertTrue(msg.isSubscribedMessage());
+
+        WampSubscribedMessage subscribed = msg.asSubscribedMessage();
+        assertTrue(subscribed.getRequestId() == requestId);
+        assertTrue(subscribed.getSubscriptionId() == subscriptionId);
+    }
+
+    public void testCreateUnsubscribe() {
+        int requestId = 1;
+        int subscriptionId = 2;
+        WampMessage msg = WampMessageFactory.createUnsubscribe(requestId, subscriptionId);
+
+        assertTrue(msg.isUnsubscribeMessage());
+
+        WampUnsubscribeMessage unsubscribe = msg.asUnsubscribeMessage();
+        assertTrue(unsubscribe.getRequestId() == requestId);
+        assertTrue(unsubscribe.getSubscriptionId() == subscriptionId);
+    }
+
+    public void testCreateUnsubscribed() {
+        int requestId = 1;
+        WampMessage msg = WampMessageFactory.createUnsubscribed(requestId);
+
+        assertTrue(msg.isUnsubscribedMessage());
+
+        WampUnsubscribedMessage unsubscribed = msg.asUnsubscribedMessage();
+        assertTrue(unsubscribed.getRequestId() == requestId);
+    }
+
+    public void testCreatePublish() {
+        // has no arguments and argumentsKw
+        int requestId = 1;
+        JSONObject options = new JSONObject();
+        WampMessage msg = WampMessageFactory.createPublish(requestId, options, TOPIC);
+
+        assertTrue(msg.isPublishMessage());
+
+        WampPublishMessage publish = msg.asPublishMessage();
+        assertTrue(publish.getRequestId() == requestId);
+        assertTrue(publish.getTopic().equals(TOPIC));
+
+        // has arguments
+        JSONArray arguments = new JSONArray();
+        msg = WampMessageFactory.createPublish(requestId, options, TOPIC, arguments);
+
+        assertTrue(msg.isPublishMessage());
+
+        publish = msg.asPublishMessage();
+        assertTrue(publish.getRequestId() == requestId);
+        assertTrue(publish.getTopic().equals(TOPIC));
+        assertTrue(publish.getArguments() == arguments);
+
+        // has argumentsKw
+        JSONObject argumentsKw = new JSONObject();
+        msg = WampMessageFactory.createPublish(requestId, options, TOPIC, arguments, argumentsKw);
+
+        assertTrue(msg.isPublishMessage());
+
+        publish = msg.asPublishMessage();
+        assertTrue(publish.getRequestId() == requestId);
+        assertTrue(publish.getTopic().equals(TOPIC));
+        assertTrue(publish.getArguments() == arguments);
+        assertTrue(publish.getArgumentsKw() == argumentsKw);
+    }
+
+    public void testCreatePublishAbnormal() {
+        boolean flag = false;
+        JSONObject options = new JSONObject();
+
+        // options null
+        WampMessage msg;
+        try {
+            msg = WampMessageFactory.createPublish(1, null, TOPIC);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // topic null
+        flag = false;
+        try {
+            msg = WampMessageFactory.createPublish(1, options, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // arguments null
+        flag = false;
+        try {
+            msg = WampMessageFactory.createPublish(1, options, TOPIC, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // argumentsKw null
+        flag = false;
+        try {
+            msg = WampMessageFactory.createPublish(1, options, TOPIC, new JSONArray(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreatePublished() {
+        int requestId = 1;
+        int publicationId = 2;
+        WampMessage msg = WampMessageFactory.createPublished(requestId, publicationId);
+
+        assertTrue(msg.isPublishedMessage());
+
+        WampPublishedMessage published = msg.asPublishedMessage();
+
+        assertTrue(published.getRequestId() == requestId);
+        assertTrue(published.getPublicationId() == publicationId);
+    }
+
+    public void testCreateEvent() {
+        int subscriptionId = 1;
+        int publicationId = 2;
+        JSONObject details = new JSONObject();
+        WampMessage msg;
+        WampEventMessage event;
+
+        // no arguments and argumentsKw
+        msg = WampMessageFactory.createEvent(subscriptionId, publicationId, details);
+
+        assertTrue(msg.isEventMessage());
+
+        event = msg.asEventMessage();
+        assertTrue(event.getSubscriptionId() == subscriptionId);
+        assertTrue(event.getPublicationId() == publicationId);
+        assertTrue(event.getDetails() == details);
+
+        // arguments
+        JSONArray arguments = new JSONArray();
+        msg = WampMessageFactory.createEvent(subscriptionId, publicationId, details, arguments);
+
+        assertTrue(msg.isEventMessage());
+
+        event = msg.asEventMessage();
+        assertTrue(event.getSubscriptionId() == subscriptionId);
+        assertTrue(event.getPublicationId() == publicationId);
+        assertTrue(event.getDetails() == details);
+        assertTrue(event.getArguments() == arguments);
+
+        // argumentsKw
+        JSONObject argumentsKw = new JSONObject();
+        msg = WampMessageFactory.createEvent(subscriptionId, publicationId, details, arguments,
+                argumentsKw);
+
+        assertTrue(msg.isEventMessage());
+
+        event = msg.asEventMessage();
+        assertTrue(event.getSubscriptionId() == subscriptionId);
+        assertTrue(event.getPublicationId() == publicationId);
+        assertTrue(event.getDetails() == details);
+        assertTrue(event.getArguments() == arguments);
+        assertTrue(event.getArgumentsKw() == argumentsKw);
+    }
+
+    public void createEventAbnormal() {
+        boolean flag = false;
+        JSONObject details = new JSONObject();
+
+        // details null
+        try {
+            WampMessage msg = WampMessageFactory.createEvent(1, 2, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // arguments null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createEvent(1, 2, details, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // arguments null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createEvent(1, 2, details, new JSONArray(), null);
         } catch (IllegalArgumentException e) {
             flag = true;
         }
