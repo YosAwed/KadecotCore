@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampRegisterMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +21,7 @@ public class WampRegisterMessageImpl extends WampAbstractMessage implements Wamp
     private static final int PROCEDURE_INDEX = 3;
 
     public static WampMessage create(int requestId, JSONObject options, String procedure) {
+        NullChecker.nullCheck(options, procedure);
         return new WampRegisterMessageImpl(new JSONArray().put(WampMessageType.REGISTER)
                 .put(requestId).put(options).put(procedure));
     }
