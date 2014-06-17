@@ -57,7 +57,9 @@ public class KadecotWebSocketServer {
 
     private KadecotWampRouter mRouter;
 
-    private CountDownLatch mSetupLatch;
+    private CountDownLatch mSystemSetup;
+
+    private CountDownLatch mProtocolSetup;
 
     public synchronized static KadecotWebSocketServer getInstance() {
         if (sInstance == null) {
@@ -74,15 +76,28 @@ public class KadecotWebSocketServer {
 
         mRouter = KadecotWampPeerLocator.getRouter();
 
-        mSetupLatch = new CountDownLatch(KadecotWampPeerLocator.getClients().length);
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        mSystemSetup = new CountDownLatch(KadecotWampPeerLocator.getSystemClients().length);
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.connect(mRouter);
             client.setCallback(new KadecotWampClientSetupCallback(
                     client.getSubscribableTopics(), client.getRegisterableProcedures(),
                     new OnCompletionListener() {
                         @Override
                         public void onCompletion() {
-                            mSetupLatch.countDown();
+                            mSystemSetup.countDown();
+                        }
+                    }));
+        }
+
+        mProtocolSetup = new CountDownLatch(KadecotWampPeerLocator.getProtocolClients().length);
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.connect(mRouter);
+            client.setCallback(new KadecotWampClientSetupCallback(
+                    client.getSubscribableTopics(), client.getRegisterableProcedures(),
+                    new OnCompletionListener() {
+                        @Override
+                        public void onCompletion() {
+                            mProtocolSetup.countDown();
                         }
                     }));
         }
@@ -112,13 +127,26 @@ public class KadecotWebSocketServer {
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno), draftList);
         mWebSocketServer.start();
 
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
                     new JSONObject()));
         }
 
         try {
-            mSetupLatch.await(5, TimeUnit.SECONDS);
+            mSystemSetup.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Log.e(TAG, "unable to setup KadecotWampClient");
+            return;
+        }
+
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
+                    new JSONObject()));
+        }
+
+        try {
+            mProtocolSetup.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
             Log.e(TAG, "unable to setup KadecotWampClient");
@@ -148,7 +176,12 @@ public class KadecotWebSocketServer {
             e.printStackTrace();
         }
 
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                    WampError.CLOSE_REALM));
+        }
+
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
                     WampError.CLOSE_REALM));
         }
@@ -174,8 +207,7 @@ public class KadecotWebSocketServer {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            mClients.remove(conn).transmit(
-                    WampMessageFactory.createGoodbye(new JSONObject(), WampError.CLOSE_REALM));
+            mClients.remove(conn);
         }
 
         @Override
@@ -208,4 +240,5 @@ public class KadecotWebSocketServer {
 
         }
     }
+
 }
