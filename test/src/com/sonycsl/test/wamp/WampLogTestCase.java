@@ -9,7 +9,6 @@ public class WampLogTestCase extends TestCase {
     private static final String TAG = "WampLogTestCase";
 
     public void testCtor() {
-        WampLog log = new WampLog();
     }
 
     public void testE() {
