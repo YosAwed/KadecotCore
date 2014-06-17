@@ -5,6 +5,8 @@
 
 package com.sonycsl.Kadecot.wamp;
 
+import com.sonycsl.Kadecot.core.provider.KadecotCoreStore;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,14 +31,14 @@ public class KadecotDeviceData {
     }
 
     public KadecotDeviceData(JSONObject device) throws JSONException {
-        deviceId = device.getLong(KadecotProviderUtil.DEVICE_ID);
-        protocol = device.getString(KadecotProviderUtil.DEVICE_PROTOCOL);
-        uuid = device.getString(KadecotProviderUtil.DEVICE_UUID);
-        deviceType = device.getString(KadecotProviderUtil.DEVICE_TYPE);
-        description = device.getString(KadecotProviderUtil.DEVICE_DESCRIPTION);
-        status = device.getBoolean(KadecotProviderUtil.DEVICE_STATUS);
-        if (device.has(KadecotProviderUtil.DEVICE_NICKNAME)) {
-            nickname = device.getString(KadecotProviderUtil.DEVICE_NICKNAME);
+        deviceId = device.getLong(KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID);
+        protocol = device.getString(KadecotCoreStore.Devices.DeviceColumns.PROTOCOL);
+        uuid = device.getString(KadecotCoreStore.Devices.DeviceColumns.UUID);
+        deviceType = device.getString(KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE);
+        description = device.getString(KadecotCoreStore.Devices.DeviceColumns.DESCRIPTION);
+        status = device.getBoolean(KadecotCoreStore.Devices.DeviceColumns.STATUS);
+        if (device.has(KadecotCoreStore.Devices.DeviceColumns.NICKNAME)) {
+            nickname = device.getString(KadecotCoreStore.Devices.DeviceColumns.NICKNAME);
         }
     }
 
@@ -92,12 +94,12 @@ public class KadecotDeviceData {
             String deviceType, boolean status, String nickname) throws JSONException {
         JSONObject json = new JSONObject();
 
-        json.put(KadecotProviderUtil.DEVICE_PROTOCOL, protocol);
-        json.put(KadecotProviderUtil.DEVICE_UUID, uuid);
-        json.put(KadecotProviderUtil.DEVICE_DESCRIPTION, description);
-        json.put(KadecotProviderUtil.DEVICE_STATUS, status);
-        json.put(KadecotProviderUtil.DEVICE_TYPE, deviceType);
-        json.put(KadecotProviderUtil.DEVICE_NICKNAME, nickname);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.PROTOCOL, protocol);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.UUID, uuid);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.DESCRIPTION, description);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.STATUS, status);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE, deviceType);
+        json.put(KadecotCoreStore.Devices.DeviceColumns.NICKNAME, nickname);
 
         return json;
     }
