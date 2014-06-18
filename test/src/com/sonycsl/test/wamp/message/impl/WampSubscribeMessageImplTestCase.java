@@ -2,6 +2,7 @@
 package com.sonycsl.test.wamp.message.impl;
 
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.impl.WampAbortMessageImpl;
 import com.sonycsl.wamp.message.impl.WampSubscribeMessageImpl;
 
 import junit.framework.TestCase;
@@ -49,6 +50,16 @@ public class WampSubscribeMessageImplTestCase extends TestCase {
         // no topic
         try {
             String topic = subscribe.getTopic();
+            fail();
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    public void testIllegalMessageType() {
+        JSONArray msg = new JSONArray();
+        msg.put(-1);
+        try {
+            WampAbortMessageImpl abort = new WampAbortMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

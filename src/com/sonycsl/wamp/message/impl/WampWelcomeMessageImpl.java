@@ -27,6 +27,14 @@ public class WampWelcomeMessageImpl extends WampAbstractMessage implements WampW
 
     public WampWelcomeMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.WELCOME) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

@@ -46,6 +46,15 @@ public class WampAbortMessageImplTestCase extends TestCase {
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
+    }
 
+    public void testIllegalMessageType() {
+        JSONArray msg = new JSONArray();
+        msg.put(-1);
+        try {
+            WampAbortMessageImpl abort = new WampAbortMessageImpl(msg);
+            fail();
+        } catch (IllegalArgumentException e) {
+        }
     }
 }

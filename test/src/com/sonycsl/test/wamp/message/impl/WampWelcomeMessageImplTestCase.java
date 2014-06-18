@@ -2,6 +2,7 @@
 package com.sonycsl.test.wamp.message.impl;
 
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.message.impl.WampAbortMessageImpl;
 import com.sonycsl.wamp.message.impl.WampWelcomeMessageImpl;
 
 import junit.framework.TestCase;
@@ -47,6 +48,16 @@ public class WampWelcomeMessageImplTestCase extends TestCase {
         // no details
         try {
             JSONObject detials = welcome.getDetails();
+            fail();
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    public void testIllegalMessageType() {
+        JSONArray msg = new JSONArray();
+        msg.put(-1);
+        try {
+            WampAbortMessageImpl abort = new WampAbortMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

@@ -28,6 +28,14 @@ public class WampSubscribeMessageImpl extends WampAbstractMessage implements Wam
 
     public WampSubscribeMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.SUBSCRIBE) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

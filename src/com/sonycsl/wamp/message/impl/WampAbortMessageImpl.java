@@ -27,6 +27,13 @@ public class WampAbortMessageImpl extends WampAbstractMessage implements WampAbo
 
     public WampAbortMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.ABORT) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
