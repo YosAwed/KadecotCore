@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampHelloMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +20,7 @@ public class WampHelloMessageImpl extends WampAbstractMessage implements WampHel
     private static final int DETAILS_TYPE_INDEX = 2;
 
     public static WampMessage create(String realm, JSONObject details) {
+        NullChecker.nullCheck(realm, details);
         return new WampHelloMessageImpl(new JSONArray().put(WampMessageType.HELLO).put(realm)
                 .put(details));
     }
