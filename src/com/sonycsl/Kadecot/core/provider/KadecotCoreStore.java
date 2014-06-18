@@ -54,6 +54,8 @@ public class KadecotCoreStore {
             public static final String NAME = "name";
 
             public static final String DESCRIPTION = "description";
+
+            public static final String REFERENCE_COUNT = "referenceCount";
         }
     }
 

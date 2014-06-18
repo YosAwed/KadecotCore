@@ -5,6 +5,8 @@
 
 package com.sonycsl.Kadecot.wamp;
 
+import android.content.ContentResolver;
+
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
@@ -21,10 +23,17 @@ public class KadecotWampRouter extends WampRouter {
 
     public static final String REALM = "realm";
 
+    private final ContentResolver mResolver;
+
+    public KadecotWampRouter(ContentResolver resolver) {
+        super();
+        mResolver = resolver;
+    }
+
     @Override
     protected Set<WampRole> getRouterRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new WampBroker());
+        roleSet.add(new WampBroker(new KadecotTopicResolver(mResolver)));
         roleSet.add(new WampDealer() {
             @Override
             protected JSONObject createInvocationDetails(JSONObject callOptions) {

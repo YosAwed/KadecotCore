@@ -26,12 +26,12 @@ public class DeviceObserver {
     private String mLastUpdated;
     private OnDeviceChangedListener mListener;
 
-    public DeviceObserver(ContentResolver resolver) {
+    public DeviceObserver(ContentResolver resolver, Handler handler) {
         mResolver = resolver;
         mLastUpdated = DateFormat.format("yyyy-MM-dd kk:mm:ss", Calendar.getInstance())
                 .toString();
         mResolver.registerContentObserver(KadecotCoreStore.Devices.CONTENT_URI, true,
-                new ContentObserver(new Handler()) {
+                new ContentObserver(handler) {
 
                     @Override
                     public void onChange(boolean selfChange) {

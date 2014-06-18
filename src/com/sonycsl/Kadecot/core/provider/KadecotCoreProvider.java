@@ -183,6 +183,7 @@ public class KadecotCoreProvider extends ContentProvider {
                     KadecotCoreStore.Topics.TopicColumns.PROTOCOL + " TEXT NOT NULL, " +
                     KadecotCoreStore.Topics.TopicColumns.NAME + " TEXT NOT NULL, " +
                     KadecotCoreStore.Topics.TopicColumns.DESCRIPTION + " TEXT NOT NULL, " +
+                    KadecotCoreStore.Topics.TopicColumns.REFERENCE_COUNT + " INTEGER DEFAULT 0, " +
                     "UNIQUE(" + KadecotCoreStore.Topics.TopicColumns.NAME + ") " +
                     ");");
 

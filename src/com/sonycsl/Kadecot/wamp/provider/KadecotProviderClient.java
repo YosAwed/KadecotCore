@@ -7,11 +7,13 @@ package com.sonycsl.Kadecot.wamp.provider;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.os.Handler;
 import android.os.RemoteException;
 
 import com.sonycsl.Kadecot.core.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.wamp.KadecotWampClient;
 import com.sonycsl.Kadecot.wamp.provider.DeviceObserver.OnDeviceChangedListener;
+import com.sonycsl.Kadecot.wamp.provider.TopicObserver.OnSubscriberListener;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -31,7 +33,9 @@ public final class KadecotProviderClient extends KadecotWampClient {
     private static final String PREFIX = "com.sonycsl.kadecot.provider";
 
     public static enum Topic {
-        DEVICE("device");
+        DEVICE("device"),
+        START("start"),
+        STOP("stop");
 
         private final String mUri;
 
@@ -94,12 +98,15 @@ public final class KadecotProviderClient extends KadecotWampClient {
     }
 
     private final ContentResolver mResolver;
-    private final DeviceObserver mObserver;
+    private final DeviceObserver mDeviceObserver;
+    private final TopicObserver mTopicObserver;
 
-    public KadecotProviderClient(Context context) {
+    public KadecotProviderClient(Context context, Handler handler) {
         super();
+
         mResolver = context.getContentResolver();
-        mObserver = new DeviceObserver(mResolver);
+        mDeviceObserver = new DeviceObserver(mResolver, handler);
+        mTopicObserver = new TopicObserver(mResolver, handler);
     }
 
     @Override
@@ -125,7 +132,7 @@ public final class KadecotProviderClient extends KadecotWampClient {
     @Override
     protected void onReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
-            mObserver.setOnDeviceChangedListener(new OnDeviceChangedListener() {
+            mDeviceObserver.setOnDeviceChangedListener(new OnDeviceChangedListener() {
                 @Override
                 public void onDeviceFound(JSONObject device) {
                     JSONObject options = new JSONObject();
@@ -141,10 +148,38 @@ public final class KadecotProviderClient extends KadecotWampClient {
                             new JSONArray(), device));
                 }
             });
+
+            mTopicObserver.setOnSubscriberListener(new OnSubscriberListener() {
+
+                @Override
+                public void onAppeared(String topic) {
+                    try {
+                        transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
+                                new JSONObject(), KadecotProviderClient.Topic.START.getUri(),
+                                new JSONArray(), new JSONObject().put("topic", topic)));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
+
+                @Override
+                public void onDisappeared(String topic) {
+                    try {
+                        transmit(WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
+                                new JSONObject(), KadecotProviderClient.Topic.STOP.getUri(),
+                                new JSONArray(), new JSONObject().put("topic", topic)));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
+            });
         }
 
         if (msg.isGoodbyeMessage()) {
-            mObserver.setOnDeviceChangedListener(null);
+            mDeviceObserver.setOnDeviceChangedListener(null);
+            mTopicObserver.setOnSubscriberListener(null);
         }
     }
 
