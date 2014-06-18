@@ -66,7 +66,7 @@ public class WampMessageFactoryTestCase extends TestCase {
         // no message type
         try {
             JSONArray json = new JSONArray();
-            WampMessage msg = WampMessageFactory.create(json);
+            WampMessageFactory.create(json);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -91,7 +91,7 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateHelloAbnormal() {
         // details null check
         try {
-            WampMessage msg = WampMessageFactory.createHello(REALM, null);
+            WampMessageFactory.createHello(REALM, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -99,7 +99,7 @@ public class WampMessageFactoryTestCase extends TestCase {
         // realm null check
         try {
             JSONObject role = new JSONObject("{\"roles\":{\"caller\":{}}}");
-            WampMessage msg = WampMessageFactory.createHello(null, role);
+            WampMessageFactory.createHello(null, role);
             fail();
         } catch (IllegalArgumentException e) {
         } catch (JSONException e) {
@@ -128,7 +128,7 @@ public class WampMessageFactoryTestCase extends TestCase {
         // details null check
         try {
             int sessionId = 1;
-            WampMessage msg = WampMessageFactory.createWelcome(sessionId, null);
+            WampMessageFactory.createWelcome(sessionId, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -148,14 +148,14 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateAbortAbnormal() {
         // details null check
         try {
-            WampMessage msg = WampMessageFactory.createAbort(null, WampError.NO_SUCH_REALM);
+            WampMessageFactory.createAbort(null, WampError.NO_SUCH_REALM);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // reason null check
         try {
-            WampMessage msg = WampMessageFactory.createAbort(new JSONObject(), null);
+            WampMessageFactory.createAbort(new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -175,14 +175,14 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateGoodbyeAbnormal() {
         // details null check
         try {
-            WampMessage msg = WampMessageFactory.createGoodbye(null, WampError.GOODBYE_AND_OUT);
+            WampMessageFactory.createGoodbye(null, WampError.GOODBYE_AND_OUT);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // reason null check
         try {
-            WampMessage msg = WampMessageFactory.createAbort(new JSONObject(), null);
+            WampMessageFactory.createAbort(new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -243,28 +243,28 @@ public class WampMessageFactoryTestCase extends TestCase {
 
         // options null
         try {
-            WampMessage msg = WampMessageFactory.createError(requestType, 1, null, error);
+            WampMessageFactory.createError(requestType, 1, null, error);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // error null
         try {
-            WampMessage msg = WampMessageFactory.createError(requestType, 1, options, null);
+            WampMessageFactory.createError(requestType, 1, options, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            WampMessage msg = WampMessageFactory.createError(requestType, 1, options, error, null);
+            WampMessageFactory.createError(requestType, 1, options, error, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // argumentsKw null
         try {
-            WampMessage msg = WampMessageFactory.createError(requestType, 1, options, error,
+            WampMessageFactory.createError(requestType, 1, options, error,
                     new JSONArray(), null);
             fail();
         } catch (IllegalArgumentException e) {
@@ -287,14 +287,14 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateSubscribeAbnormal() {
         // options null check
         try {
-            WampMessage msg = WampMessageFactory.createSubscribe(1, null, TOPIC);
+            WampMessageFactory.createSubscribe(1, null, TOPIC);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // topic null check
         try {
-            WampMessage msg = WampMessageFactory.createSubscribe(1, new JSONObject(), null);
+            WampMessageFactory.createSubscribe(1, new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -374,30 +374,29 @@ public class WampMessageFactoryTestCase extends TestCase {
         JSONObject options = new JSONObject();
 
         // options null
-        WampMessage msg;
         try {
-            msg = WampMessageFactory.createPublish(1, null, TOPIC);
+            WampMessageFactory.createPublish(1, null, TOPIC);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // topic null
         try {
-            msg = WampMessageFactory.createPublish(1, options, null);
+            WampMessageFactory.createPublish(1, options, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            msg = WampMessageFactory.createPublish(1, options, TOPIC, null);
+            WampMessageFactory.createPublish(1, options, TOPIC, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // argumentsKw null
         try {
-            msg = WampMessageFactory.createPublish(1, options, TOPIC, new JSONArray(), null);
+            WampMessageFactory.createPublish(1, options, TOPIC, new JSONArray(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -465,21 +464,21 @@ public class WampMessageFactoryTestCase extends TestCase {
 
         // details null
         try {
-            WampMessage msg = WampMessageFactory.createEvent(1, 2, null);
+            WampMessageFactory.createEvent(1, 2, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            WampMessage msg = WampMessageFactory.createEvent(1, 2, details, null);
+            WampMessageFactory.createEvent(1, 2, details, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            WampMessage msg = WampMessageFactory.createEvent(1, 2, details, new JSONArray(), null);
+            WampMessageFactory.createEvent(1, 2, details, new JSONArray(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -501,14 +500,14 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateRegisterAbnormal() {
         // options null
         try {
-            WampMessage msg = WampMessageFactory.createRegister(1, null, PROCEDURE);
+            WampMessageFactory.createRegister(1, null, PROCEDURE);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // procedure null
         try {
-            WampMessage msg = WampMessageFactory.createRegister(1, new JSONObject(), null);
+            WampMessageFactory.createRegister(1, new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -593,21 +592,21 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateInvocationAbnormal() {
         // details null
         try {
-            WampMessage msg = WampMessageFactory.createInvocation(1, 1, null);
+            WampMessageFactory.createInvocation(1, 1, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            WampMessage msg = WampMessageFactory.createInvocation(1, 1, new JSONObject(), null);
+            WampMessageFactory.createInvocation(1, 1, new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // argumentsKw null
         try {
-            WampMessage msg = WampMessageFactory.createInvocation(1, 1, new JSONObject(),
+            WampMessageFactory.createInvocation(1, 1, new JSONObject(),
                     new JSONArray(), null);
             fail();
         } catch (IllegalArgumentException e) {
@@ -654,22 +653,21 @@ public class WampMessageFactoryTestCase extends TestCase {
     public void testCreateYieldAbnormal() {
         // options null
         try {
-            WampMessage msg = WampMessageFactory.createYield(1, null);
+            WampMessageFactory.createYield(1, null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // arguments null
         try {
-            WampMessage msg = WampMessageFactory.createYield(1, new JSONObject(), null);
+            WampMessageFactory.createYield(1, new JSONObject(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // argumentsKw null
         try {
-            WampMessage msg = WampMessageFactory.createYield(1, new JSONObject(), new JSONArray(),
-                    null);
+            WampMessageFactory.createYield(1, new JSONObject(), new JSONArray(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }

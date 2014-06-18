@@ -12,34 +12,34 @@ public class WampMessageTypeTestCase extends TestCase {
     }
 
     public void testMessageCode() {
-        assertTrue(WampMessageType.HELLO == 1);
-        assertTrue(WampMessageType.WELCOME == 2);
-        assertTrue(WampMessageType.ABORT == 3);
-        assertTrue(WampMessageType.CHALLENGE == 4);
-        assertTrue(WampMessageType.AUTHENTICATE == 5);
-        assertTrue(WampMessageType.GOODBYE == 6);
-        assertTrue(WampMessageType.HEARTBEAT == 7);
-        assertTrue(WampMessageType.ERROR == 8);
+        assertEquals(1, WampMessageType.HELLO);
+        assertEquals(2, WampMessageType.WELCOME);
+        assertEquals(3, WampMessageType.ABORT);
+        assertEquals(4, WampMessageType.CHALLENGE);
+        assertEquals(5, WampMessageType.AUTHENTICATE);
+        assertEquals(6, WampMessageType.GOODBYE);
+        assertEquals(7, WampMessageType.HEARTBEAT);
+        assertEquals(8, WampMessageType.ERROR);
 
-        assertTrue(WampMessageType.PUBLISH == 16);
-        assertTrue(WampMessageType.PUBLISHED == 17);
+        assertEquals(16, WampMessageType.PUBLISH);
+        assertEquals(17, WampMessageType.PUBLISHED);
 
-        assertTrue(WampMessageType.SUBSCRIBE == 32);
-        assertTrue(WampMessageType.SUBSCRIBED == 33);
-        assertTrue(WampMessageType.UNSUBSCRIBE == 34);
-        assertTrue(WampMessageType.UNSUBSCRIBED == 35);
-        assertTrue(WampMessageType.EVENT == 36);
+        assertEquals(32, WampMessageType.SUBSCRIBE);
+        assertEquals(33, WampMessageType.SUBSCRIBED);
+        assertEquals(34, WampMessageType.UNSUBSCRIBE);
+        assertEquals(35, WampMessageType.UNSUBSCRIBED);
+        assertEquals(36, WampMessageType.EVENT);
 
-        assertTrue(WampMessageType.CALL == 48);
-        assertTrue(WampMessageType.CANCEL == 49);
-        assertTrue(WampMessageType.RESULT == 50);
+        assertEquals(48, WampMessageType.CALL);
+        assertEquals(49, WampMessageType.CANCEL);
+        assertEquals(50, WampMessageType.RESULT);
 
-        assertTrue(WampMessageType.REGISTER == 64);
-        assertTrue(WampMessageType.REGISTERED == 65);
-        assertTrue(WampMessageType.UNREGISTER == 66);
-        assertTrue(WampMessageType.UNREGISTERED == 67);
-        assertTrue(WampMessageType.INVOCATION == 68);
-        assertTrue(WampMessageType.INTERRUPT == 69);
-        assertTrue(WampMessageType.YIELD == 70);
+        assertEquals(64, WampMessageType.REGISTER);
+        assertEquals(65, WampMessageType.REGISTERED);
+        assertEquals(66, WampMessageType.UNREGISTER);
+        assertEquals(67, WampMessageType.UNREGISTERED);
+        assertEquals(68, WampMessageType.INVOCATION);
+        assertEquals(69, WampMessageType.INTERRUPT);
+        assertEquals(70, WampMessageType.YIELD);
     }
 }
