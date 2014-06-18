@@ -5,11 +5,11 @@
 
 package com.sonycsl.wamp.role;
 
-import com.sonycsl.wamp.DoubleKeyMap;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampPublishMessage;
 import com.sonycsl.wamp.message.WampPublishedMessage;
+import com.sonycsl.wamp.util.DoubleKeyMap;
 
 public class WampPublisher extends WampRole {
 

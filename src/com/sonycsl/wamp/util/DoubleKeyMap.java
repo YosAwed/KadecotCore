@@ -1,5 +1,5 @@
 
-package com.sonycsl.wamp;
+package com.sonycsl.wamp.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

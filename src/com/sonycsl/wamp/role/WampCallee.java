@@ -5,7 +5,6 @@
 
 package com.sonycsl.wamp.role;
 
-import com.sonycsl.wamp.DoubleKeyMap;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
@@ -15,6 +14,7 @@ import com.sonycsl.wamp.message.WampRegisterMessage;
 import com.sonycsl.wamp.message.WampRegisteredMessage;
 import com.sonycsl.wamp.message.WampUnregisterMessage;
 import com.sonycsl.wamp.message.WampUnregisteredMessage;
+import com.sonycsl.wamp.util.DoubleKeyMap;
 
 import org.json.JSONObject;
 
