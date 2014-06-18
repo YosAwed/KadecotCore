@@ -89,4 +89,39 @@ public class WampPublisherTestCase extends TestCase {
         }
 
     }
+
+    public void testRxPublishedTwice() {
+        WampMessage[] msgs = {
+                WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
+                        TOPIC),
+                WampMessageFactory.createPublish(WampRequestIdGenerator.getId(), new JSONObject(),
+                        TOPIC, new JSONArray()),
+        };
+
+        for (WampMessage msg : msgs) {
+            assertFalse(mPublisher.resolveRxMessage(mPeer,
+                    WampMessageFactory.createPublished(msg.asPublishMessage().getRequestId(),
+                            WampRequestIdGenerator.getId()),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            fail();
+                        }
+                    }));
+            assertTrue(mPublisher.resolveTxMessage(mPeer, msg));
+        }
+
+        for (WampMessage msg : msgs) {
+            assertTrue(mPublisher.resolveRxMessage(mPeer,
+                    WampMessageFactory.createPublished(msg.asPublishMessage().getRequestId(),
+                            WampRequestIdGenerator.getId()),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            fail();
+                        }
+                    }));
+        }
+
+    }
 }

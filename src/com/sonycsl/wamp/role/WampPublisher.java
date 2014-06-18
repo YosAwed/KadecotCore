@@ -5,17 +5,15 @@
 
 package com.sonycsl.wamp.role;
 
+import com.sonycsl.wamp.DoubleKeyMap;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampPublishMessage;
 import com.sonycsl.wamp.message.WampPublishedMessage;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class WampPublisher extends WampRole {
 
-    private Map<WampPeer, WampMessage> mPubs = new ConcurrentHashMap<WampPeer, WampMessage>();
+    private DoubleKeyMap<WampPeer, Integer, WampMessage> mPubs = new DoubleKeyMap<WampPeer, Integer, WampMessage>();
 
     @Override
     public final String getRoleName() {
@@ -27,7 +25,7 @@ public class WampPublisher extends WampRole {
         if (!msg.isPublishMessage()) {
             return false;
         }
-        mPubs.put(receiver, msg);
+        mPubs.put(receiver, msg.asPublishMessage().getRequestId(), msg);
         return true;
     }
 
@@ -38,18 +36,21 @@ public class WampPublisher extends WampRole {
             return false;
         }
 
-        if (!mPubs.containsKey(transmitter)) {
+        WampPublishedMessage publishedMsg = msg.asPublishedMessage();
+
+        if (!mPubs.containsKey(transmitter, publishedMsg.getRequestId())) {
             return false;
         }
 
-        WampPublishMessage request = mPubs.get(transmitter).asPublishMessage();
+        WampPublishMessage request = mPubs.get(transmitter, publishedMsg.getRequestId())
+                .asPublishMessage();
         WampPublishedMessage response = msg.asPublishedMessage();
 
         if (request.getRequestId() != response.getRequestId()) {
             return false;
         }
 
-        mPubs.remove(transmitter);
+        mPubs.remove(transmitter, publishedMsg.getRequestId());
 
         return true;
     }
