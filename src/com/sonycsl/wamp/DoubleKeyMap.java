@@ -4,48 +4,51 @@ package com.sonycsl.wamp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DoubleKeyMap<W, K, V> {
+public class DoubleKeyMap<K1, K2, V> {
 
-    private Map<W, Map<K, V>> mKkvMap = new ConcurrentHashMap<W, Map<K, V>>();
+    private Map<K1, Map<K2, V>> mKkvMap = new ConcurrentHashMap<K1, Map<K2, V>>();
 
-    public V put(W key0, K key, V value) {
-        Map<K, V> kv = mKkvMap.get(key0);
+    public V put(K1 key1, K2 key2, V value) {
+        Map<K2, V> kv = mKkvMap.get(key1);
         if (kv == null) {
-            kv = new ConcurrentHashMap<K, V>();
-            mKkvMap.put(key0, kv);
+            kv = new ConcurrentHashMap<K2, V>();
+            mKkvMap.put(key1, kv);
         }
-        return kv.put(key, value);
+        return kv.put(key2, value);
     }
 
-    public V get(W key0, K key) {
-        Map<K, V> kv = mKkvMap.get(key0);
-        if (kv == null) {
-            return null;
-        }
-        return kv.get(key);
-    }
-
-    public V remove(W key0, K key) {
-        Map<K, V> kv = mKkvMap.get(key0);
+    public V get(K1 key1, K2 key2) {
+        Map<K2, V> kv = mKkvMap.get(key1);
         if (kv == null) {
             return null;
         }
-        return kv.remove(key);
+        return kv.get(key2);
     }
 
-    public boolean containsKey(W key0, K key) {
-        Map<K, V> kv = mKkvMap.get(key0);
+    public V remove(K1 key1, K2 key2) {
+        Map<K2, V> kv = mKkvMap.get(key1);
+        if (kv == null) {
+            return null;
+        }
+        return kv.remove(key2);
+    }
+
+    public boolean containsKey(K1 key1, K2 key2) {
+        Map<K2, V> kv = mKkvMap.get(key1);
         if (kv == null) {
             return false;
         }
-        return kv.containsKey(key);
+        return kv.containsKey(key2);
     }
 
-    public boolean isEmpty(W key0) {
-        Map<K, V> kv = mKkvMap.get(key0);
-        if (kv == null) {
-            return true;
+    public void clear() {
+        for (K1 key1 : mKkvMap.keySet()) {
+            Map<K2, V> kv = mKkvMap.get(key1);
+            if (kv != null) {
+                kv.clear();
+            }
         }
-        return kv.size() == 0;
+        mKkvMap.clear();
     }
+
 }
