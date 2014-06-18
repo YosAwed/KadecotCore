@@ -22,15 +22,33 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WampBroker extends WampRole {
 
+    public interface PubSubMessageHandler {
+        public void onSubscribe(String topic);
+
+        public void onUnsubscribe(String topic);
+    }
+
     private final Map<String, Map<WampPeer, Integer>> mSubscriberMaps = new ConcurrentHashMap<String, Map<WampPeer, Integer>>();
 
     private int mPublicationId = 0;
 
     private int mSubscriptionId = 0;
 
+    private final PubSubMessageHandler mPubSubMessageHandler;
+
     @Override
     public final String getRoleName() {
         return "broker";
+    }
+
+    public WampBroker() {
+        super();
+        mPubSubMessageHandler = null;
+    }
+
+    public WampBroker(PubSubMessageHandler handler) {
+        super();
+        mPubSubMessageHandler = handler;
     }
 
     @Override
@@ -72,6 +90,10 @@ public class WampBroker extends WampRole {
         listener.onReply(transmitter,
                 WampMessageFactory.createSubscribed(sub.getRequestId(), subscriptionId));
 
+        if (mPubSubMessageHandler != null) {
+            mPubSubMessageHandler.onSubscribe(topic);
+        }
+
         return true;
     }
 
@@ -94,6 +116,9 @@ public class WampBroker extends WampRole {
                     subMap.remove(target);
                     listener.onReply(transmitter,
                             WampMessageFactory.createUnsubscribed(unsub.getRequestId()));
+                    if (mPubSubMessageHandler != null) {
+                        mPubSubMessageHandler.onUnsubscribe(topics.getKey());
+                    }
                     return true;
                 }
             }
