@@ -7,16 +7,22 @@ import com.sonycsl.wamp.message.WampErrorMessage;
 import com.sonycsl.wamp.message.WampEventMessage;
 import com.sonycsl.wamp.message.WampGoodbyeMessage;
 import com.sonycsl.wamp.message.WampHelloMessage;
+import com.sonycsl.wamp.message.WampInvocationMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampPublishMessage;
 import com.sonycsl.wamp.message.WampPublishedMessage;
+import com.sonycsl.wamp.message.WampRegisterMessage;
+import com.sonycsl.wamp.message.WampRegisteredMessage;
 import com.sonycsl.wamp.message.WampSubscribeMessage;
 import com.sonycsl.wamp.message.WampSubscribedMessage;
+import com.sonycsl.wamp.message.WampUnregisterMessage;
+import com.sonycsl.wamp.message.WampUnregisteredMessage;
 import com.sonycsl.wamp.message.WampUnsubscribeMessage;
 import com.sonycsl.wamp.message.WampUnsubscribedMessage;
 import com.sonycsl.wamp.message.WampWelcomeMessage;
+import com.sonycsl.wamp.message.WampYieldMessage;
 
 import junit.framework.TestCase;
 
@@ -551,6 +557,228 @@ public class WampMessageFactoryTestCase extends TestCase {
         flag = false;
         try {
             WampMessage msg = WampMessageFactory.createEvent(1, 2, details, new JSONArray(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreateRegister() {
+        int requestId = 1;
+        JSONObject options = new JSONObject();
+        WampMessage msg = WampMessageFactory.createRegister(requestId, options, PROCEDURE);
+
+        assertTrue(msg.isRegisterMessage());
+
+        WampRegisterMessage register = msg.asRegisterMessage();
+        assertTrue(register.getRequestId() == requestId);
+        assertTrue(register.getOptions() == options);
+        assertTrue(register.getProcedure().equals(PROCEDURE));
+    }
+
+    public void testCreateRegisterAbnormal() {
+        // options null
+        boolean flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createRegister(1, null, PROCEDURE);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // procedure null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createRegister(1, new JSONObject(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreateRegistered() {
+        int requestId = 1;
+        int registrationId = 2;
+        WampMessage msg = WampMessageFactory.createRegistered(requestId, registrationId);
+
+        assertTrue(msg.isRegisteredMessage());
+
+        WampRegisteredMessage registered = msg.asRegisteredMessage();
+        assertTrue(registered.getRequestId() == requestId);
+        assertTrue(registered.getRegistrationId() == registrationId);
+    }
+
+    public void testCreateUnregister() {
+        int requestId = 1;
+        int registrationId = 2;
+        WampMessage msg = WampMessageFactory.createUnregister(requestId, registrationId);
+
+        assertTrue(msg.isUnregisterMessage());
+
+        WampUnregisterMessage unregister = msg.asUnregisterMessage();
+        assertTrue(unregister.getRequestId() == requestId);
+        assertTrue(unregister.getRegistrationId() == registrationId);
+    }
+
+    public void testCreateUnregistered() {
+        int requestId = 1;
+        WampMessage msg = WampMessageFactory.createUnregistered(requestId);
+
+        assertTrue(msg.isUnregisteredMessage());
+
+        WampUnregisteredMessage unregistered = msg.asUnregisteredMessage();
+        assertTrue(unregistered.getRequestId() == requestId);
+    }
+
+    public void testCreateInvocation() {
+        int requestId = 1;
+        int registrationId = 2;
+        JSONObject details = new JSONObject();
+
+        // no arguments and argumentsKw
+        WampMessage msg = WampMessageFactory.createInvocation(requestId, registrationId, details);
+
+        assertTrue(msg.isInvocationMessage());
+        WampInvocationMessage invocation = msg.asInvocationMessage();
+
+        assertTrue(invocation.getRequestId() == requestId);
+        assertTrue(invocation.getRegistrationId() == registrationId);
+        assertTrue(invocation.getDetails() == details);
+
+        // arguments
+        JSONArray arguments = new JSONArray();
+        msg = WampMessageFactory.createInvocation(requestId, registrationId, details, arguments);
+
+        assertTrue(msg.isInvocationMessage());
+        invocation = msg.asInvocationMessage();
+
+        assertTrue(invocation.getRequestId() == requestId);
+        assertTrue(invocation.getRegistrationId() == registrationId);
+        assertTrue(invocation.getDetails() == details);
+        assertTrue(invocation.getArguments() == arguments);
+
+        // argumentsKw
+        JSONObject argumentsKw = new JSONObject();
+        msg = WampMessageFactory.createInvocation(requestId, registrationId, details, arguments,
+                argumentsKw);
+
+        assertTrue(msg.isInvocationMessage());
+        invocation = msg.asInvocationMessage();
+
+        assertTrue(invocation.getRequestId() == requestId);
+        assertTrue(invocation.getRegistrationId() == registrationId);
+        assertTrue(invocation.getDetails() == details);
+        assertTrue(invocation.getArguments() == arguments);
+        assertTrue(invocation.getArgumentsKw() == argumentsKw);
+    }
+
+    public void testCreateInvocationAbnormal() {
+        // details null
+        boolean flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createInvocation(1, 1, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // arguments null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createInvocation(1, 1, new JSONObject(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // argumentsKw null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createInvocation(1, 1, new JSONObject(),
+                    new JSONArray(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+    }
+
+    public void testCreateYield() {
+        int requestId = 1;
+        JSONObject options = new JSONObject();
+
+        // no arguments and argumentsKw
+        WampMessage msg = WampMessageFactory.createYield(requestId, options);
+
+        assertTrue(msg.isYieldMessage());
+
+        WampYieldMessage yield = msg.asYieldMessage();
+        assertTrue(yield.getRequestId() == requestId);
+        assertTrue(yield.getOptions() == options);
+
+        // arguments
+        JSONArray arguments = new JSONArray();
+        msg = WampMessageFactory.createYield(requestId, options, arguments);
+
+        assertTrue(msg.isYieldMessage());
+
+        yield = msg.asYieldMessage();
+        assertTrue(yield.getRequestId() == requestId);
+        assertTrue(yield.getOptions() == options);
+        assertTrue(yield.getArguments() == arguments);
+
+        // argumentsKw
+        JSONObject argumentsKw = new JSONObject();
+        msg = WampMessageFactory.createYield(requestId, options, arguments, argumentsKw);
+
+        assertTrue(msg.isYieldMessage());
+
+        yield = msg.asYieldMessage();
+        assertTrue(yield.getRequestId() == requestId);
+        assertTrue(yield.getOptions() == options);
+        assertTrue(yield.getArguments() == arguments);
+        assertTrue(yield.getArgumentsKw() == argumentsKw);
+    }
+
+    public void testCreateYieldAbnormal() {
+        // options null
+        boolean flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createYield(1, null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // arguments null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createYield(1, new JSONObject(), null);
+        } catch (IllegalArgumentException e) {
+            flag = true;
+        }
+        if (!flag) {
+            fail();
+        }
+
+        // argumentsKw null
+        flag = false;
+        try {
+            WampMessage msg = WampMessageFactory.createYield(1, new JSONObject(), new JSONArray(),
+                    null);
         } catch (IllegalArgumentException e) {
             flag = true;
         }
