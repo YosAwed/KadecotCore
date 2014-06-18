@@ -414,6 +414,12 @@ public class WampMessageFactoryTestCase extends TestCase {
             fail();
         } catch (IllegalArgumentException e) {
         }
+
+        // illegal message type
+        JSONArray json = new JSONArray();
+        json.put(-1);
+        WampMessage msg = WampMessageFactory.create(json);
+        assertNull(msg);
     }
 
     public void testCreateHello() {
