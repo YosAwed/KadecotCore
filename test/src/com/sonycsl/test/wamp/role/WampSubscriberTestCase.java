@@ -19,6 +19,9 @@ import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class WampSubscriberTestCase extends TestCase {
 
     private static class TestWampSubscriber extends WampSubscriber {
@@ -93,6 +96,34 @@ public class WampSubscriberTestCase extends TestCase {
 
     }
 
+    public void testRxSubscribedTwice() {
+        int subscriptionId = 100;
+
+        WampMessage[] msgs = {
+                WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
+                        new JSONObject(), TOPIC),
+                WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
+                        new JSONObject(), TOPIC)
+        };
+
+        for (WampMessage msg : msgs) {
+            assertTrue(mSubscriber.resolveTxMessage(mPeer, msg));
+        }
+        for (WampMessage msg : msgs) {
+            ++subscriptionId;
+            assertTrue(mSubscriber.resolveRxMessage(mPeer,
+                    WampMessageFactory.createSubscribed(msg.asSubscribeMessage().getRequestId(),
+                            subscriptionId),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            fail();
+                        }
+                    }));
+        }
+
+    }
+
     public void testTxUnSubscribe() {
         int requestId = WampRequestIdGenerator.getId();
         final int subscriptionId = 100;
@@ -145,6 +176,49 @@ public class WampSubscriberTestCase extends TestCase {
                         fail();
                     }
                 }));
+    }
+
+    public void testRxUnsubscribedTwice() {
+        int subscriptionId = 100;
+
+        WampMessage[] msgs = {
+                WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
+                        new JSONObject(), TOPIC),
+                WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
+                        new JSONObject(), TOPIC)
+        };
+
+        Set<WampMessage> unsubMsgs = new HashSet<WampMessage>();
+
+        for (WampMessage msg : msgs) {
+            unsubMsgs.add(WampMessageFactory.createUnsubscribe(WampRequestIdGenerator.getId(),
+                    ++subscriptionId));
+
+            assertTrue(mSubscriber.resolveTxMessage(mPeer, msg));
+            assertTrue(mSubscriber.resolveRxMessage(mPeer,
+                    WampMessageFactory.createSubscribed(msg.asSubscribeMessage().getRequestId(),
+                            subscriptionId),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            fail();
+                        }
+                    }));
+        }
+
+        for (WampMessage unsubMsg : unsubMsgs) {
+            assertTrue(mSubscriber.resolveTxMessage(mPeer, unsubMsg));
+        }
+        for (WampMessage unsubMsg : unsubMsgs) {
+            assertTrue(mSubscriber.resolveRxMessage(mPeer,
+                    WampMessageFactory.createUnsubscribed(unsubMsg.asUnsubscribeMessage()
+                            .getRequestId()), new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            fail();
+                        }
+                    }));
+        }
     }
 
     public void testRxEvent() {

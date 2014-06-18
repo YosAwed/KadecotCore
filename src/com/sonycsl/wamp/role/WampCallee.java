@@ -14,6 +14,7 @@ import com.sonycsl.wamp.message.WampRegisterMessage;
 import com.sonycsl.wamp.message.WampRegisteredMessage;
 import com.sonycsl.wamp.message.WampUnregisterMessage;
 import com.sonycsl.wamp.message.WampUnregisteredMessage;
+import com.sonycsl.wamp.util.DoubleKeyMap;
 
 import org.json.JSONObject;
 
@@ -22,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class WampCallee extends WampRole {
 
-    private final Map<WampPeer, WampMessage> mRegs = new ConcurrentHashMap<WampPeer, WampMessage>();
-    private final Map<WampPeer, WampMessage> mUnregs = new ConcurrentHashMap<WampPeer, WampMessage>();
+    private final DoubleKeyMap<WampPeer, Integer, WampMessage> mRegs = new DoubleKeyMap<WampPeer, Integer, WampMessage>();
+    private final DoubleKeyMap<WampPeer, Integer, WampMessage> mUnregs = new DoubleKeyMap<WampPeer, Integer, WampMessage>();
     private final Map<WampPeer, Map<Integer, String>> mProcMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
     @Override
@@ -34,7 +35,7 @@ abstract public class WampCallee extends WampRole {
     @Override
     protected final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isRegisterMessage()) {
-            mRegs.put(receiver, msg);
+            mRegs.put(receiver, msg.asRegisterMessage().getRequestId(), msg);
             if (mProcMaps.get(receiver) == null) {
                 mProcMaps.put(receiver, new ConcurrentHashMap<Integer, String>());
             }
@@ -42,7 +43,7 @@ abstract public class WampCallee extends WampRole {
         }
 
         if (msg.isUnregisterMessage()) {
-            mUnregs.put(receiver, msg);
+            mUnregs.put(receiver, msg.asUnregisterMessage().getRequestId(), msg);
             return true;
         }
 
@@ -69,11 +70,13 @@ abstract public class WampCallee extends WampRole {
     }
 
     private boolean resolveRegisteredMessage(WampPeer transmitter, WampMessage msg) {
-        if (!mRegs.containsKey(transmitter)) {
+        WampRegisteredMessage registeredMsg = msg.asRegisteredMessage();
+        if (!mRegs.containsKey(transmitter, registeredMsg.getRequestId())) {
             return false;
         }
 
-        WampRegisterMessage request = mRegs.get(transmitter).asRegisterMessage();
+        WampRegisterMessage request = mRegs.get(transmitter, registeredMsg.getRequestId())
+                .asRegisterMessage();
         WampRegisteredMessage response = msg.asRegisteredMessage();
 
         if (request.getRequestId() != response.getRequestId()) {
@@ -86,16 +89,18 @@ abstract public class WampCallee extends WampRole {
         }
         procMap.put(response.getRegistrationId(), request.getProcedure());
 
-        mRegs.remove(transmitter);
+        mRegs.remove(transmitter, registeredMsg.getRequestId());
         return true;
     }
 
     private boolean resolveUnregisteredMessage(WampPeer transmitter, WampMessage msg) {
-        if (!mUnregs.containsKey(transmitter)) {
+        WampUnregisteredMessage unregisteredMsg = msg.asUnregisteredMessage();
+        if (!mUnregs.containsKey(transmitter, unregisteredMsg.getRequestId())) {
             return false;
         }
 
-        WampUnregisterMessage request = mUnregs.get(transmitter).asUnregisterMessage();
+        WampUnregisterMessage request = mUnregs.get(transmitter, unregisteredMsg.getRequestId())
+                .asUnregisterMessage();
         WampUnregisteredMessage response = msg.asUnregisteredMessage();
 
         if (request.getRequestId() != response.getRequestId()) {
@@ -110,7 +115,7 @@ abstract public class WampCallee extends WampRole {
         }
         procMap.remove(request.getRegistrationId());
 
-        mUnregs.remove(transmitter);
+        mUnregs.remove(transmitter, unregisteredMsg.getRequestId());
         return true;
     }
 

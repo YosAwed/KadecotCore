@@ -79,6 +79,7 @@ public class WampCalleeTestCase extends TestCase {
     }
 
     private static final String PROCEDURE = "com.myapp.myprocedure1";
+    private static final String PROCEDURE2 = "com.myapp.myprocedure2";
 
     private TestWampCallee mCallee;
     private MockWampPeer mPeer;
@@ -124,6 +125,33 @@ public class WampCalleeTestCase extends TestCase {
                 WampMessageFactory.createRegister(requestId, new JSONObject(), PROCEDURE)));
         assertTrue(mCallee.resolveRxMessage(mPeer,
                 WampMessageFactory.createRegistered(requestId, registrationId),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    public void testRxRegisterdTwice() {
+        final int requestId1 = WampRequestIdGenerator.getId();
+        final int requestId2 = WampRequestIdGenerator.getId();
+        final int registrationId1 = 100;
+        final int registrationId2 = 200;
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId2, new JSONObject(), PROCEDURE2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId1, registrationId1),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId2, registrationId2),
                 new OnReplyListener() {
                     @Override
                     public void onReply(WampPeer receiver, WampMessage reply) {
@@ -179,6 +207,56 @@ public class WampCalleeTestCase extends TestCase {
                         WampMessageFactory.createUnregister(requestId, registrationId)));
         assertTrue(mCallee.resolveRxMessage(mPeer,
                 WampMessageFactory.createUnregistered(requestId), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    public void testRxUnregisterdTwice() {
+        int requestId1 = WampRequestIdGenerator.getId();
+        final int registrationId1 = 100;
+        int requestId2 = WampRequestIdGenerator.getId();
+        final int registrationId2 = 200;
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId1, registrationId1),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId2, new JSONObject(), PROCEDURE2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId2, registrationId2),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+
+        requestId1 = WampRequestIdGenerator.getId();
+        requestId2 = WampRequestIdGenerator.getId();
+        assertTrue(mCallee
+                .resolveTxMessage(mPeer,
+                        WampMessageFactory.createUnregister(requestId1, registrationId1)));
+        assertTrue(mCallee
+                .resolveTxMessage(mPeer,
+                        WampMessageFactory.createUnregister(requestId2, registrationId2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createUnregistered(requestId1), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createUnregistered(requestId2), new OnReplyListener() {
                     @Override
                     public void onReply(WampPeer receiver, WampMessage reply) {
                         fail();
