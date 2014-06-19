@@ -100,7 +100,7 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     }
 
     @Override
-    public JSONObject getArgumentKw() {
+    public JSONObject getArgumentsKw() {
         try {
             return toJSON().getJSONObject(ARGUMENTS_KW_INDEX);
         } catch (JSONException e) {

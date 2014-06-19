@@ -149,7 +149,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
             if (!result.hasArgumentsKw()) {
                 return;
             }
-            JSONObject device = result.getArgumentKw();
+            JSONObject device = result.getArgumentsKw();
             try {
                 // add device data to data list
                 ECHONETLiteDeviceData data = new ECHONETLiteDeviceData(device);
