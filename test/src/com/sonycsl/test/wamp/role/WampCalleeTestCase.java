@@ -214,7 +214,7 @@ public class WampCalleeTestCase extends TestCase {
                 }));
     }
 
-    public void testRxUnregisterdTwice() {
+    public void testRxUnregisterTwice() {
         int requestId1 = WampRequestIdGenerator.getId();
         final int registrationId1 = 100;
         int requestId2 = WampRequestIdGenerator.getId();
