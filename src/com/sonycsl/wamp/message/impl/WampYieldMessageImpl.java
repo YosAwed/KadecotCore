@@ -42,6 +42,14 @@ public class WampYieldMessageImpl extends WampAbstractMessage implements WampYie
 
     public WampYieldMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.YIELD) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

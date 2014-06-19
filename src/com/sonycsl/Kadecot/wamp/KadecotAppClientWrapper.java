@@ -115,7 +115,7 @@ public class KadecotAppClientWrapper {
             return;
         }
 
-        callback.onResult(msg.getDetails(), msg.getArgumentKw());
+        callback.onResult(msg.getDetails(), msg.getArgumentsKw());
     }
 
     private void respondEvent(WampEventMessage msg) {

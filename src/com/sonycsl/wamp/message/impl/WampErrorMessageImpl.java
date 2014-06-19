@@ -46,6 +46,14 @@ public class WampErrorMessageImpl extends WampAbstractMessage implements WampErr
 
     public WampErrorMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.ERROR) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

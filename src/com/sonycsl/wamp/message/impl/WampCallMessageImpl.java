@@ -44,6 +44,13 @@ public class WampCallMessageImpl extends WampAbstractMessage implements WampCall
 
     public WampCallMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.CALL) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

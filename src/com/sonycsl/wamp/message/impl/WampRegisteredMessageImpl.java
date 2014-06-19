@@ -24,6 +24,14 @@ public class WampRegisteredMessageImpl extends WampAbstractMessage implements Wa
 
     public WampRegisteredMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.REGISTERED) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
