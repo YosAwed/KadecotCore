@@ -27,6 +27,14 @@ public class WampGoodbyeMessageImpl extends WampAbstractMessage implements WampG
 
     public WampGoodbyeMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.GOODBYE) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

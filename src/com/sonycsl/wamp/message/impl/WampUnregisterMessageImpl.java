@@ -24,6 +24,14 @@ public class WampUnregisterMessageImpl extends WampAbstractMessage implements Wa
 
     public WampUnregisterMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.UNREGISTER) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

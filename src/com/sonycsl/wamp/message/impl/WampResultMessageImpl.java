@@ -42,6 +42,14 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
 
     public WampResultMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.RESULT) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -92,7 +100,7 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     }
 
     @Override
-    public JSONObject getArgumentKw() {
+    public JSONObject getArgumentsKw() {
         try {
             return toJSON().getJSONObject(ARGUMENTS_KW_INDEX);
         } catch (JSONException e) {
