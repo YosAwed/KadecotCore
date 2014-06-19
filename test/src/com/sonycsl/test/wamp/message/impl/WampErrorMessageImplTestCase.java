@@ -54,7 +54,7 @@ public class WampErrorMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = error.getRequestType();
+            int requestId = error.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }

@@ -34,7 +34,6 @@ public class WampHelloMessageImplTestCase extends TestCase {
 
     public void testAbnormal() {
         JSONArray msg = new JSONArray();
-        msg.put(WampMessageType.HELLO);
         WampHelloMessageImpl hello = new WampHelloMessageImpl(msg);
 
         // no realm

@@ -23,6 +23,16 @@ public class WampAbstractMessageTestCase extends TestCase {
         assertNotNull(msg);
     }
 
+    public void testAbnormal() {
+        JSONArray json = new JSONArray();
+        try {
+            WampMessage msg = new WampBaseMessage(json);
+            int type = msg.getMessageType();
+            fail();
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
     public void testIsMethods() {
         JSONArray json = new JSONArray();
         json.put(WampMessageType.HELLO);
