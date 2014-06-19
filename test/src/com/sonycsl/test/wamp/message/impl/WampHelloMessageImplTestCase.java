@@ -2,7 +2,6 @@
 package com.sonycsl.test.wamp.message.impl;
 
 import com.sonycsl.wamp.message.WampMessageType;
-import com.sonycsl.wamp.message.impl.WampAbortMessageImpl;
 import com.sonycsl.wamp.message.impl.WampHelloMessageImpl;
 
 import junit.framework.TestCase;
@@ -57,7 +56,7 @@ public class WampHelloMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampAbortMessageImpl abort = new WampAbortMessageImpl(msg);
+            WampHelloMessageImpl hello = new WampHelloMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }
