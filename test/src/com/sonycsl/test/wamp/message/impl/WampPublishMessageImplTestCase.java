@@ -31,6 +31,7 @@ public class WampPublishMessageImplTestCase extends TestCase {
         assertTrue(publish.isPublishMessage());
         assertTrue(publish.getRequestId() == requestId);
         assertTrue(publish.getOptions() == options);
+        assertTrue(publish.getTopic().equals(topic));
         assertTrue(publish.hasArguments());
         assertTrue(publish.getArguments() == arguments);
         assertTrue(publish.hasArgumentsKw());
