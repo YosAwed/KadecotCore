@@ -377,4 +377,26 @@ public class WampCalleeTestCase extends TestCase {
                     }
                 }));
     }
+
+    public void testNoRegisterInvocation() {
+        assertFalse(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createInvocation(1, -1, new JSONObject()),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                    }
+                }));
+    }
+
+    public void testRegistrationIdMismatch() {
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createInvocation(2, -1, new JSONObject()),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                    }
+                }));
+    }
 }
