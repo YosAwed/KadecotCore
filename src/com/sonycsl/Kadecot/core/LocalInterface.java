@@ -73,13 +73,14 @@ public class LocalInterface {
                         @Override
                         public void onResult(JSONObject details, JSONObject argumentsKw) {
                             mKadecot.callJsOnKadecotMyPage(resultListener
-                                    + "(JSON.parse(\"[]\"), JSON.parse("
+                                    + "(JSON.parse("
                                     + JsonEscapeUtil.escapeSlash(argumentsKw)
-                                    + ", true));");
+                                    + "), true);");
                         }
 
                         @Override
                         public void onError(JSONObject details, String error) {
+                            Log.e(TAG, "CALL ERROR: " + error);
                             mKadecot.callJsOnKadecotMyPage(errorListener
                                     + "(JSON.parse(\"[]\"), "
                                     + "JSON.parse(\"{\\\"error\\\":\\\"" + error + "\\\"}\")"
@@ -118,6 +119,7 @@ public class LocalInterface {
 
                 @Override
                 public void onError(JSONObject details, String error) {
+                    Log.e(TAG, "SUBSCIRBE onError: " + error);
                     mKadecot.callJsOnKadecotMyPage(subscribeErrorListener
                             + "(JSON.parse(\"[]\"), "
                             + "JSON.parse(\"{\\\"error\\\":\\\"" + error + "\\\"}\")"
