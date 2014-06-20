@@ -6,6 +6,7 @@
 package com.sonycsl.test.wamp.role;
 
 import com.sonycsl.test.mock.MockWampPeer;
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampEventMessage;
 import com.sonycsl.wamp.message.WampMessage;
@@ -282,6 +283,55 @@ public class WampSubscriberTestCase extends TestCase {
                     @Override
                     public void onReply(WampPeer receiver, WampMessage reply) {
                         fail();
+                    }
+                }));
+    }
+
+    // abnormal
+    public void testSubscribedWithNoSubscribe() {
+        assertFalse(mSubscriber.resolveRxMessage(mPeer,
+                WampMessageFactory.createSubscribed(1, -1), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    // abnormal
+    public void testUnsubscribedWithNoUnsubscribe() {
+        assertFalse(mSubscriber.resolveRxMessage(mPeer,
+                WampMessageFactory.createUnsubscribed(-1), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    // abnormal
+    public void testNoSubscriptionEvent() {
+        assertFalse(mSubscriber.resolveRxMessage(mPeer,
+                WampMessageFactory.createEvent(1, 1, new JSONObject()), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    // abnormal
+    public void testNoSuchSubscription() {
+        int requestId = 1;
+        assertTrue(mSubscriber.resolveTxMessage(mPeer,
+                WampMessageFactory.createSubscribe(requestId, new JSONObject(), TOPIC)));
+        assertTrue(mSubscriber.resolveRxMessage(mPeer,
+                WampMessageFactory.createEvent(-1, 1, new JSONObject()), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        assertTrue(reply.isErrorMessage());
+                        assertEquals(WampError.NO_SUCH_SUBSCRIPTION, reply.asErrorMessage()
+                                .getUri());
                     }
                 }));
     }
