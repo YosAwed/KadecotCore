@@ -9,6 +9,7 @@ import com.sonycsl.test.mock.MockWampPeer;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampPublisher;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
@@ -17,6 +18,9 @@ import junit.framework.TestCase;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class WampPublisherTestCase extends TestCase {
 
@@ -122,6 +126,24 @@ public class WampPublisherTestCase extends TestCase {
                         }
                     }));
         }
+    }
 
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.WELCOME);
+        uncheckRx.add(WampMessageType.ABORT);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.ERROR);
+        uncheckRx.add(WampMessageType.PUBLISHED);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mPublisher, mPeer, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.HELLO);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.PUBLISH);
+
+        WampRoleTestUtil.txMessageOutOfRole(mPublisher, mPeer, uncheckTx);
     }
 }

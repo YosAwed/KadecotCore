@@ -20,6 +20,9 @@ import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class WampCallerTestCase extends TestCase {
 
     private static class TestWampCaller extends WampCaller {
@@ -97,5 +100,24 @@ public class WampCallerTestCase extends TestCase {
                 fail();
             }
         }));
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.WELCOME);
+        uncheckRx.add(WampMessageType.ABORT);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.ERROR);
+        uncheckRx.add(WampMessageType.RESULT);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mCaller, mPeer, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.HELLO);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.CALL);
+
+        WampRoleTestUtil.txMessageOutOfRole(mCaller, mPeer, uncheckTx);
     }
 }

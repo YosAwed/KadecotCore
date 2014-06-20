@@ -6,10 +6,13 @@
 package com.sonycsl.test.wamp.role;
 
 import com.sonycsl.test.mock.MockWampPeer;
+import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampBroker;
+import com.sonycsl.wamp.role.WampBroker.PubSubMessageHandler;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
@@ -18,6 +21,8 @@ import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,9 +30,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class WampBrokerTestCase extends TestCase {
 
     private static class TestWampBroker extends WampBroker {
+        private TestWampBroker() {
+            super();
+        }
+
+        private TestWampBroker(PubSubMessageHandler handler) {
+            super(handler);
+        }
     }
 
     private static final String TOPIC = "wamp.broaker.test.case.topic";
+    private static final String TOPIC1 = "wamp.broker.test.case.topic1";
+    private static final String TOPIC2 = "wamp.broker.test.case.topic2";
     private static final String UNKNOWN_TOPIC = "wamp.broaker.test.case.unknown.topic";
 
     private TestWampBroker mBroker;
@@ -37,17 +51,32 @@ public class WampBrokerTestCase extends TestCase {
 
     @Override
     protected void setUp() {
-        mBroker = new TestWampBroker();
+        mBroker = new TestWampBroker(new PubSubMessageHandler() {
+
+            @Override
+            public void onUnsubscribe(String topic) {
+            }
+
+            @Override
+            public void onSubscribe(String topic) {
+            }
+
+        });
         mPeer1 = new MockWampPeer();
         mPeer2 = new MockWampPeer();
         mPeer3 = new MockWampPeer();
     }
 
     public void testCtor() {
+        assertNotNull(new TestWampBroker());
         assertNotNull(mBroker);
         assertNotNull(mPeer1);
         assertNotNull(mPeer2);
         assertNotNull(mPeer3);
+    }
+
+    public void testGetRoleName() {
+        assertEquals(mBroker.getRoleName(), "broker");
     }
 
     public void testRxSubscribe() {
@@ -357,11 +386,123 @@ public class WampBrokerTestCase extends TestCase {
     }
 
     public void testResolveTxMessage() {
+        assertFalse(mBroker.resolveTxMessage(null, null));
+    }
+
+    // abnormal
+    public void testNoSuchSubscription() {
+        mBroker.resolveRxMessage(mPeer1, WampMessageFactory.createUnsubscribe(1, -1),
+                new OnReplyListener() {
+
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        assertTrue(reply.isErrorMessage());
+                        assertEquals(WampError.NO_SUCH_SUBSCRIPTION, reply.asErrorMessage()
+                                .getUri());
+                    }
+                });
+    }
+
+    public void testRxManySubscribe() {
+        int regNum = 200;
+        final CountDownLatch latch2 = new CountDownLatch(regNum);
+
+        // subscribe topic1 * 100
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    mBroker.resolveRxMessage(mPeer1, WampMessageFactory.createSubscribe(
+                            WampRequestIdGenerator.getId(), new JSONObject(), TOPIC1 + "." + i),
+                            new OnReplyListener() {
+                                @Override
+                                public void onReply(WampPeer receiver, WampMessage reply) {
+                                    if (reply.isSubscribedMessage()) {
+                                        latch2.countDown();
+                                        return;
+                                    }
+                                    fail();
+                                }
+                            });
+                }
+            }
+        }).start();
+
+        // subscribe topic2 * 100
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    mBroker.resolveRxMessage(mPeer2, WampMessageFactory.createSubscribe(
+                            WampRequestIdGenerator.getId(), new JSONObject(), TOPIC2 + "." + i),
+                            new OnReplyListener() {
+                                @Override
+                                public void onReply(WampPeer receiver, WampMessage reply) {
+                                    if (reply.isSubscribedMessage()) {
+                                        latch2.countDown();
+                                        return;
+                                    }
+                                    fail(reply.toString());
+                                }
+                            });
+                }
+            }
+        }).start();
+
         try {
-            mBroker.resolveTxMessage(null, null);
-        } catch (UnsupportedOperationException e) {
-            return;
+            assertTrue(latch2.await(5, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
         }
-        fail();
+
+        // call procedures
+        for (int i = 0; i < regNum / 2; i++) {
+            assertTrue(mBroker.resolveRxMessage(mPeer1, WampMessageFactory.createPublish(
+                    WampRequestIdGenerator.getId(), new JSONObject(), TOPIC1 + "." + i),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            if (reply.isErrorMessage()) {
+                                fail(reply.toString());
+                            }
+                        }
+                    }));
+
+            assertTrue(mBroker.resolveRxMessage(mPeer2, WampMessageFactory.createPublish(
+                    WampRequestIdGenerator.getId(), new JSONObject(), TOPIC2 + "." + i),
+                    new OnReplyListener() {
+                        @Override
+                        public void onReply(WampPeer receiver, WampMessage reply) {
+                            if (reply.isErrorMessage()) {
+                                fail(reply.toString());
+                            }
+                        }
+                    }));
+        }
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.HELLO);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.PUBLISH);
+        uncheckRx.add(WampMessageType.SUBSCRIBE);
+        uncheckRx.add(WampMessageType.UNSUBSCRIBE);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mBroker, mPeer1, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.WELCOME);
+        uncheckTx.add(WampMessageType.ABORT);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.ERROR);
+        uncheckTx.add(WampMessageType.PUBLISHED);
+        uncheckTx.add(WampMessageType.SUBSCRIBED);
+        uncheckTx.add(WampMessageType.UNSUBSCRIBED);
+        uncheckTx.add(WampMessageType.EVENT);
+
+        WampRoleTestUtil.txMessageOutOfRole(mBroker, mPeer1, uncheckTx);
     }
 }
