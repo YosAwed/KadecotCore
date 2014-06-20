@@ -39,7 +39,7 @@ abstract public class WampDealer extends WampRole {
 
     @Override
     public final boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
