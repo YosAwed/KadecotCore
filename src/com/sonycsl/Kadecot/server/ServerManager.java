@@ -26,8 +26,6 @@ public class ServerManager {
 
     private KadecotServerService mKadecotService;
 
-    private KadecotJSONPServer mJSONPServer;
-
     private KadecotWebSocketServer mWebSocketServer;
 
     private KadecotSnapServer mSnapServer;
@@ -38,7 +36,7 @@ public class ServerManager {
 
     private ServerSettings mServerSettings;
 
-    private static final int mSnapPort = 31414;
+    private static final int mSnapPort = 31413;
 
     private final int STATUS_ON = 0;
 
@@ -204,7 +202,7 @@ public class ServerManager {
             return;
         }
         try {
-            getJSONPServer().start(31413);
+            getJSONPServer().start();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -259,11 +257,8 @@ public class ServerManager {
         return mDeviceManager;
     }
 
-    private KadecotJSONPServer getJSONPServer() {
-        if (mJSONPServer == null) {
-            mJSONPServer = KadecotJSONPServer.getInstance(mContext);
-        }
-        return mJSONPServer;
+    private KadecotHttpServer getJSONPServer() {
+        return KadecotHttpServer.getInstance();
     }
 
     private KadecotSnapServer getSnapServer() {
