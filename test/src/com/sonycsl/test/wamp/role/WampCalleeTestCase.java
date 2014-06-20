@@ -10,6 +10,7 @@ import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampYieldMessage;
 import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampRole;
@@ -22,8 +23,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -398,5 +401,29 @@ public class WampCalleeTestCase extends TestCase {
                     public void onReply(WampPeer receiver, WampMessage reply) {
                     }
                 }));
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.WELCOME);
+        uncheckRx.add(WampMessageType.ABORT);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.ERROR);
+        uncheckRx.add(WampMessageType.REGISTERED);
+        uncheckRx.add(WampMessageType.UNREGISTERED);
+        uncheckRx.add(WampMessageType.INVOCATION);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mCallee, mPeer, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.HELLO);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.ERROR);
+        uncheckTx.add(WampMessageType.REGISTER);
+        uncheckTx.add(WampMessageType.UNREGISTER);
+        uncheckTx.add(WampMessageType.YIELD);
+
+        WampRoleTestUtil.txMessageOutOfRole(mCallee, mPeer, uncheckTx);
     }
 }

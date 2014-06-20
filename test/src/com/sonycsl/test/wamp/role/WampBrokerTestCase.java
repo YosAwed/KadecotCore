@@ -10,6 +10,7 @@ import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.role.WampBroker;
 import com.sonycsl.wamp.role.WampBroker.PubSubMessageHandler;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
@@ -20,6 +21,8 @@ import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -383,12 +386,7 @@ public class WampBrokerTestCase extends TestCase {
     }
 
     public void testResolveTxMessage() {
-        try {
-            mBroker.resolveTxMessage(null, null);
-        } catch (UnsupportedOperationException e) {
-            return;
-        }
-        fail();
+        assertFalse(mBroker.resolveTxMessage(null, null));
     }
 
     // abnormal
@@ -482,5 +480,29 @@ public class WampBrokerTestCase extends TestCase {
                         }
                     }));
         }
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.HELLO);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.PUBLISH);
+        uncheckRx.add(WampMessageType.SUBSCRIBE);
+        uncheckRx.add(WampMessageType.UNSUBSCRIBE);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mBroker, mPeer1, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.WELCOME);
+        uncheckTx.add(WampMessageType.ABORT);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.ERROR);
+        uncheckTx.add(WampMessageType.PUBLISHED);
+        uncheckTx.add(WampMessageType.SUBSCRIBED);
+        uncheckTx.add(WampMessageType.UNSUBSCRIBED);
+        uncheckTx.add(WampMessageType.EVENT);
+
+        WampRoleTestUtil.txMessageOutOfRole(mBroker, mPeer1, uncheckTx);
     }
 }

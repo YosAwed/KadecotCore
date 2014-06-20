@@ -20,6 +20,8 @@ import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -654,13 +656,7 @@ public class WampDealerTestCase extends TestCase {
     }
 
     public void testResolveTxMessage() {
-        try {
-            mDealer.resolveTxMessage(null, null);
-        } catch (UnsupportedOperationException e) {
-            return;
-        }
-
-        fail();
+        assertFalse(mDealer.resolveTxMessage(null, null));
     }
 
     // abnormal
@@ -752,5 +748,31 @@ public class WampDealerTestCase extends TestCase {
                         }
                     }));
         }
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.HELLO);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.ERROR);
+        uncheckRx.add(WampMessageType.CALL);
+        uncheckRx.add(WampMessageType.REGISTER);
+        uncheckRx.add(WampMessageType.UNREGISTER);
+        uncheckRx.add(WampMessageType.YIELD);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mDealer, mPeer1, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.WELCOME);
+        uncheckTx.add(WampMessageType.ABORT);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.ERROR);
+        uncheckTx.add(WampMessageType.RESULT);
+        uncheckTx.add(WampMessageType.REGISTERED);
+        uncheckTx.add(WampMessageType.UNREGISTERED);
+        uncheckTx.add(WampMessageType.INVOCATION);
+
+        WampRoleTestUtil.txMessageOutOfRole(mDealer, mPeer1, uncheckTx);
     }
 }
