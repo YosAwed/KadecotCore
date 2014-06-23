@@ -42,6 +42,9 @@ public class KadecotHttpServer extends NanoHTTPD {
 
     private static final String DEVICE_ID = "deviceId";
     private static final String PROTOCOL = "protocol";
+    private static final String PROCEDURE = "procedure";
+
+    private static final String PROCEDURE_HEAD = "com.sonycsl.kadecot.";
 
     private static final KadecotHttpServer sInstance = new KadecotHttpServer(JSONP_PORT);
 
@@ -261,8 +264,8 @@ public class KadecotHttpServer extends NanoHTTPD {
     }
 
     private Response invokeWampCall(String callback, JSONObject device, Map<String, String> params) {
-        String procedure = params.get("procedure");
-        if (procedure == null) {
+        String procedureFoot = params.get(PROCEDURE);
+        if (procedureFoot == null) {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
         String paramsKwStr = params.get(PARAMS);
@@ -270,16 +273,30 @@ public class KadecotHttpServer extends NanoHTTPD {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
 
-        JSONObject paramsKw;
+        String procedure;
         try {
-            paramsKw = new JSONObject(paramsKwStr);
-        } catch (JSONException e) {
-            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+            StringBuilder procBuilder = new StringBuilder();
+            procBuilder.append(PROCEDURE_HEAD);
+            procBuilder.append(device.getString(PROTOCOL));
+            procBuilder.append(".");
+            procBuilder.append(PROCEDURE);
+            procBuilder.append(".");
+            procBuilder.append(procedureFoot);
+
+            procedure = procBuilder.toString();
+        } catch (JSONException e1) {
+            return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback);
         }
 
         JSONObject options;
         try {
             options = new JSONObject().put(DEVICE_ID, device.getLong(DEVICE_ID));
+        } catch (JSONException e) {
+            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+        }
+        JSONObject paramsKw;
+        try {
+            paramsKw = new JSONObject(paramsKwStr);
         } catch (JSONException e) {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
