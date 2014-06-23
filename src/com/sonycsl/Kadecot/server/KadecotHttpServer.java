@@ -121,7 +121,7 @@ public class KadecotHttpServer extends NanoHTTPD {
         }
 
         if (session.getMethod() == Method.POST) {
-            if (directories.length == 4) {
+            if (directories.length == 3) {
                 JSONObject options;
                 try {
                     long deviceId = Long.parseLong(directories[2]);
@@ -131,15 +131,19 @@ public class KadecotHttpServer extends NanoHTTPD {
                 } catch (JSONException e) {
                     return new Response(Response.Status.BAD_REQUEST.toString());
                 }
-                String procedure = directories[3];
 
                 Map<String, String> params = session.getParms();
                 if (params == null) {
                     return new Response(Response.Status.BAD_REQUEST.toString());
                 }
+                String procedure = params.get("procedure");
+                if (procedure == null) {
+                    return new Response(Response.Status.BAD_REQUEST.toString());
+                }
+
                 JSONObject paramsKw;
                 try {
-                    paramsKw = new JSONObject(session.getQueryParameterString());
+                    paramsKw = new JSONObject(params.get("paramsKw"));
                 } catch (JSONException e) {
                     return new Response(Response.Status.BAD_REQUEST.toString());
                 }
@@ -206,40 +210,6 @@ public class KadecotHttpServer extends NanoHTTPD {
             }
         }
 
-        if (directories.length == 4) {
-            long deviceId;
-            try {
-                deviceId = Long.parseLong(directories[2]);
-            } catch (NumberFormatException e) {
-                return new Response(Response.Status.BAD_REQUEST.toString());
-            }
-            ResultHolder getDeviceListResult = syncCall(mAppClient,
-                    KadecotProviderClient.Procedure.GET_DEVICE_LIST.getUri(),
-                    new JSONObject(), new JSONObject());
-            if (getDeviceListResult == null) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
-            }
-            JSONArray deviceList;
-            try {
-                deviceList = getDeviceListResult.argumentsKw.getJSONArray("deviceList");
-            } catch (JSONException e) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
-            }
-
-            try {
-                for (int devi = 0; devi < deviceList.length(); devi++) {
-                    JSONObject device = deviceList.getJSONObject(devi);
-                    if (device.getLong("deviceId") == deviceId) {
-                        String description = deviceList.getJSONObject(devi)
-                                .getString("description");
-                        return new Response(description);
-                    }
-                }
-
-            } catch (JSONException e) {
-                return new Response(Response.Status.BAD_REQUEST.toString());
-            }
-        }
         return new Response(Response.Status.BAD_REQUEST.toString());
     }
 
