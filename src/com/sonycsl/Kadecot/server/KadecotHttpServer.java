@@ -37,6 +37,7 @@ public class KadecotHttpServer extends NanoHTTPD {
     private static final int JSONP_PORT = 31413;
 
     private static final String DEVICES = "devices";
+    private static final String PARAMS = "params";
 
     private static final KadecotHttpServer sInstance = new KadecotHttpServer(JSONP_PORT);
 
@@ -198,7 +199,7 @@ public class KadecotHttpServer extends NanoHTTPD {
 
         JSONObject paramsKw;
         try {
-            paramsKw = new JSONObject(params.get("paramsKw"));
+            paramsKw = new JSONObject(params.get(PARAMS));
         } catch (JSONException e) {
             return new Response(Response.Status.BAD_REQUEST.toString());
         }
