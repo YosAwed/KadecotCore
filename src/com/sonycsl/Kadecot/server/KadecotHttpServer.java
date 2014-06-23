@@ -40,6 +40,12 @@ public class KadecotHttpServer extends NanoHTTPD {
     private static final String PARAMS = "params";
     private static final String CALLBACK = "callback";
 
+    private static final String DEVICE_ID = "deviceId";
+    private static final String PROTOCOL = "protocol";
+    private static final String PROCEDURE = "procedure";
+
+    private static final String PROCEDURE_HEAD = "com.sonycsl.kadecot.";
+
     private static final KadecotHttpServer sInstance = new KadecotHttpServer(JSONP_PORT);
 
     private static class JsonpResponse extends Response {
@@ -190,75 +196,107 @@ public class KadecotHttpServer extends NanoHTTPD {
             } catch (NumberFormatException e) {
                 return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
             }
-            Map<String, String> params = session.getParms();
 
-            if (params.isEmpty()) {
-                return getProcedureDetail(callback, deviceId);
+            JSONObject device = fetchDevice(deviceId);
+            if (device == null) {
+                return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback);
             }
 
-            return invokeWampCall(callback, deviceId, params);
+            Map<String, String> params = session.getParms();
+            if (params.isEmpty()) {
+                return getProcedureDetail(callback, device);
+            }
+
+            return invokeWampCall(callback, device, params);
         }
 
         return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
     }
 
-    private Response getProcedureDetail(String callback, long deviceId) {
+    private JSONObject fetchDevice(long deviceId) {
         ResultHolder getDeviceListResult = syncCall(mAppClient,
                 KadecotProviderClient.Procedure.GET_DEVICE_LIST.getUri(),
                 new JSONObject(), new JSONObject());
         if (!getDeviceListResult.success) {
-            return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback, JsonpResponse
-                    .generateErrorJson(getDeviceListResult.error).toString());
+            return null;
         }
         JSONArray deviceList;
         try {
             deviceList = getDeviceListResult.argumentsKw.getJSONArray("deviceList");
         } catch (JSONException e) {
-            return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback);
+            return null;
         }
 
         try {
             for (int devi = 0; devi < deviceList.length(); devi++) {
                 JSONObject device = deviceList.getJSONObject(devi);
-                if (device.getLong("deviceId") == deviceId) {
-                    String protocol = deviceList.getJSONObject(devi).getString("protocol");
-                    ResultHolder getProcListResult = syncCall(mAppClient,
-                            KadecotProviderClient.Procedure.GET_PROCEDURE_LIST.getUri(),
-                            new JSONObject(), new JSONObject().put(
-                                    KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
-                                    protocol));
-                    if (!getProcListResult.success) {
-                        return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback,
-                                JsonpResponse.generateErrorJson(getProcListResult.error).toString());
-                    }
-
-                    return new JsonpResponse(Response.Status.OK, callback,
-                            getProcListResult.argumentsKw.toString());
+                if (device.getLong(DEVICE_ID) == deviceId) {
+                    return device;
                 }
             }
 
         } catch (JSONException e) {
-            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+            return null;
         }
-        return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+
+        return null;
     }
 
-    private Response invokeWampCall(String callback, long deviceId, Map<String, String> params) {
-        String procedure = params.get("procedure");
-        if (procedure == null) {
+    private Response getProcedureDetail(String callback, JSONObject device) {
+        try {
+            String protocol = device.getString(PROTOCOL);
+            ResultHolder getProcListResult = syncCall(mAppClient,
+                    KadecotProviderClient.Procedure.GET_PROCEDURE_LIST.getUri(),
+                    new JSONObject(), new JSONObject().put(
+                            KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
+                            protocol));
+            if (!getProcListResult.success) {
+                return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback,
+                        JsonpResponse.generateErrorJson(getProcListResult.error).toString());
+            }
+
+            return new JsonpResponse(Response.Status.OK, callback,
+                    getProcListResult.argumentsKw.toString());
+
+        } catch (JSONException e) {
+            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+        }
+    }
+
+    private Response invokeWampCall(String callback, JSONObject device, Map<String, String> params) {
+        String procedureFoot = params.get(PROCEDURE);
+        if (procedureFoot == null) {
+            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+        }
+        String paramsKwStr = params.get(PARAMS);
+        if (paramsKwStr == null) {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
 
-        JSONObject paramsKw;
+        String procedure;
         try {
-            paramsKw = new JSONObject(params.get(PARAMS));
-        } catch (JSONException e) {
-            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+            StringBuilder procBuilder = new StringBuilder();
+            procBuilder.append(PROCEDURE_HEAD);
+            procBuilder.append(device.getString(PROTOCOL));
+            procBuilder.append(".");
+            procBuilder.append(PROCEDURE);
+            procBuilder.append(".");
+            procBuilder.append(procedureFoot);
+
+            procedure = procBuilder.toString();
+        } catch (JSONException e1) {
+            return new JsonpResponse(Response.Status.INTERNAL_ERROR, callback);
         }
 
         JSONObject options;
         try {
-            options = new JSONObject().put("deviceId", deviceId);
+            options = new JSONObject().put(DEVICE_ID, device.getLong(DEVICE_ID));
+        } catch (JSONException e) {
+            return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
+        }
+        JSONObject paramsKw;
+        try {
+            paramsKw = new JSONObject(paramsKwStr);
         } catch (JSONException e) {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
