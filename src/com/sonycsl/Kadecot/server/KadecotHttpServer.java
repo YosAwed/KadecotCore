@@ -37,6 +37,7 @@ public class KadecotHttpServer extends NanoHTTPD {
     private static final int JSONP_PORT = 31413;
 
     private static final String DEVICES = "devices";
+    private static final String PARAMS = "params";
 
     private static final KadecotHttpServer sInstance = new KadecotHttpServer(JSONP_PORT);
 
@@ -91,7 +92,7 @@ public class KadecotHttpServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-        if (!(session.getMethod() == Method.GET || session.getMethod() == Method.POST)) {
+        if (!(session.getMethod() == Method.GET)) {
             return new Response(Response.Status.METHOD_NOT_ALLOWED.toString());
         }
         if (!mProxy.isOpen()) {
@@ -120,39 +121,6 @@ public class KadecotHttpServer extends NanoHTTPD {
             return new Response(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
         }
 
-        if (session.getMethod() == Method.POST) {
-            if (directories.length == 4) {
-                JSONObject options;
-                try {
-                    long deviceId = Long.parseLong(directories[2]);
-                    options = new JSONObject().put("deviceId", deviceId);
-                } catch (NumberFormatException e) {
-                    return new Response(Response.Status.BAD_REQUEST.toString());
-                } catch (JSONException e) {
-                    return new Response(Response.Status.BAD_REQUEST.toString());
-                }
-                String procedure = directories[3];
-
-                Map<String, String> params = session.getParms();
-                if (params == null) {
-                    return new Response(Response.Status.BAD_REQUEST.toString());
-                }
-                JSONObject paramsKw;
-                try {
-                    paramsKw = new JSONObject(session.getQueryParameterString());
-                } catch (JSONException e) {
-                    return new Response(Response.Status.BAD_REQUEST.toString());
-                }
-                ResultHolder result = syncCall(mAppClient, procedure, options, paramsKw);
-                if (result == null) {
-                    return new Response(Response.Status.INTERNAL_ERROR.toString());
-                }
-                return new Response(result.argumentsKw.toString());
-            }
-
-            return new Response(Response.Status.BAD_REQUEST.toString());
-        }
-
         if (directories.length == 2) {
             if (DEVICES.equals(directories[1])) {
                 ResultHolder getDeviceListResult = syncCall(mAppClient,
@@ -164,83 +132,89 @@ public class KadecotHttpServer extends NanoHTTPD {
         }
 
         if (directories.length == 3) {
+            if (!DEVICES.equals(directories[1])) {
+                return new Response(Response.Status.BAD_REQUEST.toString());
+            }
             long deviceId;
             try {
                 deviceId = Long.parseLong(directories[2]);
             } catch (NumberFormatException e) {
                 return new Response(Response.Status.BAD_REQUEST.toString());
             }
-            ResultHolder getDeviceListResult = syncCall(mAppClient,
-                    KadecotProviderClient.Procedure.GET_DEVICE_LIST.getUri(),
-                    new JSONObject(), new JSONObject());
-            if (getDeviceListResult == null) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
-            }
-            JSONArray deviceList;
-            try {
-                deviceList = getDeviceListResult.argumentsKw.getJSONArray("deviceList");
-            } catch (JSONException e) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
+            Map<String, String> params = session.getParms();
+
+            if (params.isEmpty()) {
+                return getProcedureDetail(deviceId);
             }
 
-            try {
-                for (int devi = 0; devi < deviceList.length(); devi++) {
-                    JSONObject device = deviceList.getJSONObject(devi);
-                    if (device.getLong("deviceId") == deviceId) {
-                        String protocol = deviceList.getJSONObject(devi).getString("protocol");
-                        ResultHolder getProcListResult = syncCall(mAppClient,
-                                KadecotProviderClient.Procedure.GET_PROCEDURE_LIST.getUri(),
-                                new JSONObject(), new JSONObject().put(
-                                        KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
-                                        protocol));
-                        if (getProcListResult == null) {
-                            return new Response(Response.Status.INTERNAL_ERROR.toString());
-                        }
-
-                        return new Response(getProcListResult.argumentsKw.toString());
-                    }
-                }
-
-            } catch (JSONException e) {
-                return new Response(Response.Status.BAD_REQUEST.toString());
-            }
+            return invokeWampCall(deviceId, params);
         }
 
-        if (directories.length == 4) {
-            long deviceId;
-            try {
-                deviceId = Long.parseLong(directories[2]);
-            } catch (NumberFormatException e) {
-                return new Response(Response.Status.BAD_REQUEST.toString());
-            }
-            ResultHolder getDeviceListResult = syncCall(mAppClient,
-                    KadecotProviderClient.Procedure.GET_DEVICE_LIST.getUri(),
-                    new JSONObject(), new JSONObject());
-            if (getDeviceListResult == null) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
-            }
-            JSONArray deviceList;
-            try {
-                deviceList = getDeviceListResult.argumentsKw.getJSONArray("deviceList");
-            } catch (JSONException e) {
-                return new Response(Response.Status.INTERNAL_ERROR.toString());
-            }
+        return new Response(Response.Status.BAD_REQUEST.toString());
+    }
 
-            try {
-                for (int devi = 0; devi < deviceList.length(); devi++) {
-                    JSONObject device = deviceList.getJSONObject(devi);
-                    if (device.getLong("deviceId") == deviceId) {
-                        String description = deviceList.getJSONObject(devi)
-                                .getString("description");
-                        return new Response(description);
+    private Response getProcedureDetail(long deviceId) {
+        ResultHolder getDeviceListResult = syncCall(mAppClient,
+                KadecotProviderClient.Procedure.GET_DEVICE_LIST.getUri(),
+                new JSONObject(), new JSONObject());
+        if (getDeviceListResult == null) {
+            return new Response(Response.Status.INTERNAL_ERROR.toString());
+        }
+        JSONArray deviceList;
+        try {
+            deviceList = getDeviceListResult.argumentsKw.getJSONArray("deviceList");
+        } catch (JSONException e) {
+            return new Response(Response.Status.INTERNAL_ERROR.toString());
+        }
+
+        try {
+            for (int devi = 0; devi < deviceList.length(); devi++) {
+                JSONObject device = deviceList.getJSONObject(devi);
+                if (device.getLong("deviceId") == deviceId) {
+                    String protocol = deviceList.getJSONObject(devi).getString("protocol");
+                    ResultHolder getProcListResult = syncCall(mAppClient,
+                            KadecotProviderClient.Procedure.GET_PROCEDURE_LIST.getUri(),
+                            new JSONObject(), new JSONObject().put(
+                                    KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
+                                    protocol));
+                    if (getProcListResult == null) {
+                        return new Response(Response.Status.INTERNAL_ERROR.toString());
                     }
-                }
 
-            } catch (JSONException e) {
-                return new Response(Response.Status.BAD_REQUEST.toString());
+                    return new Response(getProcListResult.argumentsKw.toString());
+                }
             }
+
+        } catch (JSONException e) {
+            return new Response(Response.Status.BAD_REQUEST.toString());
         }
         return new Response(Response.Status.BAD_REQUEST.toString());
+    }
+
+    private Response invokeWampCall(long deviceId, Map<String, String> params) {
+        String procedure = params.get("procedure");
+        if (procedure == null) {
+            return new Response(Response.Status.BAD_REQUEST.toString());
+        }
+
+        JSONObject paramsKw;
+        try {
+            paramsKw = new JSONObject(params.get(PARAMS));
+        } catch (JSONException e) {
+            return new Response(Response.Status.BAD_REQUEST.toString());
+        }
+
+        JSONObject options;
+        try {
+            options = new JSONObject().put("deviceId", deviceId);
+        } catch (JSONException e) {
+            return new Response(Response.Status.BAD_REQUEST.toString());
+        }
+        ResultHolder result = syncCall(mAppClient, procedure, options, paramsKw);
+        if (result == null) {
+            return new Response(Response.Status.INTERNAL_ERROR.toString());
+        }
+        return new Response(result.argumentsKw.toString());
     }
 
     private static ResultHolder syncCall(KadecotAppClientWrapper appClient, String procedure,
