@@ -122,6 +122,9 @@ public class KadecotHttpServer extends NanoHTTPD {
 
         if (session.getMethod() == Method.POST) {
             if (directories.length == 3) {
+                if (!DEVICES.equals(directories[1])) {
+                    return new Response(Response.Status.BAD_REQUEST.toString());
+                }
                 JSONObject options;
                 try {
                     long deviceId = Long.parseLong(directories[2]);
@@ -168,6 +171,9 @@ public class KadecotHttpServer extends NanoHTTPD {
         }
 
         if (directories.length == 3) {
+            if (!DEVICES.equals(directories[1])) {
+                return new Response(Response.Status.BAD_REQUEST.toString());
+            }
             long deviceId;
             try {
                 deviceId = Long.parseLong(directories[2]);
