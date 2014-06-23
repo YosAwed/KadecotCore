@@ -34,6 +34,7 @@ public class ProviderCallee extends WampCallee {
         ContentValues values = new ContentValues();
         values.put(KadecotCoreStore.Devices.DeviceColumns.STATUS, false);
         provider.update(KadecotCoreStore.Devices.CONTENT_URI, values, null, null);
+        provider.release();
     }
 
     private WampMessage createError(WampInvocationMessage msg, String error) {

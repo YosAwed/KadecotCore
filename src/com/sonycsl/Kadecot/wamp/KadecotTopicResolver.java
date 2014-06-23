@@ -38,8 +38,10 @@ public class KadecotTopicResolver implements PubSubMessageHandler {
                 return;
             }
 
+            cursor.moveToFirst();
             int refCount = cursor.getInt(cursor
                     .getColumnIndex(KadecotCoreStore.Topics.TopicColumns.REFERENCE_COUNT));
+            cursor.close();
 
             if (countUp) {
                 refCount++;
