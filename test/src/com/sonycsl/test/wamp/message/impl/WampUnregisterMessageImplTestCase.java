@@ -31,14 +31,14 @@ public class WampUnregisterMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = unregister.getRequestId();
+            unregister.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no registrationId
         try {
-            int registraionId = unregister.getRegistrationId();
+            unregister.getRegistrationId();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +48,7 @@ public class WampUnregisterMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampUnregisterMessageImpl unregister = new WampUnregisterMessageImpl(msg);
+            new WampUnregisterMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

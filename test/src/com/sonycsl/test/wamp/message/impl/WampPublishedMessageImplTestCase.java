@@ -31,14 +31,14 @@ public class WampPublishedMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = published.getRequestId();
+            published.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no publicationId
         try {
-            int publicationId = published.getPublicationId();
+            published.getPublicationId();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +48,7 @@ public class WampPublishedMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampPublishedMessageImpl published = new WampPublishedMessageImpl(msg);
+            new WampPublishedMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

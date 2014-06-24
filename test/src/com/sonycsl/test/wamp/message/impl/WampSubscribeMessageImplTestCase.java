@@ -34,21 +34,21 @@ public class WampSubscribeMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = subscribe.getRequestId();
+            subscribe.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no options
         try {
-            JSONObject options = subscribe.getOptions();
+            subscribe.getOptions();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no topic
         try {
-            String topic = subscribe.getTopic();
+            subscribe.getTopic();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -58,7 +58,7 @@ public class WampSubscribeMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampSubscribeMessageImpl subscribe = new WampSubscribeMessageImpl(msg);
+            new WampSubscribeMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

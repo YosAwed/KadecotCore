@@ -114,13 +114,20 @@ public class KadecotCoreProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        int numOfRows = 0;
         SQLiteDatabase db = mHelper.getWritableDatabase();
         switch (URI_MATCHER.match(uri)) {
             case DEVICE:
-                int numOfRows = db.update(DatabaseHelper.DEVICE_TABLE, values, selection,
+                numOfRows = db.update(DatabaseHelper.DEVICE_TABLE, values, selection,
                         selectionArgs);
                 getContext().getContentResolver().notifyChange(
                         KadecotCoreStore.Devices.CONTENT_URI, null);
+                return numOfRows;
+            case TOPIC:
+                numOfRows = db.update(DatabaseHelper.TOPIC_TABLE, values, selection,
+                        selectionArgs);
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Topics.CONTENT_URI, null);
                 return numOfRows;
             default:
                 return 0;

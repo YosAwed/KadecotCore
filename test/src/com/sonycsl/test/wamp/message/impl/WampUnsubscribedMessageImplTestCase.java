@@ -30,7 +30,7 @@ public class WampUnsubscribedMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = unsubscribed.getRequestId();
+            unsubscribed.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -40,7 +40,7 @@ public class WampUnsubscribedMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampUnsubscribedMessageImpl unsubscribed = new WampUnsubscribedMessageImpl(msg);
+            new WampUnsubscribedMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

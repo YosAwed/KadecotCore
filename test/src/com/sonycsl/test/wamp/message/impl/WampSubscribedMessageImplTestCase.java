@@ -31,14 +31,14 @@ public class WampSubscribedMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = subscribed.getRequestId();
+            subscribed.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no subscriptionId
         try {
-            int subscriptionId = subscribed.getSubscriptionId();
+            subscribed.getSubscriptionId();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +48,7 @@ public class WampSubscribedMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampSubscribedMessageImpl subscribed = new WampSubscribedMessageImpl(msg);
+            new WampSubscribedMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

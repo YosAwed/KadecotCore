@@ -34,6 +34,7 @@ public class ProviderCallee extends WampCallee {
         ContentValues values = new ContentValues();
         values.put(KadecotCoreStore.Devices.DeviceColumns.STATUS, false);
         provider.update(KadecotCoreStore.Devices.CONTENT_URI, values, null, null);
+        provider.release();
     }
 
     private WampMessage createError(WampInvocationMessage msg, String error) {
@@ -196,7 +197,6 @@ public class ProviderCallee extends WampCallee {
             return createError(msg, WampError.INVALID_ARGUMENT);
         }
 
-        int numOfRows = 0;
         ContentProviderClient provider = mResolver.acquireContentProviderClient(
                 KadecotCoreStore.Devices.CONTENT_URI);
 
@@ -217,21 +217,21 @@ public class ProviderCallee extends WampCallee {
                     : false;
             cursor.close();
             if (status ^ values.getAsBoolean(KadecotCoreStore.Devices.DeviceColumns.STATUS)) {
+                int numOfRows = 0;
                 numOfRows = provider.update(KadecotCoreStore.Devices.CONTENT_URI, values,
                         KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID + "=?",
                         new String[] {
                             String.valueOf(deviceId)
                         });
+                if (numOfRows != 1) {
+                    return createError(msg, WampError.INVALID_ARGUMENT);
+                }
             }
         } catch (RemoteException e) {
             e.printStackTrace();
             return createError(msg, WampError.INVALID_ARGUMENT);
         } finally {
             provider.release();
-        }
-
-        if (numOfRows != 1) {
-            return createError(msg, WampError.INVALID_ARGUMENT);
         }
 
         try {

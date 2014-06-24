@@ -43,21 +43,21 @@ public class WampCallMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = call.getRequestId();
+            call.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no options
         try {
-            JSONObject options = call.getOptions();
+            call.getOptions();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no procedure
         try {
-            String procedure = call.getProcedure();
+            call.getProcedure();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -65,7 +65,7 @@ public class WampCallMessageImplTestCase extends TestCase {
         // no arguments
         try {
             assertFalse(call.hasArguments());
-            JSONArray arguments = call.getArguments();
+            call.getArguments();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -73,7 +73,7 @@ public class WampCallMessageImplTestCase extends TestCase {
         // no argumentsKw
         try {
             assertFalse(call.hasArgumentsKw());
-            JSONObject argumentsKw = call.getArgumentsKw();
+            call.getArgumentsKw();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -83,7 +83,7 @@ public class WampCallMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampCallMessageImpl call = new WampCallMessageImpl(msg);
+            new WampCallMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

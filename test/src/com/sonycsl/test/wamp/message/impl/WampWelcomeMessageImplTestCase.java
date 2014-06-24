@@ -39,14 +39,14 @@ public class WampWelcomeMessageImplTestCase extends TestCase {
 
         // no session id
         try {
-            int sessionId = welcome.getSession();
+            welcome.getSession();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no details
         try {
-            JSONObject detials = welcome.getDetails();
+            welcome.getDetails();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -56,7 +56,7 @@ public class WampWelcomeMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampWelcomeMessageImpl welcome = new WampWelcomeMessageImpl(msg);
+            new WampWelcomeMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

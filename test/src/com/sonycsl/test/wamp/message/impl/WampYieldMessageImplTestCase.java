@@ -40,14 +40,14 @@ public class WampYieldMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = yield.getRequestId();
+            yield.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no options
         try {
-            JSONObject options = yield.getOptions();
+            yield.getOptions();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -55,7 +55,7 @@ public class WampYieldMessageImplTestCase extends TestCase {
         // no arguments
         try {
             assertFalse(yield.hasArguments());
-            JSONArray arguments = yield.getArguments();
+            yield.getArguments();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -63,7 +63,7 @@ public class WampYieldMessageImplTestCase extends TestCase {
         // no argumentsKw
         try {
             assertFalse(yield.hasArgumentsKw());
-            JSONObject argumentsKw = yield.getArgumentsKw();
+            yield.getArgumentsKw();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -73,7 +73,7 @@ public class WampYieldMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampYieldMessageImpl yield = new WampYieldMessageImpl(msg);
+            new WampYieldMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

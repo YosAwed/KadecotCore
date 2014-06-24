@@ -3,6 +3,7 @@ package com.sonycsl.Kadecot.wamp.provider;
 
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Handler;
@@ -71,6 +72,19 @@ public class TopicObserver {
         mRefCounts = new HashMap<String, Integer>();
 
         mResolver = resolver;
+        ContentProviderClient provider = mResolver
+                .acquireContentProviderClient(KadecotCoreStore.Topics.CONTENT_URI);
+
+        ContentValues values = new ContentValues();
+        values.put(KadecotCoreStore.Topics.TopicColumns.REFERENCE_COUNT, 0);
+        try {
+            provider.update(KadecotCoreStore.Topics.CONTENT_URI, values, null, null);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } finally {
+            provider.release();
+        }
+
         mRefCounts = getRefCounts();
 
         mResolver.registerContentObserver(KadecotCoreStore.Topics.CONTENT_URI, true,
