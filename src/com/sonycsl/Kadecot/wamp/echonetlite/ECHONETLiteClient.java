@@ -113,7 +113,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
             private Map<String, Runnable> mRunnables = new HashMap<String, Runnable>();
 
             @Override
-            public void onTopicSubscribed(String topic) {
+            public void onTopicStarted(String topic) {
                 final String propertyName = topic.split("\\.", 7)[6];
 
                 Runnable r = new Runnable() {
@@ -181,7 +181,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
             }
 
             @Override
-            public void onTopicUnsubscribed(String topic) {
+            public void onTopicStopped(String topic) {
                 mHandler.removeCallbacks(mRunnables.remove(topic));
             }
 
@@ -271,14 +271,6 @@ public class ECHONETLiteClient extends KadecotWampClient {
         }
     }
 
-    public void startDiscovery() {
-        mManager.start();
-    }
-
-    public void stopDiscovery() {
-        mManager.stop();
-    }
-
     private void putTopics() {
         try {
             // TODO: fix this workaround
@@ -311,7 +303,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
 
     }
 
-    protected void putDeviceInfo(JSONObject data) {
+    private void putDeviceInfo(JSONObject data) {
         try {
             mTemporaryDeviceMap.put(data.getString(KadecotCoreStore.Devices.DeviceColumns.UUID),
                     data);
@@ -324,7 +316,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
                 new JSONArray(), data));
     }
 
-    protected void publishOnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
+    private void publishOnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
         try {
             for (DeviceProperty dp : list) {
                 JSONObject options = new JSONObject();
@@ -490,7 +482,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
         }
     }
 
-    public EchoObject getEchoObject(long deviceId) throws UnknownHostException {
+    private EchoObject getEchoObject(long deviceId) throws UnknownHostException {
         ECHONETLiteDeviceData data = mDeviceMap.get(deviceId);
         if (data == null) {
             return null;
@@ -513,7 +505,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
         return eoj;
     }
 
-    public Map<Long, ECHONETLiteDeviceData> getDeviceMap() {
+    Map<Long, ECHONETLiteDeviceData> getDeviceMap() {
         return mDeviceMap;
     }
 }
