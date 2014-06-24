@@ -16,7 +16,7 @@ import com.sonycsl.Kadecot.device.echo.EchoDeviceDatabase;
 import com.sonycsl.Kadecot.wamp.KadecotProperty;
 import com.sonycsl.Kadecot.wamp.KadecotWampClient;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
-import com.sonycsl.Kadecot.wamp.echonetlite.ECHONETLiteClient.ECHONETLiteWampSubscriber.OnTopicListener;
+import com.sonycsl.Kadecot.wamp.echonetlite.ECHONETLiteWampSubscriber.OnTopicListener;
 import com.sonycsl.Kadecot.wamp.provider.KadecotProviderClient;
 import com.sonycsl.echo.Echo;
 import com.sonycsl.echo.eoj.EchoObject;
@@ -31,7 +31,6 @@ import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampCaller;
 import com.sonycsl.wamp.role.WampPublisher;
 import com.sonycsl.wamp.role.WampRole;
-import com.sonycsl.wamp.role.WampSubscriber;
 import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONArray;
@@ -489,54 +488,6 @@ public class ECHONETLiteClient extends KadecotWampClient {
 
             return propertyList;
         }
-    }
-
-    protected static final class ECHONETLiteWampSubscriber extends WampSubscriber {
-
-        public interface OnTopicListener {
-            public void onTopicSubscribed(String topic);
-
-            public void onTopicUnsubscribed(String topic);
-        }
-
-        private final ECHONETLiteManager mManager;
-        private final OnTopicListener mListener;
-
-        public ECHONETLiteWampSubscriber(ECHONETLiteManager manager, OnTopicListener listener) {
-            mManager = manager;
-            mListener = listener;
-        }
-
-        @Override
-        protected void onEvent(String topic, WampMessage msg) {
-            if (topic.equals(KadecotWampTopic.TOPIC_PRIVATE_SEARCH)) {
-                mManager.refreshDeviceList();
-            }
-
-            if (topic.equals(KadecotProviderClient.Topic.START.getUri())) {
-                if (mListener != null) {
-                    try {
-                        mListener.onTopicSubscribed(msg.asEventMessage().getArgumentsKw()
-                                .getString("topic"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            if (topic.equals(KadecotProviderClient.Topic.STOP.getUri())) {
-                if (mListener != null) {
-                    try {
-                        mListener.onTopicUnsubscribed(msg.asEventMessage().getArgumentsKw()
-                                .getString("topic"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        }
-
     }
 
     public EchoObject getEchoObject(long deviceId) throws UnknownHostException {
