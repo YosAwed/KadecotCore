@@ -31,6 +31,8 @@ public class KadecotHttpServer extends NanoHTTPD {
     private KadecotAppClientWrapper mAppClient;
     private KadecotWebsocketClientProxy mProxy;
 
+    private boolean mIsStarted;
+
     private static final String LOCALHOST = "localhost";
     private static final String WEBSOCKET_PORT = "41314";
 
@@ -112,7 +114,11 @@ public class KadecotHttpServer extends NanoHTTPD {
     }
 
     @Override
-    public void start() throws IOException {
+    public synchronized void start() throws IOException {
+        if (mIsStarted) {
+            return;
+        }
+
         try {
             open();
         } catch (InterruptedException e) {
@@ -121,12 +127,19 @@ public class KadecotHttpServer extends NanoHTTPD {
             throw new IOException();
         }
         super.start();
+
+        mIsStarted = true;
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
+        if (!mIsStarted) {
+            return;
+        }
+
         close();
         super.stop();
+        mIsStarted = false;
     }
 
     public boolean isRunning() {
