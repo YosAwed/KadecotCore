@@ -85,7 +85,6 @@ public class ECHONETLiteClient extends KadecotWampClient {
             @Override
             public void OnPropertyChanged(ECHONETLiteDeviceData data, List<DeviceProperty> list) {
                 publishOnPropertyChanged(data, list);
-
             }
         };
     }
@@ -96,13 +95,11 @@ public class ECHONETLiteClient extends KadecotWampClient {
             @Override
             public void onDeviceStateChanged(JSONObject data) {
                 putDeviceInfo(data);
-
             }
 
             @Override
             public void onDeviceAdded(JSONObject data) {
                 putDeviceInfo(data);
-
             }
         };
     }
@@ -143,6 +140,19 @@ public class ECHONETLiteClient extends KadecotWampClient {
                                             continue;
                                         }
 
+                                        JSONObject argsKw;
+                                        try {
+                                            argsKw = mCallee
+                                                    .createResponseArgumentsKw(response);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                            continue;
+                                        }
+
+                                        if (argsKw == null) {
+                                            continue;
+                                        }
+
                                         try {
                                             transmit(WampMessageFactory.createPublish(
                                                     WampRequestIdGenerator.getId(),
@@ -154,8 +164,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
                                                             .getClassCode(),
                                                             ECHONETLitePropertyName
                                                                     .translate(propertyName)),
-                                                    new JSONArray(),
-                                                    mCallee.createResponseArgumentsKw(response)));
+                                                    new JSONArray(), argsKw));
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                             continue;
@@ -194,6 +203,13 @@ public class ECHONETLiteClient extends KadecotWampClient {
 
     @Override
     protected void onTransmitted(WampPeer peer, WampMessage msg) {
+        if (msg.isGoodbyeMessage()) {
+            if (mIdHolder < 0) {
+                return;
+            }
+            transmit(WampMessageFactory
+                    .createUnsubscribe(WampRequestIdGenerator.getId(), mIdHolder));
+        }
     }
 
     @Override
@@ -214,11 +230,24 @@ public class ECHONETLiteClient extends KadecotWampClient {
         return procs;
     }
 
+    // TODO: 2014/6 release 向けの暫定措置
+    private int mIdHolder = -1;
+
     @Override
     protected void onReceived(WampMessage msg) {
         if (msg.isWelcomeMessage()) {
             mManager.start();
             putTopics();
+
+            mIdHolder = WampRequestIdGenerator.getId();
+            transmit(WampMessageFactory.createSubscribe(mIdHolder,
+                    new JSONObject(), ECHONETLiteTopicGenerator.getTopic((short) 304, "0x85")));
+        }
+
+        if (msg.isSubscribedMessage()) {
+            if (mIdHolder == msg.asSubscribedMessage().getRequestId()) {
+                mIdHolder = msg.asSubscribedMessage().getSubscriptionId();
+            }
         }
 
         if (msg.isGoodbyeMessage()) {
@@ -390,12 +419,11 @@ public class ECHONETLiteClient extends KadecotWampClient {
             JSONObject json = new JSONObject();
             DeviceProperty dp = list.get(0);
             if (dp.value == null) {
-                return json;
+                return null;
             }
             String propName = ECHONETLitePropertyName.translate(dp.name);
             json.put(KadecotProperty.PROPERTY_NAME_KEY, propName);
             json.put(KadecotProperty.PROPERTY_VALUE_KEY, dp.value);
-            // Log.i(TAG, "return property : " + json.toString());
             return json;
         }
 
