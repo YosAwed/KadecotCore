@@ -11,9 +11,9 @@ import org.json.JSONException;
 public class ECHONETLiteWampSubscriber extends WampSubscriber {
 
     public interface OnTopicListener {
-        public void onTopicSubscribed(String topic);
+        public void onTopicStarted(String topic);
 
-        public void onTopicUnsubscribed(String topic);
+        public void onTopicStopped(String topic);
     }
 
     private final ECHONETLiteManager mManager;
@@ -33,7 +33,7 @@ public class ECHONETLiteWampSubscriber extends WampSubscriber {
         if (topic.equals(KadecotProviderClient.Topic.START.getUri())) {
             if (mListener != null) {
                 try {
-                    mListener.onTopicSubscribed(msg.asEventMessage().getArgumentsKw()
+                    mListener.onTopicStarted(msg.asEventMessage().getArgumentsKw()
                             .getString("topic"));
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -44,7 +44,7 @@ public class ECHONETLiteWampSubscriber extends WampSubscriber {
         if (topic.equals(KadecotProviderClient.Topic.STOP.getUri())) {
             if (mListener != null) {
                 try {
-                    mListener.onTopicUnsubscribed(msg.asEventMessage().getArgumentsKw()
+                    mListener.onTopicStopped(msg.asEventMessage().getArgumentsKw()
                             .getString("topic"));
                 } catch (JSONException e) {
                     e.printStackTrace();
