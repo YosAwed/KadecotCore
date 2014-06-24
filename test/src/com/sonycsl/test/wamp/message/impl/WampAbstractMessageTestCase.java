@@ -27,7 +27,7 @@ public class WampAbstractMessageTestCase extends TestCase {
         JSONArray json = new JSONArray();
         try {
             WampMessage msg = new WampBaseMessage(json);
-            int type = msg.getMessageType();
+            msg.getMessageType();
             fail();
         } catch (IllegalArgumentException e) {
         }

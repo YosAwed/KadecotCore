@@ -38,14 +38,14 @@ public class WampHelloMessageImplTestCase extends TestCase {
 
         // no realm
         try {
-            String realm = hello.getRealm();
+            hello.getRealm();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no details
         try {
-            JSONObject details = hello.getDetails();
+            hello.getDetails();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -55,7 +55,7 @@ public class WampHelloMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampHelloMessageImpl hello = new WampHelloMessageImpl(msg);
+            new WampHelloMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

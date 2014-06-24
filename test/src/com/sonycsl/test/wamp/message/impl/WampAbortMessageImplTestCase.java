@@ -33,7 +33,7 @@ public class WampAbortMessageImplTestCase extends TestCase {
 
         // no details
         try {
-            JSONObject details = abort.getDetails();
+            abort.getDetails();
             fail();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -41,7 +41,7 @@ public class WampAbortMessageImplTestCase extends TestCase {
 
         // no reason
         try {
-            String reason = abort.getReason();
+            abort.getReason();
             fail();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -52,7 +52,7 @@ public class WampAbortMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampAbortMessageImpl abort = new WampAbortMessageImpl(msg);
+            new WampAbortMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

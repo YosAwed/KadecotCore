@@ -35,21 +35,21 @@ public class WampRegisterMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = register.getRequestId();
+            register.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no options
         try {
-            JSONObject options = register.getOptions();
+            register.getOptions();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no procedure
         try {
-            String procedure = register.getProcedure();
+            register.getProcedure();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -59,7 +59,7 @@ public class WampRegisterMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampRegisterMessageImpl register = new WampRegisterMessageImpl(msg);
+            new WampRegisterMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

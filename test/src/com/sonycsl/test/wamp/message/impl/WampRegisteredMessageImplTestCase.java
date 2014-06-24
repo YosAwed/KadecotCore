@@ -31,14 +31,14 @@ public class WampRegisteredMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = registered.getRequestId();
+            registered.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no registrationId
         try {
-            int registraionId = registered.getRegistrationId();
+            registered.getRegistrationId();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +48,7 @@ public class WampRegisteredMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampRegisteredMessageImpl registered = new WampRegisteredMessageImpl(msg);
+            new WampRegisteredMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

@@ -33,14 +33,14 @@ public class WampGoodbyeMessageImplTestCase extends TestCase {
 
         // no details
         try {
-            JSONObject details = goodbye.getDetails();
+            goodbye.getDetails();
             fail();
         } catch (Exception e) {
         }
 
         // no reason
         try {
-            String reason = goodbye.getReason();
+            goodbye.getReason();
             fail();
         } catch (Exception e) {
         }
@@ -50,7 +50,7 @@ public class WampGoodbyeMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampGoodbyeMessageImpl goodbye = new WampGoodbyeMessageImpl(msg);
+            new WampGoodbyeMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

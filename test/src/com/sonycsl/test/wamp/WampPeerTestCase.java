@@ -130,7 +130,7 @@ public class WampPeerTestCase extends TestCase {
 
             @Override
             protected Set<WampRole> getRoleSet() {
-                Set roles = new HashSet<WampRole>();
+                Set<WampRole> roles = new HashSet<WampRole>();
                 return roles;
             }
         };
@@ -183,7 +183,7 @@ public class WampPeerTestCase extends TestCase {
 
             @Override
             protected Set<WampRole> getRoleSet() {
-                Set roles = new HashSet<WampRole>();
+                Set<WampRole> roles = new HashSet<WampRole>();
                 return roles;
             }
         };

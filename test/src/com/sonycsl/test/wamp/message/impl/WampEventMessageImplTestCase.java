@@ -43,21 +43,21 @@ public class WampEventMessageImplTestCase extends TestCase {
 
         // no subscriptionId
         try {
-            int subscriptionId = event.getSubscriptionId();
+            event.getSubscriptionId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no publicationId
         try {
-            int publicationId = event.getPublicationId();
+            event.getPublicationId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no details
         try {
-            JSONObject details = event.getDetails();
+            event.getDetails();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -65,7 +65,7 @@ public class WampEventMessageImplTestCase extends TestCase {
         // no arguments
         try {
             assertFalse(event.hasArguments());
-            JSONArray arguments = event.getArguments();
+            event.getArguments();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -73,7 +73,7 @@ public class WampEventMessageImplTestCase extends TestCase {
         // no argumentsKw
         try {
             assertFalse(event.hasArgumentsKw());
-            JSONObject argumentsKw = event.getArgumentsKw();
+            event.getArgumentsKw();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -83,7 +83,7 @@ public class WampEventMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampEventMessageImpl event = new WampEventMessageImpl(msg);
+            new WampEventMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }

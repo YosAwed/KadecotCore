@@ -43,21 +43,21 @@ public class WampPublishMessageImplTestCase extends TestCase {
 
         // no requestId
         try {
-            int requestId = publish.getRequestId();
+            publish.getRequestId();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no options
         try {
-            JSONObject options = publish.getOptions();
+            publish.getOptions();
             fail();
         } catch (IllegalArgumentException e) {
         }
 
         // no topic
         try {
-            String topic = publish.getTopic();
+            publish.getTopic();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -65,7 +65,7 @@ public class WampPublishMessageImplTestCase extends TestCase {
         // no arguments
         try {
             assertFalse(publish.hasArguments());
-            JSONArray arguments = publish.getArguments();
+            publish.getArguments();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -73,7 +73,7 @@ public class WampPublishMessageImplTestCase extends TestCase {
         // no argumentsKw
         try {
             assertFalse(publish.hasArgumentsKw());
-            JSONObject argumentsKw = publish.getArgumentsKw();
+            publish.getArgumentsKw();
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -83,7 +83,7 @@ public class WampPublishMessageImplTestCase extends TestCase {
         JSONArray msg = new JSONArray();
         msg.put(-1);
         try {
-            WampPublishMessageImpl publish = new WampPublishMessageImpl(msg);
+            new WampPublishMessageImpl(msg);
             fail();
         } catch (IllegalArgumentException e) {
         }
