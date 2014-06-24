@@ -11,6 +11,7 @@ import com.sonycsl.wamp.role.WampRole;
 
 import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +19,6 @@ import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.channels.NotYetConnectedException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -127,7 +127,7 @@ public class KadecotWebsocketClientProxy extends WampPeer {
 
         try {
             mWsClient.send(msg.toString());
-        } catch (NotYetConnectedException e) {
+        } catch (WebsocketNotConnectedException e) {
             Log.i(TAG, "OnReceived: WebSocket is already closed. msg=" + msg.toString());
         }
 
