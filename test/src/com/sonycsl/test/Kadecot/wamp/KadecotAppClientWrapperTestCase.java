@@ -27,15 +27,15 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
     @Override
     protected void setUp() {
         mPeer = new MockWampPeer();
-        mPeer.setCallback(new TestableCallback());
         mClient = new KadecotAppClientWrapper();
         mClient.connect(mPeer);
     }
 
     public void testCall() {
         final CountDownLatch mResultLatch = new CountDownLatch(1);
-        final TestableCallback mPeerCallback = (TestableCallback) mPeer.getCallback();
+        final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
+        mPeer.setCallback(mPeerCallback);
 
         mClient.call("testProcedure", new JSONObject(), new JSONObject(), new WampCallListener() {
 
@@ -74,8 +74,9 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
 
     public void testCallError() {
         final CountDownLatch mErrorLatch = new CountDownLatch(1);
-        final TestableCallback mPeerCallback = (TestableCallback) mPeer.getCallback();
+        final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
+        mPeer.setCallback(mPeerCallback);
 
         mClient.call("testProcedure", new JSONObject(), new JSONObject(), new WampCallListener() {
 
@@ -113,8 +114,9 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
 
     public void testSubscribe() {
         final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
-        final TestableCallback mPeerCallback = (TestableCallback) mPeer.getCallback();
+        final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
+        mPeer.setCallback(mPeerCallback);
 
         mClient.subscribe("testTopic", new JSONObject(), new WampSubscribeListener() {
 
@@ -156,8 +158,9 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
 
     public void testSubscribeError() {
         final CountDownLatch mErrorLatch = new CountDownLatch(1);
-        final TestableCallback mPeerCallback = (TestableCallback) mPeer.getCallback();
+        final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
+        mPeer.setCallback(mPeerCallback);
 
         mClient.subscribe("testTopic", new JSONObject(), new WampSubscribeListener() {
 
@@ -205,8 +208,9 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
     public void testEvent() {
         final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
         final CountDownLatch mEventLatch = new CountDownLatch(1);
-        final TestableCallback mPeerCallback = (TestableCallback) mPeer.getCallback();
+        final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
+        mPeer.setCallback(mPeerCallback);
 
         final SubscriptionIdHolder holder = new SubscriptionIdHolder();
 

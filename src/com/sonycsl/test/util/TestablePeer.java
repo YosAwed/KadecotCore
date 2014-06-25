@@ -21,11 +21,6 @@ public class TestablePeer extends WampPeer {
     }
 
     @Override
-    public TestableCallback getCallback() {
-        return (TestableCallback) super.getCallback();
-    }
-
-    @Override
     protected Set<WampRole> getRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
         roleSet.add(new MockWampRole());
