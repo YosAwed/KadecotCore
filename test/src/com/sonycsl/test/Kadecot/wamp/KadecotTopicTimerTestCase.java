@@ -32,13 +32,8 @@ public class KadecotTopicTimerTestCase extends TestCase {
     @Override
     protected void setUp() {
         mTopicTimer = new KadecotTopicTimer(TOPIC, 100, TimeUnit.MILLISECONDS);
-        mTopicTimer.setCallback(new TestableCallback());
-
         mSubscriber = new MockWampClient();
-        mSubscriber.setCallback(new TestableCallback());
-
         mRouter = new MockWampRouter();
-        mRouter.setCallback(new TestableCallback());
 
         mRouter.connect(mSubscriber);
         mRouter.connect(mTopicTimer);
@@ -52,30 +47,31 @@ public class KadecotTopicTimerTestCase extends TestCase {
     }
 
     public void testTxPublish() {
-        TestableCallback listener = (TestableCallback) mSubscriber.getCallback();
-        listener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        TestableCallback subListener = new TestableCallback();
+        subListener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        mSubscriber.setCallback(subListener);
         mSubscriber.transmit(WampMessageFactory.createHello("", new JSONObject()));
         try {
-            assertTrue(listener.await(1, TimeUnit.SECONDS));
+            assertTrue(subListener.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
 
-        listener = (TestableCallback) mTopicTimer.getCallback();
-        listener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        TestableCallback topicTimerlistener = new TestableCallback();
+        topicTimerlistener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
         mTopicTimer.transmit(WampMessageFactory.createHello("", new JSONObject()));
+        mTopicTimer.setCallback(topicTimerlistener);
         try {
-            assertTrue(listener.await(1, TimeUnit.SECONDS));
+            assertTrue(topicTimerlistener.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
 
-        listener = (TestableCallback) mSubscriber.getCallback();
-        listener.setTargetMessageType(WampMessageType.SUBSCRIBED, new CountDownLatch(1));
+        subListener.setTargetMessageType(WampMessageType.SUBSCRIBED, new CountDownLatch(1));
         mSubscriber.transmit(WampMessageFactory.createSubscribe(WampRequestIdGenerator.getId(),
                 new JSONObject(), TOPIC));
         try {
-            assertTrue(listener.await(1, TimeUnit.SECONDS));
+            assertTrue(subListener.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
@@ -83,12 +79,11 @@ public class KadecotTopicTimerTestCase extends TestCase {
         assertNotNull(mSubscriber.getAllMessages());
         assertTrue(mSubscriber.getAllMessages().size() > 0);
 
-        listener = (TestableCallback) mTopicTimer.getCallback();
-        listener.setTargetMessageType(WampMessageType.GOODBYE, new CountDownLatch(1));
+        topicTimerlistener.setTargetMessageType(WampMessageType.GOODBYE, new CountDownLatch(1));
         mTopicTimer.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
                 WampError.CLOSE_REALM));
         try {
-            assertTrue(listener.await(1, TimeUnit.SECONDS));
+            assertTrue(topicTimerlistener.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }

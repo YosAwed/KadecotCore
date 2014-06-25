@@ -44,10 +44,7 @@ public class WampPeerTestCase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         mPeer = new TestablePeer();
-        mPeer.setCallback(new TestableCallback());
-
         mEchoPeer = new EchoPeer();
-        mEchoPeer.setCallback(new TestableCallback());
 
         mPeer.connect(mEchoPeer);
     }
@@ -58,25 +55,29 @@ public class WampPeerTestCase extends TestCase {
     }
 
     public void testTramsmit() {
-        mPeer.getCallback().setTargetMessageType(WampMessageType.HELLO, new CountDownLatch(1));
-        mEchoPeer.getCallback()
-                .setTargetMessageType(WampMessageType.HELLO, new CountDownLatch(1));
+        final TestableCallback peerCallback = new TestableCallback();
+        peerCallback.setTargetMessageType(WampMessageType.HELLO, new CountDownLatch(1));
+        mPeer.setCallback(peerCallback);
+
+        final TestableCallback echoCallback = new TestableCallback();
+        echoCallback.setTargetMessageType(WampMessageType.HELLO, new CountDownLatch(1));
+        mEchoPeer.setCallback(echoCallback);
 
         WampMessage hello = WampMessageFactory.createHello(TEST_REALM, DETAILS);
         mPeer.transmit(hello);
         try {
-            assertTrue(mEchoPeer.getCallback().await(1, TimeUnit.SECONDS));
+            assertTrue(echoCallback.await(1, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             fail();
         }
-        assertEquals(hello, mEchoPeer.getCallback().getTargetMessage());
+        assertEquals(hello, echoCallback.getTargetMessage());
 
         try {
-            mPeer.getCallback().await(1, TimeUnit.SECONDS);
+            peerCallback.await(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             fail();
         }
-        assertEquals(hello, mPeer.getCallback().getTargetMessage());
+        assertEquals(hello, peerCallback.getTargetMessage());
     }
 
     public void testNullMsg() {
