@@ -159,7 +159,7 @@ public class ServerSettings {
     }
 
     public boolean isEnabledWebSocketServer() {
-        return mPreferences.getBoolean(KEY_WEBSOCKET_SERVER, false);
+        return mPreferences.getBoolean(KEY_WEBSOCKET_SERVER, true);
     }
 
     public void enableJSONPServer(boolean enabled) {
@@ -189,7 +189,7 @@ public class ServerSettings {
     }
 
     public boolean isEnabledPersistentMode() {
-        return mPreferences.getBoolean(KEY_PERSISTENT_MODE, false);
+        return mPreferences.getBoolean(KEY_PERSISTENT_MODE, true);
     }
 
     private ServerManager getServerManager() {
