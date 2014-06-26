@@ -212,21 +212,30 @@ public class ECHONETLiteClient extends KadecotWampClient {
     }
 
     @Override
-    public Set<String> getSubscribableTopics() {
+    public Map<String, String> getSubscribableTopics() {
+        Map<String, String> topics = new HashMap<String, String>();
+        for (String topic : ECHONETLiteTopicGenerator.getTopics()) {
+            topics.put(topic, "");
+        }
+        return topics;
+    }
+
+    @Override
+    public Map<String, String> getRegisterableProcedures() {
+        Map<String, String> procs = new HashMap<String, String>();
+        for (ECHONETLiteProcedure procedure : ECHONETLiteProcedure.values()) {
+            procs.put(procedure.toString(), "");
+        }
+        return procs;
+    }
+
+    @Override
+    public Set<String> getTopicsToSubscribe() {
         Set<String> topics = new HashSet<String>();
         topics.add(KadecotWampTopic.TOPIC_PRIVATE_SEARCH);
         topics.add(KadecotProviderClient.Topic.START.getUri());
         topics.add(KadecotProviderClient.Topic.STOP.getUri());
         return topics;
-    }
-
-    @Override
-    public Set<String> getRegisterableProcedures() {
-        Set<String> procs = new HashSet<String>();
-        for (ECHONETLiteProcedure procedure : ECHONETLiteProcedure.values()) {
-            procs.add(procedure.toString());
-        }
-        return procs;
     }
 
     // TODO: 2014/6 release 向けの暫定措置
@@ -344,7 +353,7 @@ public class ECHONETLiteClient extends KadecotWampClient {
                     .getEnum(procedure);
             WampInvocationMessage invMsg = msg.asInvocationMessage();
 
-            if (enumProcedure == ECHONETLiteProcedure.NOT_PROCEDURE) {
+            if (enumProcedure == null) {
                 return WampMessageFactory.createError(msg.getMessageType(), invMsg.getRequestId(),
                         new JSONObject(), WampError.NO_SUCH_PROCEDURE);
             }

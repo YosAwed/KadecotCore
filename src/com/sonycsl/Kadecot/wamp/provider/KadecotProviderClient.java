@@ -25,7 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public final class KadecotProviderClient extends KadecotWampClient {
@@ -184,18 +186,26 @@ public final class KadecotProviderClient extends KadecotWampClient {
     }
 
     @Override
-    public Set<String> getSubscribableTopics() {
-        Set<String> topics = new HashSet<String>();
+    public Map<String, String> getSubscribableTopics() {
+        Map<String, String> topics = new HashMap<String, String>();
+        for (Topic t : Topic.values()) {
+            topics.put(t.getUri(), "");
+        }
         return topics;
     }
 
     @Override
-    public Set<String> getRegisterableProcedures() {
-        Set<String> procs = new HashSet<String>();
+    public Map<String, String> getRegisterableProcedures() {
+        Map<String, String> procs = new HashMap<String, String>();
 
         for (Procedure p : Procedure.values()) {
-            procs.add(p.getUri());
+            procs.put(p.getUri(), "");
         }
         return procs;
+    }
+
+    @Override
+    public Set<String> getTopicsToSubscribe() {
+        return new HashSet<String>();
     }
 }

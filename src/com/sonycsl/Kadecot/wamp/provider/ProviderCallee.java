@@ -7,6 +7,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.sonycsl.Kadecot.core.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.wamp.provider.KadecotProviderClient.Procedure;
@@ -595,9 +596,13 @@ public class ProviderCallee extends WampCallee {
                     KadecotCoreStore.Procedures.ProcedureColumns.DESCRIPTION,
                     msg.getArgumentsKw()
                             .getString(KadecotCoreStore.Procedures.ProcedureColumns.DESCRIPTION));
-            values.put(
-                    KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
-                    procedure.split("\\.", 5)[3]);
+            try {
+                values.put(
+                        KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL,
+                        procedure.split("\\.", 5)[3]);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                Log.e("ProviderCallee", "procedure=" + procedure + "msg=" + msg);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             return createError(msg, WampError.INVALID_ARGUMENT);
