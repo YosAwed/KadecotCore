@@ -3,6 +3,9 @@ package com.sonycsl.Kadecot.wamp.echonetlite;
 
 import android.util.SparseArray;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 public final class ECHONETLiteTopicGenerator {
 
     // TODO: raw フォルダに json ファイルをおいてすべての EPC Name を生成する
@@ -112,4 +115,17 @@ public final class ECHONETLiteTopicGenerator {
         return PREFIX + "." + CLASS_NAMES.get(classCode) + "." + EPCS.get(classCode).get(epc);
     }
 
+    static Collection<String> getTopics() {
+        Collection<String> topics = new HashSet<String>();
+        for (int classi = 0; classi < CLASS_NAMES.size(); classi++) {
+            int className = CLASS_NAMES.keyAt(classi);
+            for (int epci = 0; epci < EPCS.size(); epci++) {
+                SparseArray<String> epc = EPCS.get(EPCS.keyAt(epci));
+                for (int epcni = 0; epcni < epc.size(); epcni++) {
+                    topics.add(getTopic((short) className, String.valueOf(epc.keyAt(epcni))));
+                }
+            }
+        }
+        return topics;
+    }
 }

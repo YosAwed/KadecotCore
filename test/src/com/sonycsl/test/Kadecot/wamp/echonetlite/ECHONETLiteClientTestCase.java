@@ -31,13 +31,13 @@ public class ECHONETLiteClientTestCase extends AndroidTestCase {
     }
 
     public void testGetSubscribableTopics() {
-        Set<String> topics = mClient.getSubscribableTopics();
+        Set<String> topics = mClient.getTopicsToSubscribe();
         assertNotNull(topics);
         assertTrue(topics.size() > 0);
     }
 
     public void testGetRegisterableProcedures() {
-        Set<String> procs = mClient.getRegisterableProcedures();
+        Set<String> procs = mClient.getRegisterableProcedures().keySet();
         assertNotNull(procs);
         assertTrue(procs.size() > 0);
     }
