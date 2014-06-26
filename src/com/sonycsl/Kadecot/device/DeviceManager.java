@@ -13,7 +13,6 @@ import com.sonycsl.Kadecot.call.ErrorResponse;
 import com.sonycsl.Kadecot.call.Notification;
 import com.sonycsl.Kadecot.call.Response;
 import com.sonycsl.Kadecot.core.KadecotCoreApplication;
-import com.sonycsl.Kadecot.device.echo.EchoManager;
 import com.sonycsl.Kadecot.log.Logger;
 
 import org.json.JSONArray;
@@ -76,7 +75,6 @@ public class DeviceManager {
         mApp = (KadecotCoreApplication) context.getApplicationContext();
         mContext = mApp;
         mDeviceProtocols = new HashMap<String, DeviceProtocol>();
-        registerDeviceProtocol(EchoManager.getInstance(mContext));
     }
 
     public static synchronized DeviceManager getInstance(Context context) {
