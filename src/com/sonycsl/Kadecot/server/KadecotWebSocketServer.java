@@ -8,12 +8,12 @@ package com.sonycsl.Kadecot.server;
 import android.os.Build;
 import android.util.Log;
 
+import com.sonycsl.Kadecot.wamp.KadecotProtocolSetupCallback;
 import com.sonycsl.Kadecot.wamp.KadecotWampClient;
-import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback;
 import com.sonycsl.Kadecot.wamp.KadecotWampPeerLocator;
 import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
+import com.sonycsl.Kadecot.wamp.KadecotWampSetupCallback;
 import com.sonycsl.Kadecot.wamp.KadecotWebSocketClient;
-import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback.OnCompletionListener;
 import com.sonycsl.wamp.WampError;
 import com.sonycsl.wamp.WampRouter;
 import com.sonycsl.wamp.message.WampMessage;
@@ -57,7 +57,9 @@ public class KadecotWebSocketServer {
 
     private KadecotWampRouter mRouter;
 
-    private CountDownLatch mSetupLatch;
+    private CountDownLatch mSystemSetup;
+
+    private CountDownLatch mWampSetup;
 
     public synchronized static KadecotWebSocketServer getInstance() {
         if (sInstance == null) {
@@ -74,15 +76,37 @@ public class KadecotWebSocketServer {
 
         mRouter = KadecotWampPeerLocator.getRouter();
 
-        mSetupLatch = new CountDownLatch(KadecotWampPeerLocator.getClients().length);
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        mSystemSetup = new CountDownLatch(KadecotWampPeerLocator.getSystemClients().length);
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.connect(mRouter);
-            client.setCallback(new KadecotWampClientSetupCallback(
-                    client.getSubscribableTopics(), client.getRegisterableProcedures(),
-                    new OnCompletionListener() {
+            client.setCallback(new KadecotWampSetupCallback(
+                    client.getTopicsToSubscribe(), client.getRegisterableProcedures()
+                            .keySet(),
+                    new KadecotWampSetupCallback.OnCompletionListener() {
                         @Override
                         public void onCompletion() {
-                            mSetupLatch.countDown();
+                            mSystemSetup.countDown();
+                        }
+                    }));
+        }
+
+        mWampSetup = new CountDownLatch(KadecotWampPeerLocator.getProtocolClients().length);
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.connect(mRouter);
+            client.setCallback(new KadecotProtocolSetupCallback(client.getSubscribableTopics(),
+                    client.getRegisterableProcedures(),
+                    new KadecotProtocolSetupCallback.OnCompletionListener() {
+
+                        @Override
+                        public void onCompletion() {
+                        }
+                    }));
+            client.setCallback(new KadecotWampSetupCallback(client.getTopicsToSubscribe(), client
+                    .getRegisterableProcedures().keySet(),
+                    new KadecotWampSetupCallback.OnCompletionListener() {
+                        @Override
+                        public void onCompletion() {
+                            mWampSetup.countDown();
                         }
                     }));
         }
@@ -112,16 +136,29 @@ public class KadecotWebSocketServer {
         mWebSocketServer = new WebSocketServerImpl(new InetSocketAddress(portno), draftList);
         mWebSocketServer.start();
 
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
                     new JSONObject()));
         }
 
         try {
-            mSetupLatch.await(5, TimeUnit.SECONDS);
+            mSystemSetup.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
             Log.e(TAG, "unable to setup KadecotWampClient");
+            return;
+        }
+
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
+                    new JSONObject()));
+        }
+
+        try {
+            mWampSetup.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Log.e(TAG, "unable to setup Wamp");
             return;
         }
 
@@ -148,7 +185,12 @@ public class KadecotWebSocketServer {
             e.printStackTrace();
         }
 
-        for (KadecotWampClient client : KadecotWampPeerLocator.getClients()) {
+        for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
+            client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
+                    WampError.CLOSE_REALM));
+        }
+
+        for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
             client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
                     WampError.CLOSE_REALM));
         }
@@ -207,4 +249,5 @@ public class KadecotWebSocketServer {
 
         }
     }
+
 }

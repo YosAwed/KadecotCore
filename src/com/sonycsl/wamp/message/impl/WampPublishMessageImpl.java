@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampPublishMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,24 +23,35 @@ public class WampPublishMessageImpl extends WampAbstractMessage implements WampP
     private static final int ARGUMENTS_KW_INDEX = 5;
 
     public static WampMessage create(int requestId, JSONObject options, String topic) {
+        NullChecker.nullCheck(options, topic);
         return new WampPublishMessageImpl(new JSONArray().put(WampMessageType.PUBLISH)
                 .put(requestId).put(options).put(topic));
     }
 
     public static WampMessage create(int requestId, JSONObject options, String topic,
             JSONArray arguments) {
+        NullChecker.nullCheck(options, topic, arguments);
         return new WampPublishMessageImpl(new JSONArray().put(WampMessageType.PUBLISH)
                 .put(requestId).put(options).put(topic).put(arguments));
     }
 
     public static WampMessage create(int requestId, JSONObject options, String topic,
             JSONArray arguments, JSONObject argumentsKw) {
+        NullChecker.nullCheck(options, topic, arguments, argumentsKw);
         return new WampPublishMessageImpl(new JSONArray().put(WampMessageType.PUBLISH)
                 .put(requestId).put(options).put(topic).put(arguments).put(argumentsKw));
     }
 
     public WampPublishMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.PUBLISH) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

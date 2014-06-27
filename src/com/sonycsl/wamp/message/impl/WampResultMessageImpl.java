@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampResultMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,23 +22,34 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     private static final int ARGUMENTS_KW_INDEX = 4;
 
     public static WampMessage create(int requestId, JSONObject details) {
+        NullChecker.nullCheck(details);
         return new WampResultMessageImpl(new JSONArray().put(WampMessageType.RESULT).put(requestId)
                 .put(details));
     }
 
     public static WampMessage create(int requestId, JSONObject details, JSONArray arguments) {
+        NullChecker.nullCheck(details, arguments);
         return new WampResultMessageImpl(new JSONArray().put(WampMessageType.RESULT).put(requestId)
                 .put(details).put(arguments));
     }
 
     public static WampMessage create(int requestId, JSONObject details, JSONArray arguments,
             JSONObject argumentsKw) {
+        NullChecker.nullCheck(details, arguments, argumentsKw);
         return new WampResultMessageImpl(new JSONArray().put(WampMessageType.RESULT).put(requestId)
                 .put(details).put(arguments).put(argumentsKw));
     }
 
     public WampResultMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.RESULT) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -88,7 +100,7 @@ public class WampResultMessageImpl extends WampAbstractMessage implements WampRe
     }
 
     @Override
-    public JSONObject getArgumentKw() {
+    public JSONObject getArgumentsKw() {
         try {
             return toJSON().getJSONObject(ARGUMENTS_KW_INDEX);
         } catch (JSONException e) {

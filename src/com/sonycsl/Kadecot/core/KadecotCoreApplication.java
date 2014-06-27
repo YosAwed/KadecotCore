@@ -6,13 +6,14 @@
 package com.sonycsl.Kadecot.core;
 
 import android.app.Application;
+import android.os.Handler;
 
-import com.sonycsl.Kadecot.wamp.KadecotProviderWampClient;
 import com.sonycsl.Kadecot.wamp.KadecotTopicTimer;
 import com.sonycsl.Kadecot.wamp.KadecotWampPeerLocator;
 import com.sonycsl.Kadecot.wamp.KadecotWampRouter;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.Kadecot.wamp.echonetlite.ECHONETLiteClient;
+import com.sonycsl.Kadecot.wamp.provider.KadecotProviderClient;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,11 +28,14 @@ public class KadecotCoreApplication extends Application {
         mModifiableCoreObject = new AppModifiableCoreObject(this);
 
         KadecotWampPeerLocator locator = new KadecotWampPeerLocator();
-        locator.setRouter(new KadecotWampRouter());
-        locator.loadClient(new KadecotProviderWampClient(this));
-        locator.loadClient(new ECHONETLiteClient(this));
-        locator.loadClient(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
+        locator.setRouter(new KadecotWampRouter(getContentResolver()));
+
+        locator.loadSystemClient(new KadecotProviderClient(this, new Handler()));
+
+        locator.loadSystemClient(new KadecotTopicTimer(KadecotWampTopic.TOPIC_PRIVATE_SEARCH, 5,
                 TimeUnit.SECONDS));
+
+        locator.loadProtocolClient(new ECHONETLiteClient(this));
         KadecotWampPeerLocator.load(locator);
     }
 

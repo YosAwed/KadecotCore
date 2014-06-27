@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampWelcomeMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,12 +20,21 @@ public class WampWelcomeMessageImpl extends WampAbstractMessage implements WampW
     private static final int DETAILS_INDEX = 2;
 
     public static WampMessage create(int session, JSONObject details) {
+        NullChecker.nullCheck(details);
         return new WampWelcomeMessageImpl(new JSONArray().put(WampMessageType.WELCOME).put(session)
                 .put(details));
     }
 
     public WampWelcomeMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.WELCOME) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

@@ -8,6 +8,7 @@ public enum ECHONETLitePropertyName {
 
     // common
     OPERATION_STATUS("OperationStatus", "0x80"),
+    MEASURED_CUMULATIVE_POWER_CONSUMPTION("MeasuredCumulativePowerConsumption", "0x85"),
 
     // HomeAirConditioner
     OPERATION_POWER_SAVING("OperationPowerSaving", "0x8f"),

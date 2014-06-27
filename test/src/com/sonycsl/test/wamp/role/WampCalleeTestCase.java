@@ -10,6 +10,7 @@ import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampInvocationMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
+import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampYieldMessage;
 import com.sonycsl.wamp.role.WampCallee;
 import com.sonycsl.wamp.role.WampRole;
@@ -22,8 +23,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +82,7 @@ public class WampCalleeTestCase extends TestCase {
     }
 
     private static final String PROCEDURE = "com.myapp.myprocedure1";
+    private static final String PROCEDURE2 = "com.myapp.myprocedure2";
 
     private TestWampCallee mCallee;
     private MockWampPeer mPeer;
@@ -95,6 +99,10 @@ public class WampCalleeTestCase extends TestCase {
         assertNotNull(mCallee);
         assertNotNull(mPeer);
         assertNotNull(mListener);
+    }
+
+    public void testGetRoleName() {
+        assertTrue(mCallee.getRoleName().equals("callee"));
     }
 
     public void testTxRegister() {
@@ -120,6 +128,33 @@ public class WampCalleeTestCase extends TestCase {
                 WampMessageFactory.createRegister(requestId, new JSONObject(), PROCEDURE)));
         assertTrue(mCallee.resolveRxMessage(mPeer,
                 WampMessageFactory.createRegistered(requestId, registrationId),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    public void testRxRegisterdTwice() {
+        final int requestId1 = WampRequestIdGenerator.getId();
+        final int requestId2 = WampRequestIdGenerator.getId();
+        final int registrationId1 = 100;
+        final int registrationId2 = 200;
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId2, new JSONObject(), PROCEDURE2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId1, registrationId1),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId2, registrationId2),
                 new OnReplyListener() {
                     @Override
                     public void onReply(WampPeer receiver, WampMessage reply) {
@@ -175,6 +210,56 @@ public class WampCalleeTestCase extends TestCase {
                         WampMessageFactory.createUnregister(requestId, registrationId)));
         assertTrue(mCallee.resolveRxMessage(mPeer,
                 WampMessageFactory.createUnregistered(requestId), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+    }
+
+    public void testRxUnregisterTwice() {
+        int requestId1 = WampRequestIdGenerator.getId();
+        final int registrationId1 = 100;
+        int requestId2 = WampRequestIdGenerator.getId();
+        final int registrationId2 = 200;
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId1, registrationId1),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(requestId2, new JSONObject(), PROCEDURE2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createRegistered(requestId2, registrationId2),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+
+        requestId1 = WampRequestIdGenerator.getId();
+        requestId2 = WampRequestIdGenerator.getId();
+        assertTrue(mCallee
+                .resolveTxMessage(mPeer,
+                        WampMessageFactory.createUnregister(requestId1, registrationId1)));
+        assertTrue(mCallee
+                .resolveTxMessage(mPeer,
+                        WampMessageFactory.createUnregister(requestId2, registrationId2)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createUnregistered(requestId1), new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                        fail();
+                    }
+                }));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createUnregistered(requestId2), new OnReplyListener() {
                     @Override
                     public void onReply(WampPeer receiver, WampMessage reply) {
                         fail();
@@ -294,5 +379,51 @@ public class WampCalleeTestCase extends TestCase {
                         fail();
                     }
                 }));
+    }
+
+    public void testNoRegisterInvocation() {
+        assertFalse(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createInvocation(1, -1, new JSONObject()),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                    }
+                }));
+    }
+
+    public void testRegistrationIdMismatch() {
+        assertTrue(mCallee.resolveTxMessage(mPeer,
+                WampMessageFactory.createRegister(1, new JSONObject(), PROCEDURE)));
+        assertTrue(mCallee.resolveRxMessage(mPeer,
+                WampMessageFactory.createInvocation(2, -1, new JSONObject()),
+                new OnReplyListener() {
+                    @Override
+                    public void onReply(WampPeer receiver, WampMessage reply) {
+                    }
+                }));
+    }
+
+    // abnormal
+    public void testMessageOutOfRole() {
+        Set<Integer> uncheckRx = new HashSet<Integer>();
+        uncheckRx.add(WampMessageType.WELCOME);
+        uncheckRx.add(WampMessageType.ABORT);
+        uncheckRx.add(WampMessageType.GOODBYE);
+        uncheckRx.add(WampMessageType.ERROR);
+        uncheckRx.add(WampMessageType.REGISTERED);
+        uncheckRx.add(WampMessageType.UNREGISTERED);
+        uncheckRx.add(WampMessageType.INVOCATION);
+
+        WampRoleTestUtil.rxMessageOutOfRole(mCallee, mPeer, uncheckRx);
+
+        Set<Integer> uncheckTx = new HashSet<Integer>();
+        uncheckTx.add(WampMessageType.HELLO);
+        uncheckTx.add(WampMessageType.GOODBYE);
+        uncheckTx.add(WampMessageType.ERROR);
+        uncheckTx.add(WampMessageType.REGISTER);
+        uncheckTx.add(WampMessageType.UNREGISTER);
+        uncheckTx.add(WampMessageType.YIELD);
+
+        WampRoleTestUtil.txMessageOutOfRole(mCallee, mPeer, uncheckTx);
     }
 }

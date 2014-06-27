@@ -1,7 +1,7 @@
 
 package com.sonycsl.test.util;
 
-import com.sonycsl.Kadecot.wamp.KadecotWampClientSetupCallback;
+import com.sonycsl.Kadecot.wamp.KadecotWampSetupCallback;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class TestableCallback extends KadecotWampClientSetupCallback {
+public class TestableCallback extends KadecotWampSetupCallback {
 
     public TestableCallback() {
         super(new HashSet<String>(), new HashSet<String>(), new OnCompletionListener() {

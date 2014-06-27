@@ -66,19 +66,31 @@ public class KadecotCoreProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = mHelper.getWritableDatabase();
+        Uri rowUri;
         switch (URI_MATCHER.match(uri)) {
             case DEVICE:
-                return ContentUris.withAppendedId(uri,
+                rowUri = ContentUris.withAppendedId(uri,
                         db.insert(DatabaseHelper.DEVICE_TABLE, null, values));
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Devices.CONTENT_URI, null);
+                break;
             case TOPIC:
-                return ContentUris.withAppendedId(uri,
+                rowUri = ContentUris.withAppendedId(uri,
                         db.insert(DatabaseHelper.TOPIC_TABLE, null, values));
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Topics.CONTENT_URI, null);
+                break;
             case PROC:
-                return ContentUris.withAppendedId(uri,
+                rowUri = ContentUris.withAppendedId(uri,
                         db.insert(DatabaseHelper.PROC_TABLE, null, values));
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Procedures.CONTENT_URI, null);
+                break;
             default:
                 return null;
         }
+
+        return rowUri;
     }
 
     @Override
@@ -102,10 +114,21 @@ public class KadecotCoreProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        int numOfRows = 0;
         SQLiteDatabase db = mHelper.getWritableDatabase();
         switch (URI_MATCHER.match(uri)) {
             case DEVICE:
-                return db.update(DatabaseHelper.DEVICE_TABLE, values, selection, selectionArgs);
+                numOfRows = db.update(DatabaseHelper.DEVICE_TABLE, values, selection,
+                        selectionArgs);
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Devices.CONTENT_URI, null);
+                return numOfRows;
+            case TOPIC:
+                numOfRows = db.update(DatabaseHelper.TOPIC_TABLE, values, selection,
+                        selectionArgs);
+                getContext().getContentResolver().notifyChange(
+                        KadecotCoreStore.Topics.CONTENT_URI, null);
+                return numOfRows;
             default:
                 return 0;
         }
@@ -127,31 +150,52 @@ public class KadecotCoreProvider extends ContentProvider {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE IF NOT EXISTS " + DEVICE_TABLE + " ( " +
-                    KadecotCoreStore.Devices.DeviceColumns._ID
-                    + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    +
+                    "_id INTEGER, " +
+                    KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID
+                    + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     KadecotCoreStore.Devices.DeviceColumns.PROTOCOL + " TEXT NOT NULL, " +
                     KadecotCoreStore.Devices.DeviceColumns.UUID + " TEXT NOT NULL, " +
-                    KadecotCoreStore.Devices.DeviceColumns.TYPE + " TEXT NOT NULL, " +
+                    KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE + " TEXT NOT NULL, " +
                     KadecotCoreStore.Devices.DeviceColumns.DESCRIPTION + " TEXT NOT NULL, " +
-                    KadecotCoreStore.Devices.DeviceColumns.STATUS + " INTEGER not null, " +
+                    KadecotCoreStore.Devices.DeviceColumns.STATUS + " INTEGER NOT NULL, " +
                     KadecotCoreStore.Devices.DeviceColumns.NICKNAME + " TEXT NOT NULL, " +
+                    KadecotCoreStore.Devices.DeviceColumns.UTC_UPDATED
+                    + " DATETIME DEFAULT (datetime('now')), " +
+                    KadecotCoreStore.Devices.DeviceColumns.LOCAL_UPDATED
+                    + " DATETIME DEFAULT (datetime('now', 'localtime')), " +
                     "UNIQUE(" + KadecotCoreStore.Devices.DeviceColumns.PROTOCOL + ", "
                     + KadecotCoreStore.Devices.DeviceColumns.UUID + ") " +
                     ");");
 
+            db.execSQL("CREATE TRIGGER itrig AFTER INSERT ON " + DEVICE_TABLE +
+                    " BEGIN" +
+                    " UPDATE " + DEVICE_TABLE + " SET " +
+                    "_id" + " = new." + KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID +
+                    " where " + KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID + " = new."
+                    + KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID + ";" +
+                    " END");
+
+            db.execSQL("CREATE TRIGGER utrig AFTER UPDATE ON " + DEVICE_TABLE +
+                    " BEGIN" +
+                    " UPDATE " + DEVICE_TABLE + " SET " +
+                    KadecotCoreStore.Devices.DeviceColumns.UTC_UPDATED + " = datetime('now'), " +
+                    KadecotCoreStore.Devices.DeviceColumns.LOCAL_UPDATED
+                    + " = datetime('now', 'localtime')" +
+                    " where " + KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID + " = new."
+                    + KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID + ";" +
+                    " END");
+
             db.execSQL("CREATE TABLE IF NOT EXISTS " + TOPIC_TABLE + " ( " +
-                    KadecotCoreStore.Topics.TopicColumns._ID
-                    + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     KadecotCoreStore.Topics.TopicColumns.PROTOCOL + " TEXT NOT NULL, " +
                     KadecotCoreStore.Topics.TopicColumns.NAME + " TEXT NOT NULL, " +
                     KadecotCoreStore.Topics.TopicColumns.DESCRIPTION + " TEXT NOT NULL, " +
+                    KadecotCoreStore.Topics.TopicColumns.REFERENCE_COUNT + " INTEGER DEFAULT 0, " +
                     "UNIQUE(" + KadecotCoreStore.Topics.TopicColumns.NAME + ") " +
                     ");");
 
             db.execSQL("CREATE TABLE IF NOT EXISTS " + PROC_TABLE + " ( " +
-                    KadecotCoreStore.Procedures.ProcedureColumns._ID
-                    + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     KadecotCoreStore.Procedures.ProcedureColumns.PROTOCOL + " TEXT NOT NULL, " +
                     KadecotCoreStore.Procedures.ProcedureColumns.NAME + " TEXT NOT NULL, " +
                     KadecotCoreStore.Procedures.ProcedureColumns.DESCRIPTION + " TEXT NOT NULL, " +

@@ -3,11 +3,6 @@ package com.sonycsl.Kadecot.wamp;
 
 import com.sonycsl.wamp.WampClient;
 
-import java.util.Set;
-
-abstract public class KadecotWampClient extends WampClient {
-
-    abstract public Set<String> getSubscribableTopics();
-
-    abstract public Set<String> getRegisterableProcedures();
+abstract public class KadecotWampClient extends WampClient implements KadecotWampSetupable,
+        KadecotProtocolSetupable {
 }

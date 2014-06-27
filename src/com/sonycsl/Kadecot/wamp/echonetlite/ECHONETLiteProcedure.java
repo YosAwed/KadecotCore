@@ -8,8 +8,7 @@ package com.sonycsl.Kadecot.wamp.echonetlite;
 public enum ECHONETLiteProcedure {
 
     GET("com.sonycsl.kadecot.echonetlite.procedure.get"),
-    SET("com.sonycsl.kadecot.echonetlite.procedure.set"),
-    NOT_PROCEDURE("not.procedure");
+    SET("com.sonycsl.kadecot.echonetlite.procedure.set"), ;
 
     private String procedure;
 
@@ -29,6 +28,6 @@ public enum ECHONETLiteProcedure {
                 return enumElement;
         }
 
-        return NOT_PROCEDURE;
+        return null;
     }
 }

@@ -24,6 +24,14 @@ public class WampUnsubscribedMessageImpl extends WampAbstractMessage implements
 
     public WampUnsubscribedMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.UNSUBSCRIBED) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

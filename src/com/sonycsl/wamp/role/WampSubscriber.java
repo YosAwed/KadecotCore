@@ -14,6 +14,7 @@ import com.sonycsl.wamp.message.WampSubscribeMessage;
 import com.sonycsl.wamp.message.WampSubscribedMessage;
 import com.sonycsl.wamp.message.WampUnsubscribeMessage;
 import com.sonycsl.wamp.message.WampUnsubscribedMessage;
+import com.sonycsl.wamp.util.DoubleKeyMap;
 
 import org.json.JSONObject;
 
@@ -22,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class WampSubscriber extends WampRole {
 
-    private final Map<WampPeer, WampMessage> mSubs = new ConcurrentHashMap<WampPeer, WampMessage>();
-    private final Map<WampPeer, WampMessage> mUnsubs = new ConcurrentHashMap<WampPeer, WampMessage>();
+    private final DoubleKeyMap<WampPeer, Integer, WampMessage> mSubs = new DoubleKeyMap<WampPeer, Integer, WampMessage>();
+    private final DoubleKeyMap<WampPeer, Integer, WampMessage> mUnsubs = new DoubleKeyMap<WampPeer, Integer, WampMessage>();
     private final Map<WampPeer, Map<Integer, String>> mTopicMaps = new ConcurrentHashMap<WampPeer, Map<Integer, String>>();
 
     @Override
@@ -34,14 +35,14 @@ abstract public class WampSubscriber extends WampRole {
     @Override
     public boolean resolveTxMessageImpl(WampPeer receiver, WampMessage msg) {
         if (msg.isSubscribeMessage()) {
-            mSubs.put(receiver, msg);
+            mSubs.put(receiver, msg.asSubscribeMessage().getRequestId(), msg);
             if (!mTopicMaps.containsKey(receiver)) {
                 mTopicMaps.put(receiver, new ConcurrentHashMap<Integer, String>());
             }
             return true;
         }
         if (msg.isUnsubscribeMessage()) {
-            mUnsubs.put(receiver, msg);
+            mUnsubs.put(receiver, msg.asUnsubscribeMessage().getRequestId(), msg);
             return true;
         }
         return false;
@@ -65,11 +66,13 @@ abstract public class WampSubscriber extends WampRole {
     }
 
     private boolean resolveSubscribedMessage(WampPeer transmitter, WampMessage msg) {
-        if (!mSubs.containsKey(transmitter)) {
+        WampSubscribedMessage subscribedMsg = msg.asSubscribedMessage();
+        if (!mSubs.containsKey(transmitter, subscribedMsg.getRequestId())) {
             return false;
         }
 
-        WampSubscribeMessage request = mSubs.get(transmitter).asSubscribeMessage();
+        WampSubscribeMessage request = mSubs.get(transmitter, subscribedMsg.getRequestId())
+                .asSubscribeMessage();
         WampSubscribedMessage response = msg.asSubscribedMessage();
 
         if (request.getRequestId() != response.getRequestId()) {
@@ -82,17 +85,19 @@ abstract public class WampSubscriber extends WampRole {
         }
         topicMap.put(response.getSubscriptionId(), request.getTopic());
 
-        mSubs.remove(transmitter);
+        mSubs.remove(transmitter, subscribedMsg.getRequestId());
 
         return true;
     }
 
     private boolean resolveUnsubscribedMessage(WampPeer transmitter, WampMessage msg) {
-        if (!mUnsubs.containsKey(transmitter)) {
+        WampUnsubscribedMessage unsubscribedMsg = msg.asUnsubscribedMessage();
+        if (!mUnsubs.containsKey(transmitter, unsubscribedMsg.getRequestId())) {
             return false;
         }
 
-        WampUnsubscribeMessage request = mUnsubs.get(transmitter).asUnsubscribeMessage();
+        WampUnsubscribeMessage request = mUnsubs.get(transmitter, unsubscribedMsg.getRequestId())
+                .asUnsubscribeMessage();
         WampUnsubscribedMessage response = msg.asUnsubscribedMessage();
 
         if (request.getRequestId() != response.getRequestId()) {
@@ -108,7 +113,7 @@ abstract public class WampSubscriber extends WampRole {
         }
         topicMap.remove(request.getSubscriptionId());
 
-        mUnsubs.remove(transmitter);
+        mUnsubs.remove(transmitter, unsubscribedMsg.getRequestId());
         return true;
     }
 

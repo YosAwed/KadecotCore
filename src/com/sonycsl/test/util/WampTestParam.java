@@ -3,7 +3,7 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.test.wamp;
+package com.sonycsl.test.util;
 
 public class WampTestParam {
     public static final String REALM = "realm";

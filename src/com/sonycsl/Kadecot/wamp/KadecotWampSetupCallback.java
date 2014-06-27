@@ -9,23 +9,23 @@ import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONObject;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 
-public class KadecotWampClientSetupCallback implements Callback {
+public class KadecotWampSetupCallback implements Callback {
 
     public interface OnCompletionListener {
         public void onCompletion();
     }
 
-    private final Set<String> mTopics;
-    private final Set<String> mProcedures;
-    private final Set<Integer> mSubscriptionIds;
-    private final Set<Integer> mRegistrationIds;
+    private final Collection<String> mTopics;
+    private final Collection<String> mProcedures;
+    private final Collection<Integer> mSubscriptionIds;
+    private final Collection<Integer> mRegistrationIds;
     private final OnCompletionListener mListener;
 
-    public KadecotWampClientSetupCallback(Set<String> topics, Set<String> procedures,
+    public KadecotWampSetupCallback(Collection<String> topics, Collection<String> procedures,
             OnCompletionListener listener) {
         mTopics = topics;
         mProcedures = procedures;
@@ -94,7 +94,7 @@ public class KadecotWampClientSetupCallback implements Callback {
                 receiver.transmit(WampMessageFactory.createRegister(
                         WampRequestIdGenerator.getId(), new JSONObject(), procedure));
             }
-            notifyCompletion();
+            // notifyCompletion();
             return;
         }
 

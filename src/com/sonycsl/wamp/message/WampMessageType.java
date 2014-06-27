@@ -13,7 +13,7 @@ public final class WampMessageType {
     public static final int CHALLENGE = 4;
     public static final int AUTHENTICATE = 5;
     public static final int GOODBYE = 6;
-    public static final int HEATBEAT = 7;
+    public static final int HEARTBEAT = 7;
     public static final int ERROR = 8;
 
     public static final int PUBLISH = 16;
