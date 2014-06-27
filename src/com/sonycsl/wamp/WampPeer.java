@@ -10,6 +10,7 @@ import com.sonycsl.wamp.role.WampRole;
 import com.sonycsl.wamp.role.WampRole.OnReplyListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 abstract public class WampPeer {
@@ -28,9 +29,81 @@ abstract public class WampPeer {
         public void postReceive(WampPeer receiver, WampMessage msg);
     }
 
+    private static class Callbacks implements Callback {
+
+        private Set<Callback> callbacks = new HashSet<WampPeer.Callback>();
+
+        public boolean add(Callback callback) {
+            synchronized (callbacks) {
+                return callbacks.add(callback);
+            }
+        }
+
+        public void remove(Callback callback) {
+            synchronized (callbacks) {
+                callbacks.remove(callback);
+            }
+        }
+
+        @Override
+        public void preConnect(WampPeer connecter, WampPeer connectee) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.preConnect(connecter, connectee);
+                }
+            }
+        }
+
+        @Override
+        public void postConnect(WampPeer connecter, WampPeer connectee) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.postConnect(connecter, connectee);
+                }
+            }
+        }
+
+        @Override
+        public void preTransmit(WampPeer transmitter, WampMessage msg) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.preTransmit(transmitter, msg);
+                }
+            }
+        }
+
+        @Override
+        public void postTransmit(WampPeer transmitter, WampMessage msg) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.postTransmit(transmitter, msg);
+                }
+            }
+        }
+
+        @Override
+        public void preReceive(WampPeer receiver, WampMessage msg) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.preReceive(receiver, msg);
+                }
+            }
+        }
+
+        @Override
+        public void postReceive(WampPeer receiver, WampMessage msg) {
+            synchronized (callbacks) {
+                for (Callback callback : callbacks) {
+                    callback.postReceive(receiver, msg);
+                }
+            }
+        }
+
+    }
+
     private ArrayList<WampPeer> mReceivers = new ArrayList<WampPeer>();
     private Set<WampRole> mRoleSet;
-    private Callback mCallback;
+    private Callbacks mCallbacks = new Callbacks();
 
     public WampPeer() {
     }
@@ -38,11 +111,11 @@ abstract public class WampPeer {
     abstract protected Set<WampRole> getRoleSet();
 
     public void setCallback(Callback callback) {
-        mCallback = callback;
+        mCallbacks.add(callback);
     }
 
-    public Callback getCallback() {
-        return mCallback;
+    public void removeCallback(Callback callback) {
+        mCallbacks.remove(callback);
     }
 
     public final void connect(final WampPeer receiver) {
@@ -57,13 +130,9 @@ abstract public class WampPeer {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (mCallback != null) {
-                    mCallback.preConnect(WampPeer.this, receiver);
-                }
+                mCallbacks.preConnect(WampPeer.this, receiver);
                 onConnected(receiver);
-                if (mCallback != null) {
-                    mCallback.postConnect(WampPeer.this, receiver);
-                }
+                mCallbacks.postConnect(WampPeer.this, receiver);
             }
         }).start();
 
@@ -92,14 +161,10 @@ abstract public class WampPeer {
             for (WampRole role : mRoleSet) {
                 if (role.resolveTxMessage(receiver, msg)) {
                     transmitted = true;
-                    if (mCallback != null) {
-                        mCallback.preTransmit(WampPeer.this, msg);
-                    }
+                    mCallbacks.preTransmit(WampPeer.this, msg);
                     receiver.onReceive(WampPeer.this, msg);
                     onTransmitted(receiver, msg);
-                    if (mCallback != null) {
-                        mCallback.postTransmit(WampPeer.this, msg);
-                    }
+                    mCallbacks.postTransmit(WampPeer.this, msg);
                     break;
                 }
             }
@@ -140,12 +205,12 @@ abstract public class WampPeer {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (mCallback != null) {
-                    mCallback.preReceive(WampPeer.this, msg);
+                if (mCallbacks != null) {
+                    mCallbacks.preReceive(WampPeer.this, msg);
                 }
                 onReceived(msg);
-                if (mCallback != null) {
-                    mCallback.postReceive(WampPeer.this, msg);
+                if (mCallbacks != null) {
+                    mCallbacks.postReceive(WampPeer.this, msg);
                 }
             }
         }).start();

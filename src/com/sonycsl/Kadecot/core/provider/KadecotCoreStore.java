@@ -2,7 +2,6 @@
 package com.sonycsl.Kadecot.core.provider;
 
 import android.net.Uri;
-import android.provider.BaseColumns;
 
 public class KadecotCoreStore {
 
@@ -18,19 +17,25 @@ public class KadecotCoreStore {
 
         public static final String ENTRY_CONTENT_TYPE = "vnd.android.cursor.item/device";
 
-        public interface DeviceColumns extends BaseColumns {
+        public interface DeviceColumns {
+
+            public static final String DEVICE_ID = "deviceId";
 
             public static final String PROTOCOL = "protocol";
 
             public static final String UUID = "uuid";
 
-            public static final String TYPE = "type";
+            public static final String DEVICE_TYPE = "deviceType";
 
             public static final String DESCRIPTION = "description";
 
             public static final String STATUS = "status";
 
             public static final String NICKNAME = "nickname";
+
+            public static final String UTC_UPDATED = "utc_updated";
+
+            public static final String LOCAL_UPDATED = "local_updated";
         }
     }
 
@@ -42,13 +47,15 @@ public class KadecotCoreStore {
 
         public static final String ENTRY_CONTENT_TYPE = "vnd.android.cursor.item/topic";
 
-        public interface TopicColumns extends BaseColumns {
+        public interface TopicColumns {
 
             public static final String PROTOCOL = "protocol";
 
             public static final String NAME = "name";
 
             public static final String DESCRIPTION = "description";
+
+            public static final String REFERENCE_COUNT = "referenceCount";
         }
     }
 
@@ -60,7 +67,7 @@ public class KadecotCoreStore {
 
         public static final String ENTRY_CONTENT_TYPE = "vnd.android.cursor.item/procedure";
 
-        public interface ProcedureColumns extends BaseColumns {
+        public interface ProcedureColumns {
 
             public static final String PROTOCOL = "protocol";
 

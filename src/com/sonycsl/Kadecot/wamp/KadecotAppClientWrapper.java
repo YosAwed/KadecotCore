@@ -87,6 +87,10 @@ public class KadecotAppClientWrapper {
 
     private void respondError(WampErrorMessage msg) {
         WampRequestListener callback = reqIdListenerMap.remove(msg.getRequestId());
+        if (callback == null) {
+            Log.e(TAG, "Unknown Response. msg=" + msg);
+            return;
+        }
 
         switch (msg.getRequestType()) {
             case WampMessageType.CALL:
@@ -111,7 +115,7 @@ public class KadecotAppClientWrapper {
             return;
         }
 
-        callback.onResult(msg.getDetails(), msg.getArgumentKw());
+        callback.onResult(msg.getDetails(), msg.getArgumentsKw());
     }
 
     private void respondEvent(WampEventMessage msg) {
@@ -169,9 +173,6 @@ public class KadecotAppClientWrapper {
     public void call(String procedure, JSONObject options, JSONObject paramsKw,
             WampCallListener listener) {
 
-        Log.d(TAG, "CALL procedure: " + procedure + ", options: " + options + ", paramsKw: "
-                + paramsKw);
-
         int reqId = WampRequestIdGenerator.getId();
         reqIdListenerMap.put(reqId, listener);
 
@@ -180,8 +181,6 @@ public class KadecotAppClientWrapper {
     }
 
     public void subscribe(String topic, JSONObject options, WampSubscribeListener listener) {
-        Log.d(TAG, "SUBSCRIBE topic: " + topic + ", options: " + options);
-
         int reqId = WampRequestIdGenerator.getId();
         reqIdListenerMap.put(reqId, listener);
 
@@ -189,8 +188,6 @@ public class KadecotAppClientWrapper {
     }
 
     public void unsubscribe(int subscriptionId, WampUnsubscribeListener listener) {
-        Log.d(TAG, "UNSUBSCRIBE subscriptionId: " + subscriptionId);
-
         int reqId = WampRequestIdGenerator.getId();
         reqIdListenerMap.put(reqId, listener);
         reqIdSubIdMap.put(reqId, subscriptionId);

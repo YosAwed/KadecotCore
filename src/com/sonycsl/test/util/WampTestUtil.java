@@ -24,10 +24,12 @@ public final class WampTestUtil {
     public static WampMessage transmitMessage(WampPeer requester, WampMessage request,
             WampPeer responder, int responseType) {
 
-        TestableCallback reqCallback = (TestableCallback) requester.getCallback();
-        TestableCallback resCallback = (TestableCallback) responder.getCallback();
+        TestableCallback reqCallback = new TestableCallback();
+        TestableCallback resCallback = new TestableCallback();
         reqCallback.setTargetMessageType(responseType, new CountDownLatch(1));
         resCallback.setTargetMessageType(request.getMessageType(), new CountDownLatch(1));
+        requester.setCallback(reqCallback);
+        responder.setCallback(resCallback);
 
         requester.transmit(request);
         try {
@@ -42,6 +44,8 @@ public final class WampTestUtil {
         } catch (InterruptedException e) {
             TestCase.fail();
         }
+        requester.removeCallback(reqCallback);
+        responder.removeCallback(resCallback);
 
         return reqCallback.getTargetMessage();
     }

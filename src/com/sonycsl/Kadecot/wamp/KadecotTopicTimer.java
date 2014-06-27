@@ -14,7 +14,9 @@ import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -70,12 +72,17 @@ public class KadecotTopicTimer extends KadecotWampClient {
     }
 
     @Override
-    public Set<String> getSubscribableTopics() {
-        return new HashSet<String>();
+    public Map<String, String> getSubscribableTopics() {
+        return new HashMap<String, String>();
     }
 
     @Override
-    public Set<String> getRegisterableProcedures() {
+    public Map<String, String> getRegisterableProcedures() {
+        return new HashMap<String, String>();
+    }
+
+    @Override
+    public Set<String> getTopicsToSubscribe() {
         return new HashSet<String>();
     }
 

@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampSubscribeMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,12 +21,21 @@ public class WampSubscribeMessageImpl extends WampAbstractMessage implements Wam
     private static final int TOPIC_INDEX = 3;
 
     public static WampMessage create(int requestId, JSONObject options, String topic) {
+        NullChecker.nullCheck(options, topic);
         return new WampSubscribeMessageImpl(new JSONArray().put(WampMessageType.SUBSCRIBE)
                 .put(requestId).put(options).put(topic));
     }
 
     public WampSubscribeMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.SUBSCRIBE) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

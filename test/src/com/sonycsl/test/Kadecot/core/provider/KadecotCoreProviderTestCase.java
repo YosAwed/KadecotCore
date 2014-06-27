@@ -146,7 +146,7 @@ public class KadecotCoreProviderTestCase extends ProviderTestCase2<KadecotCorePr
             ContentValues values = new ContentValues();
             values.put(KadecotCoreStore.Devices.DeviceColumns.PROTOCOL, data.getProtocol());
             values.put(KadecotCoreStore.Devices.DeviceColumns.UUID, data.getUuid());
-            values.put(KadecotCoreStore.Devices.DeviceColumns.TYPE, data.getType());
+            values.put(KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE, data.getType());
             values.put(KadecotCoreStore.Devices.DeviceColumns.DESCRIPTION, data.getDesc());
             values.put(KadecotCoreStore.Devices.DeviceColumns.STATUS, data.getStatus());
             values.put(KadecotCoreStore.Devices.DeviceColumns.NICKNAME, data.getNickname());
@@ -171,7 +171,7 @@ public class KadecotCoreProviderTestCase extends ProviderTestCase2<KadecotCorePr
             assertEquals(
                     data.getType(),
                     c.getString(c
-                            .getColumnIndexOrThrow(KadecotCoreStore.Devices.DeviceColumns.TYPE)));
+                            .getColumnIndexOrThrow(KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE)));
             assertEquals(
                     data.getDesc(),
                     c.getString(c

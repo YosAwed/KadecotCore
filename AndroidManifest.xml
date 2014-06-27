@@ -39,8 +39,12 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.sonycsl.Kadecot.server.KadecotServerService" >
-        </service>
+        <service android:name="com.sonycsl.Kadecot.server.KadecotServerService" />
+
+        <provider
+            android:name="com.sonycsl.Kadecot.core.provider.KadecotCoreProvider"
+            android:authorities="com.sonycsl.kadecot.core.provider"
+            android:exported="false" />
     </application>
 
 </manifest>

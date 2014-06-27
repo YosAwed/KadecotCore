@@ -12,8 +12,14 @@ public final class KadecotWampPeerLocator {
         instance = locator;
     }
 
-    public static KadecotWampClient[] getClients() {
-        return instance.mClients.toArray(new KadecotWampClient[instance.mClients.size()]);
+    public static KadecotWampClient[] getSystemClients() {
+        return instance.mSystemClients
+                .toArray(new KadecotWampClient[instance.mSystemClients.size()]);
+    }
+
+    public static KadecotWampClient[] getProtocolClients() {
+        return instance.mProtocolClients.toArray(new KadecotWampClient[instance.mProtocolClients
+                .size()]);
     }
 
     public static KadecotWampRouter getRouter() {
@@ -21,14 +27,20 @@ public final class KadecotWampPeerLocator {
     }
 
     private KadecotWampRouter mRouter;
-    private Set<KadecotWampClient> mClients;
+    private Set<KadecotWampClient> mSystemClients;
+    private Set<KadecotWampClient> mProtocolClients;
 
     public KadecotWampPeerLocator() {
-        mClients = new HashSet<KadecotWampClient>();
+        mSystemClients = new HashSet<KadecotWampClient>();
+        mProtocolClients = new HashSet<KadecotWampClient>();
     }
 
-    public void loadClient(KadecotWampClient client) {
-        mClients.add(client);
+    public void loadSystemClient(KadecotWampClient client) {
+        mSystemClients.add(client);
+    }
+
+    public void loadProtocolClient(KadecotWampClient client) {
+        mProtocolClients.add(client);
     }
 
     public void setRouter(KadecotWampRouter router) {

@@ -19,5 +19,5 @@ public interface WampResultMessage {
 
     public boolean hasArgumentsKw();
 
-    public JSONObject getArgumentKw();
+    public JSONObject getArgumentsKw();
 }

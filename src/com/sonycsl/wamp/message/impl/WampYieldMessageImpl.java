@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.message.WampYieldMessage;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,23 +22,34 @@ public class WampYieldMessageImpl extends WampAbstractMessage implements WampYie
     private static final int ARGUMENTS_KW_INDEX = 4;
 
     public static WampMessage create(int requestId, JSONObject options) {
+        NullChecker.nullCheck(options);
         return new WampYieldMessageImpl(new JSONArray().put(WampMessageType.YIELD).put(requestId)
                 .put(options));
     }
 
     public static WampMessage create(int requestId, JSONObject options, JSONArray arguments) {
+        NullChecker.nullCheck(options, arguments);
         return new WampYieldMessageImpl(new JSONArray().put(WampMessageType.YIELD).put(requestId)
                 .put(options).put(arguments));
     }
 
     public static WampMessage create(int requestId, JSONObject options, JSONArray arguments,
             JSONObject argumentsKw) {
+        NullChecker.nullCheck(options, arguments, argumentsKw);
         return new WampYieldMessageImpl(new JSONArray().put(WampMessageType.YIELD).put(requestId)
                 .put(options).put(arguments).put(argumentsKw));
     }
 
     public WampYieldMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.YIELD) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

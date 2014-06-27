@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
+import android.webkit.ConsoleMessage.MessageLevel;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -98,8 +99,6 @@ public class KadecotCoreActivity extends FragmentActivity {
                         new NotificationProcessor(this, 0)) {
                     @Override
                     public void send(JSONObject obj) {
-                        Dbg.print(obj);
-
                         StringBuilder builder = new StringBuilder();
                         // builder.append("if(\"kHAPI\" in window){kHAPI.net.callFromServer(");
                         builder
@@ -250,7 +249,10 @@ public class KadecotCoreActivity extends FragmentActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.d(TAG, consoleMessage.message() + " -- From line "
+                if (consoleMessage.messageLevel() != MessageLevel.ERROR) {
+                    return true;
+                }
+                Log.e(TAG, consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return true;

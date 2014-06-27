@@ -8,6 +8,7 @@ package com.sonycsl.wamp.message.impl;
 import com.sonycsl.wamp.message.WampErrorMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageType;
+import com.sonycsl.wamp.util.NullChecker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,24 +25,35 @@ public class WampErrorMessageImpl extends WampAbstractMessage implements WampErr
 
     public static WampMessage create(int requestType, int requestId, JSONObject details,
             String error) {
+        NullChecker.nullCheck(details, error);
         return new WampErrorMessageImpl(new JSONArray().put(WampMessageType.ERROR).put(requestType)
                 .put(requestId).put(details).put(error));
     }
 
     public static WampMessage create(int requestType, int requestId, JSONObject details,
             String error, JSONArray arguments) {
+        NullChecker.nullCheck(details, error, arguments);
         return new WampErrorMessageImpl(new JSONArray().put(WampMessageType.ERROR).put(requestType)
                 .put(requestId).put(details).put(error).put(arguments));
     }
 
     public static WampMessage create(int requestType, int requestId, JSONObject details,
             String error, JSONArray arguments, JSONObject argumentsKw) {
+        NullChecker.nullCheck(details, error, arguments, argumentsKw);
         return new WampErrorMessageImpl(new JSONArray().put(WampMessageType.ERROR).put(requestType)
                 .put(requestId).put(details).put(error).put(arguments).put(argumentsKw));
     }
 
     public WampErrorMessageImpl(JSONArray msg) {
         super(msg);
+        try {
+            if (msg.getInt(0) != WampMessageType.ERROR) {
+                throw new IllegalArgumentException("message type is mismatched");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
