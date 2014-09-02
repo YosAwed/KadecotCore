@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="remos_json_url">"http://app.kadecot.net/remos.json"</string>
+
+</resources>

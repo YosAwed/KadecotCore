@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="title_attention">Attention</string>
+    <string name="message_connect_kadecot">Do you want to connect Kadecot to %1$s?</string>
+    <string name="message_connected">connected</string>
+
+</resources>

@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="custom_rules" default="help">
+
+    <property name="lib.path" value="com/sonycsl/Kadecot"/>
+    <property name="sdk.name" value="kadecotclientsdk.jar"/>
+
     <target name="-post-compile">
         <copy file="bin/classes.jar" tofile="bin/kadecotcore.jar" />
+
+        <delete file="bin/${sdk.name}" />
+        <jar basedir="bin/classes" jarfile="bin/${sdk.name}"
+             includes="**/${lib.path}/provider/KadecotCoreStore*.class,
+                       **/${lib.path}/wamp/KadecotWampTopic.class,
+                       **/${lib.path}/wamp/client/KadecotWampClient*.class,
+                       **/${lib.path}/wamp/client/provider/WampProviderAccessHelper*.class,
+                       **/${lib.path}/plugin/**/*.class" />
     </target>
 </project>

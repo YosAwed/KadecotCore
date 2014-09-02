@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="apps_json_url">"http://app.kadecot.net/apps.json"</string>
+
+</resources>

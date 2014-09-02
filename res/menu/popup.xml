@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/change_nick_name"
+        android:title="@string/title_popup_menu_item_change_nick_name">
+    </item>
+    <item
+        android:id="@+id/launch_plugin_settings"
+        android:title="@string/title_popup_menu_item_launch_plugin_settings">
+    </item>
+
+</menu>
