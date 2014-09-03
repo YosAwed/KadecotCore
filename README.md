@@ -22,11 +22,30 @@ KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play か�
 また、開発者 ML みたいなものも作りたいと思っています。  
 ご興味のある方は、ひとまず info@kadecot.net まで空メールを送って頂ければ幸いです(特に返答システムはありませんのでご了承ください)。  
 
-[ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
-[Kadecot]: http://kadecot.net/ "Kadecot"
-[OpenECHO]: https://github.com/SonyCSL/OpenECHO "OpenECHO"
-[株式会社ソニーコンピュータサイエンス研究所]: http://www.sonycsl.co.jp/ "株式会社ソニーコンピュータサイエンス研究所"
-[MITライセンス]: http://opensource.org/licenses/mit-license.php "MITライセンス"
+## 必要なもの
+
+* [repo](https://source.android.com/source/using-repo.html)
+* [android-sdk](http://developer.android.com/sdk/index.html)
+
+## コードの取得方法
+
+    $ mkdir work
+    $ cd work
+    $ repo init -u https://github.com/SonyCSL/manifest.git -b master
+    $ repo sync
+    $ repo start master --all
+
+## ビルド及びインストール方法
+
+### eclipse
+
+work 以下を import し KadecotSample を Run As -> Android Application してください。
+
+### ant
+
+    $ cd work/sample
+    $ ant debug
+    $ adb install bin/KadecotSample.apk
 
 
 以下本プロジェクトで用いているソフトウェアとライセンス文章です：
@@ -67,3 +86,10 @@ Redistribution and use in source and binary forms, with or without modification,
 * Neither the name of the NanoHttpd organization nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+[ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
+[Kadecot]: http://kadecot.net/ "Kadecot"
+[OpenECHO]: https://github.com/SonyCSL/OpenECHO "OpenECHO"
+[株式会社ソニーコンピュータサイエンス研究所]: http://www.sonycsl.co.jp/ "株式会社ソニーコンピュータサイエンス研究所"
+[MITライセンス]: http://opensource.org/licenses/mit-license.php "MITライセンス"
