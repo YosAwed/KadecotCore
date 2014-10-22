@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="location_label">
+        <item>@string/living_room</item>
+        <item>@string/dining_room</item>
+        <item>@string/kitchen</item>
+        <item>@string/bathroom</item>
+        <item>@string/lavatory</item>
+        <item>@string/washroom_changing_room</item>
+        <item>@string/passageway</item>
+        <item>@string/room</item>
+        <item>@string/stairway</item>
+        <item>@string/front_door</item>
+        <item>@string/storeroom</item>
+        <item>@string/garden_perimiter</item>
+        <item>@string/garage</item>
+        <item>@string/veranda_balcony</item>
+        <item>@string/others</item>
+    </array>
+</resources>

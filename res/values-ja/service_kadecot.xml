@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="notify_access_control_ticker">新しいアプリケーションが Kadecot にアクセスしようとしています</string>
+    <string name="notify_access_control_title">Kadecot のアクセス制御</string>
+    <string name="notify_access_control_text">%1$s が Kadecot にアクセスしようとしています。\n許可する場合はタップしてチェックボックスにチェックを入れてください。</string>
+
+</resources>

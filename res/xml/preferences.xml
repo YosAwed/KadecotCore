@@ -10,35 +10,34 @@
             android:key="@string/jsonp_preference_key"
             android:summaryOff="@string/summary_jsonp_server"
             android:title="@string/title_jsonp_server" />
-        <CheckBoxPreference
-            android:key="@string/snap_preference_key"
+
+        <PreferenceScreen
+            android:key="@string/origin_list_preference_key"
             android:summary=""
-            android:title="@string/title_snap_server" />
-        <CheckBoxPreference
-            android:key="@string/log_preference_key"
-            android:summary="@string/summary_enable_log"
-            android:title="@string/title_enable_log" />
+            android:title="@string/title_activity_origin_list" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preference_category_devices" >
         <PreferenceScreen
             android:key="@string/delete_all_inactive_devices_preference_key"
             android:summary=""
             android:title="@string/title_delete_all_inactive_devices" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preference_category_applications" >
-        <PreferenceScreen
-            android:key="@string/origin_list_preference_key"
-            android:summary=""
-            android:title="@string/title_activity_origin_list" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preference_category_plugins" >
         <PreferenceScreen
             android:key="@string/plugin_list_preference_key"
             android:summary=""
-            android:title="@string/title_activity_plugin_list" >
-        </PreferenceScreen>
+            android:title="@string/title_activity_plugin_list" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preference_category_network" >
+        <PreferenceScreen
+            android:key="@string/access_point_list_preference_key"
+            android:summary=""
+            android:title="@string/title_activity_access_point_list" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preference_category_information" >
+        <PreferenceScreen
+            android:key="@string/open_source_licenses_key"
+            android:summary=""
+            android:title="@string/title_open_source_licenses" >
+        </PreferenceScreen>
         <PreferenceScreen
             android:key="@string/about_kadecot_key"
             android:summary=""

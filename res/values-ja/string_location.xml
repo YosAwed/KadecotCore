@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="living_room">居間、リビング</string>
+    <string name="dining_room">食堂、ダイニング</string>
+    <string name="kitchen">台所、キッチン</string>
+    <string name="bathroom">浴室、バス</string>
+    <string name="lavatory">トイレ</string>
+    <string name="washroom_changing_room">洗面所、脱衣所</string>
+    <string name="passageway">廊下</string>
+    <string name="room">部屋</string>
+    <string name="stairway">階段</string>
+    <string name="front_door">玄関</string>
+    <string name="storeroom">納戸</string>
+    <string name="garden_perimiter">庭、外周</string>
+    <string name="garage">車庫</string>
+    <string name="veranda_balcony">ベランダ、バルコニー</string>
+    <string name="others">その他</string>
+    <string name="free_definition">フリー定義</string>
+    <string name="installation_location_not_specified">設置場所未設定</string>
+    <string name="installation_location_indefinite">設置場所未定</string>
+    <string name="position_information">位置情報定義</string>
+    <string name="for_future_reserved">for future reserved</string>
+</resources>

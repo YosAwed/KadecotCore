@@ -96,5 +96,8 @@ public class JsonLoader extends AsyncTaskLoader<JSONObject> {
     @Override
     protected void onReset() {
         super.onReset();
+        onStopLoading();
+
+        mData = null;
     }
 }

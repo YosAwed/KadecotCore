@@ -12,9 +12,9 @@ import android.os.RemoteException;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.wamp.client.KadecotWampClient;
 import com.sonycsl.Kadecot.wamp.client.provider.DeviceObserver.OnDeviceChangedListener;
+import com.sonycsl.Kadecot.wamp.client.provider.TopicObserver.OnSubscriberListener;
 import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper.Procedure;
 import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper.Topic;
-import com.sonycsl.Kadecot.wamp.client.provider.TopicObserver.OnSubscriberListener;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
@@ -58,10 +58,6 @@ public final class KadecotProviderClient extends KadecotWampClient {
 
     @Override
     protected void onConnected(WampPeer peer) {
-    }
-
-    @Override
-    protected void onTransmitted(WampPeer peer, WampMessage msg) {
     }
 
     @Override
@@ -140,5 +136,13 @@ public final class KadecotProviderClient extends KadecotWampClient {
     @Override
     public Set<String> getTopicsToSubscribe() {
         return new HashSet<String>();
+    }
+
+    @Override
+    protected void preTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
+    protected void postTransmitted(WampPeer peer, WampMessage msg) {
     }
 }

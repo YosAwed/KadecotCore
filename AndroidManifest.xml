@@ -24,29 +24,21 @@
         android:label="@string/app_name"
         android:theme="@style/KadecotCoreTheme" >
         <activity
-            android:name="com.sonycsl.Kadecot.app.MainActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.sonycsl.Kadecot.LAUNCH_FROM_DEVICE_ERROR_NOTIFICATION" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
             android:name="com.sonycsl.Kadecot.app.EulaActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_eula" >
         </activity>
         <activity
+            android:name="com.sonycsl.Kadecot.app.AccessPointListActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_access_point_list"
+            android:launchMode="singleTop" >
+        </activity>
+        <activity
             android:name="com.sonycsl.Kadecot.app.OriginListActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_origin_list" >
+            android:label="@string/title_activity_origin_list"
+            android:launchMode="singleTop" >
         </activity>
         <activity
             android:name="com.sonycsl.Kadecot.app.PluginListActivity"
@@ -64,6 +56,11 @@
             android:name="com.sonycsl.Kadecot.provider.InMemoryProvider"
             android:authorities="com.sonycsl.kadecot.inmemory.provider"
             android:exported="true" />
+
+        <activity
+            android:name="com.sonycsl.Kadecot.app.LicensesActivity"
+            android:label="@string/title_open_source_licenses" >
+        </activity>
     </application>
 
 </manifest>

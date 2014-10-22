@@ -50,6 +50,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private Handler mHandler;
 
     private WifiConnectionBroadcastReceiver mReceiver;
+    private boolean mIsReceiverRegistered = false;
 
     private WifiDialogFragment mWifiDialogFragment;
 
@@ -63,6 +64,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             if (EulaPreference.isAgreed(MainActivity.this)) {
                 registerReceiver(mReceiver, new IntentFilter(
                         ConnectivityManager.CONNECTIVITY_ACTION));
+                mIsReceiverRegistered = true;
                 sharedPreferences.unregisterOnSharedPreferenceChangeListener(mListener);
             }
         }
@@ -129,7 +131,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                             mHandler.postDelayed(this, 500);
                             return;
                         }
-                        String ssid = info.getSSID();
+                        String ssid = info.getSSID().replace("\"", "");
                         String bssid = info.getBSSID();
                         wifiSetUp(ssid, bssid);
                         getActionBar().setTitle(getTitle());
@@ -170,6 +172,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         if (EulaPreference.isAgreed(this)) {
             registerReceiver(mReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+            mIsReceiverRegistered = true;
         } else {
             SharedPreferences sp = getSharedPreferences(getString(R.string.preferences_file_name),
                     Context.MODE_PRIVATE);
@@ -182,7 +185,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onDestroy() {
         mHandler.removeCallbacksAndMessages(null);
-        unregisterReceiver(mReceiver);
+
+        if (mIsReceiverRegistered) {
+            unregisterReceiver(mReceiver);
+        }
+
         if (!KadecotServicePreference.isPersistentModeEnabled(this)) {
             WebSocketServerPreference.setEnabled(this, false);
             stopService(mIntent);
@@ -339,7 +346,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 case 1:
                     return AppListFragment.newInstance(2);
                 case 2:
-                    return SettingsFragment.newInstance();
+                    return SettingsFragment.newInstance(R.xml.preferences);
                 default:
                     throw new IllegalArgumentException();
             }

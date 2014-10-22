@@ -42,6 +42,10 @@ public class KadecotCoreStore {
 
             public static final String BSSID = "bssid";
 
+            public static final String LOCATION = "location";
+
+            public static final String SUB_LOCATION = "sub_location";
+
             public static final String UTC_UPDATED = "utc_updated";
 
             public static final String LOCAL_UPDATED = "local_updated";

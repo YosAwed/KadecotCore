@@ -45,13 +45,17 @@ public class KadecotAppClient extends WampClient {
     }
 
     @Override
-    protected void onTransmitted(WampPeer peer, WampMessage msg) {
-    }
-
-    @Override
     protected void onReceived(WampMessage msg) {
         if (mListener != null) {
             mListener.onMessage(msg);
         }
+    }
+
+    @Override
+    protected void preTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
+    protected void postTransmitted(WampPeer peer, WampMessage msg) {
     }
 }

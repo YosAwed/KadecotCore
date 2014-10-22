@@ -6,6 +6,7 @@
 package com.sonycsl.Kadecot.service;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -18,7 +19,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -26,11 +31,12 @@ import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 import android.util.SparseArray;
 
+import com.sonycsl.Kadecot.app.OriginListActivity;
+import com.sonycsl.Kadecot.content.WifiConnectionBroadcastReceiver;
 import com.sonycsl.Kadecot.core.R;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
-import com.sonycsl.Kadecot.preference.JsonpServerPreference;
+import com.sonycsl.Kadecot.preference.DeveloperModePreference;
 import com.sonycsl.Kadecot.preference.KadecotServicePreference;
-import com.sonycsl.Kadecot.preference.SnapServerPreference;
 import com.sonycsl.Kadecot.preference.WebSocketServerPreference;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.server.websocket.ClientAuthCallback;
@@ -52,8 +58,16 @@ import com.sonycsl.wamp.util.WampRequestIdGenerator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 public final class KadecotService extends Service implements ClientAuthCallback {
 
@@ -70,6 +84,8 @@ public final class KadecotService extends Service implements ClientAuthCallback 
     private SharedPreferences mPreferences;
 
     private IWampClientImpl mIWampClient;
+
+    private int mId = 0;
 
     private OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
         @Override
@@ -88,7 +104,7 @@ public final class KadecotService extends Service implements ClientAuthCallback 
                 return;
             }
 
-            if (intent.getAction().equals(ServerManager.WS_STARTED_INTENT)) {
+            if (intent.getAction().equals(ServerManager.PLUGIN_FILTER)) {
                 String origin = "";
                 if (intent.hasExtra(ServerManager.EXTRA_ACCEPTED_ORIGIN)) {
                     origin = intent.getStringExtra(ServerManager.EXTRA_ACCEPTED_ORIGIN);
@@ -121,6 +137,8 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         }
     };
 
+    private MulticastDnsTrigger mTrigger;
+
     public KadecotService() {
         super();
     }
@@ -130,8 +148,7 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         super.onCreate();
         SUPPORTED_KEYS.add(getString(R.string.persistent_mode_preference_key));
         SUPPORTED_KEYS.add(getString(R.string.websocket_preference_key));
-        SUPPORTED_KEYS.add(getString(R.string.jsonp_preference_key));
-        SUPPORTED_KEYS.add(getString(R.string.snap_preference_key));
+        SUPPORTED_KEYS.add(getString(R.string.developer_mode_preference_key));
 
         mServerManager = new ServerManager(this);
         mServerManager.setClientAuthCallback(this);
@@ -140,8 +157,10 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         mPreferences.registerOnSharedPreferenceChangeListener(mListener);
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        filter.addAction(ServerManager.WS_STARTED_INTENT);
+        filter.addAction(ServerManager.PLUGIN_FILTER);
         registerReceiver(mReceiver, filter);
+        mTrigger = new MulticastDnsTrigger(KadecotService.this);
+        registerReceiver(mTrigger, filter);
         mIWampClient = new IWampClientImpl(KadecotService.this);
     }
 
@@ -152,6 +171,8 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         mIWampClient.disconnect();
         mServerManager.stop();
 
+        unregisterReceiver(mTrigger);
+        mTrigger.onDisconnected();
         unregisterReceiver(mReceiver);
         mPreferences.unregisterOnSharedPreferenceChangeListener(mListener);
     }
@@ -194,8 +215,7 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         contentText += "HomeNet:" + (ConnectivityManagerUtil.isConnected(this) ? "ON\n" : "OFF\n");
         contentText += "WebSocket:"
                 + (WebSocketServerPreference.isEnabled(this) ? "ON\n" : "OFF\n");
-        contentText += "Http:" + (JsonpServerPreference.isEnabled(this) ? "ON\n" : "OFF\n");
-        contentText += "Snap:" + (SnapServerPreference.isEnabled(this) ? "ON\n" : "OFF\n");
+        contentText += "Http:" + (DeveloperModePreference.isEnabled(this) ? "ON\n" : "OFF\n");
 
         Notification notice = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_notify_kadecot)
@@ -217,6 +237,12 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         final String origin = handShake.getOrigin();
 
         if (origin.equals("")) {
+            return false;
+        }
+
+        try {
+            new URL(origin);
+        } catch (MalformedURLException e) {
             return false;
         }
 
@@ -266,6 +292,27 @@ public final class KadecotService extends Service implements ClientAuthCallback 
             e.printStackTrace();
         } finally {
             client.release();
+        }
+
+        NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_stat_notify_kadecot)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.icon))
+                .setTicker(getString(R.string.notify_access_control_ticker))
+                .setContentTitle(getString(R.string.notify_access_control_title))
+                .setContentText(getString(R.string.notify_access_control_text, origin))
+                .setAutoCancel(true);
+
+        NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle(builder);
+        style.setBigContentTitle(getString(R.string.notify_access_control_title));
+        style.bigText(getString(R.string.notify_access_control_text, origin));
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, OriginListActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        notifyMgr.notify(mId++, builder.build());
+        if (mId == Integer.MAX_VALUE) {
+            mId = 0;
         }
 
         return false;
@@ -344,10 +391,6 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         }
 
         @Override
-        protected void onTransmitted(WampPeer peer, WampMessage msg) {
-        }
-
-        @Override
         protected void onReceived(WampMessage msg) {
             if (msg.isPublishedMessage()) {
                 WampPublishedMessage pubMsg = msg.asPublishedMessage();
@@ -357,6 +400,98 @@ public final class KadecotService extends Service implements ClientAuthCallback 
                     listener.onPublished(pubMsg.getPublicationId());
                 }
             }
+        }
+
+        @Override
+        protected void preTransmitted(WampPeer peer, WampMessage msg) {
+        }
+
+        @Override
+        protected void postTransmitted(WampPeer peer, WampMessage msg) {
+        }
+    }
+
+    private static final class MulticastDnsTrigger extends WifiConnectionBroadcastReceiver {
+
+        private static final String SERVICE_TYPE = "_kadecot._tcp.local.";
+        private static final String SERVICE_NAME_PREFIX = "kadecot-";
+
+        private final Context mContext;
+
+        private JmDNS mDNS;
+        private MulticastLock mLock;
+
+        public MulticastDnsTrigger(Context context) {
+            super(context);
+            mContext = context;
+        }
+
+        @Override
+        public void onConnected() {
+
+            new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected void onPreExecute() {
+                    WifiManager wifi = (WifiManager) mContext
+                            .getSystemService(Context.WIFI_SERVICE);
+                    mLock = wifi.createMulticastLock(MulticastDnsTrigger.class.getSimpleName());
+                    mLock.setReferenceCounted(true);
+                    mLock.acquire();
+                }
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    final String serviceName = SERVICE_NAME_PREFIX
+                            + ConnectivityManagerUtil.getIPAddress(mContext).replace(".", "-");
+                    ServiceInfo info = ServiceInfo.create(SERVICE_TYPE, serviceName,
+                            ServerManager.WS_PORT_NO, "");
+                    try {
+                        mDNS = JmDNS.create(InetAddress.getByName(ConnectivityManagerUtil
+                                .getIPAddress(mContext)), serviceName);
+                        mDNS.registerService(info);
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                        return null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+
+                    return null;
+                }
+            }.execute();
+        }
+
+        @Override
+        public void onDisconnected() {
+            new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    if (mDNS == null) {
+                        return null;
+                    }
+
+                    mDNS.unregisterAllServices();
+                    try {
+                        mDNS.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    mDNS = null;
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void result) {
+                    if (mLock == null) {
+                        return;
+                    }
+                    mLock.release();
+                    mLock = null;
+                }
+            }.execute();
         }
     }
 }

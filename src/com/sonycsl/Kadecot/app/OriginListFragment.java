@@ -26,7 +26,7 @@ import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 
 public class OriginListFragment extends ListFragment implements LoaderCallbacks<Cursor> {
 
-    private static final String LOADER_ID_KEY = "loaderid";
+    private static final String LOADER_ID_KEY = "loaderId";
 
     private LayoutInflater mInflater;
 

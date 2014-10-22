@@ -54,11 +54,15 @@ public class KadecotWampRouter extends WampRouter {
     }
 
     @Override
-    protected void onTransmitted(WampPeer peer, WampMessage msg) {
+    protected void onReceived(WampMessage msg) {
     }
 
     @Override
-    protected void onReceived(WampMessage msg) {
+    protected void preTransmitted(WampPeer peer, WampMessage msg) {
+    }
+
+    @Override
+    protected void postTransmitted(WampPeer peer, WampMessage msg) {
     }
 
 }

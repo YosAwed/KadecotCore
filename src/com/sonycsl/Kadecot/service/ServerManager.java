@@ -6,25 +6,28 @@
 package com.sonycsl.Kadecot.service;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.sonycsl.Kadecot.core.R;
-import com.sonycsl.Kadecot.preference.JsonpServerPreference;
-import com.sonycsl.Kadecot.preference.SnapServerPreference;
+import com.sonycsl.Kadecot.preference.DeveloperModePreference;
 import com.sonycsl.Kadecot.preference.WebSocketServerPreference;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.server.http.HttpServer;
 import com.sonycsl.Kadecot.server.http.JsonpServerModel;
 import com.sonycsl.Kadecot.server.http.KadecotServerModel;
 import com.sonycsl.Kadecot.server.http.MainAppServerModel;
-import com.sonycsl.Kadecot.server.http.SnapServerModel;
 import com.sonycsl.Kadecot.server.websocket.ClientAuthCallback;
 import com.sonycsl.Kadecot.server.websocket.OpeningHandshake;
 import com.sonycsl.Kadecot.server.websocket.WebSocketServer;
@@ -39,7 +42,10 @@ import com.sonycsl.wamp.transport.WampWebSocketTransport.OnWampMessageListener;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,7 +63,7 @@ public final class ServerManager {
 
     private static final String LOCALHOST = "localhost";
 
-    public static final String WS_STARTED_INTENT = "com.sonycsl.kadecot.intent.SERVER_STARTED";
+    public static final String PLUGIN_FILTER = "com.sonycsl.kadecot.plugin";
 
     public static final String EXTRA_ACCEPTED_ORIGIN = "acceptedOrigin";
 
@@ -70,14 +76,34 @@ public final class ServerManager {
     private boolean mStatus = false;
 
     private KadecotAppClientWrapper mClientJsonp;
-    private KadecotAppClientWrapper mClientSnap;
 
     private HttpServer mHttpServer;
 
     private KadecotServerModel mModels;
 
     private ProxyPeer mProxyJsonp;
-    private ProxyPeer mProxySnap;
+
+    private PackageManager mPackageManager;
+    private Collection<PluginConnection> mPluginConnections;
+
+    private static class PluginConnection {
+
+        private Intent mIntent;
+        private ServiceConnection mConn;
+
+        PluginConnection(Intent intent, ServiceConnection conn) {
+            mIntent = intent;
+            mConn = conn;
+        }
+
+        Intent getIntent() {
+            return mIntent;
+        }
+
+        ServiceConnection getServiceConnection() {
+            return mConn;
+        }
+    }
 
     private OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
 
@@ -113,11 +139,7 @@ public final class ServerManager {
 
     private WampWebSocketTransport mTransportJsonp;
 
-    private WampWebSocketTransport mTransportSnap;
-
     private BroadcastReceiver mWsReceiverJsonp;
-
-    private BroadcastReceiver mWsReceiverSnap;
 
     private void disableAllDevices() {
         ContentValues values = new ContentValues();
@@ -136,26 +158,69 @@ public final class ServerManager {
     private void setupChangers() {
         mChangers.put(mContext.getString(R.string.websocket_preference_key),
                 new ServerSettingChanger() {
+
                     @Override
                     public void change() {
                         if (WebSocketServerPreference.isEnabled(mContext)) {
                             mWebSocketServer.start();
-                            Intent intent = new Intent(WS_STARTED_INTENT);
+
+                            /**
+                             * Broadcast intent for inner WAMP clients. <br>
+                             * TODO: Remove this broadcast
+                             */
+                            Intent intent = new Intent(PLUGIN_FILTER);
                             intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                             intent.putExtra(EXTRA_ACCEPTED_ORIGIN, mAcceptedOrigin);
                             mContext.sendBroadcast(intent);
+
+                            /**
+                             * Get some plug-in information.
+                             */
+                            List<ResolveInfo> plugins = mPackageManager.queryIntentServices(
+                                    new Intent(ServerManager.PLUGIN_FILTER), 0);
+
+                            for (ResolveInfo plugin : plugins) {
+                                final Intent startPluginIntent = new Intent(plugin.serviceInfo.name);
+                                startPluginIntent.putExtra(EXTRA_ACCEPTED_ORIGIN, mAcceptedOrigin);
+                                final ServiceConnection serviceConn = new ServiceConnection() {
+
+                                    @Override
+                                    public void onServiceConnected(ComponentName name,
+                                            IBinder service) {
+                                    }
+
+                                    @Override
+                                    public void onServiceDisconnected(ComponentName name) {
+                                        mContext.startService(startPluginIntent);
+                                        mContext.bindService(startPluginIntent, this,
+                                                Context.BIND_AUTO_CREATE);
+                                    }
+
+                                };
+                                mPluginConnections.add(new PluginConnection(startPluginIntent,
+                                        serviceConn));
+                                mContext.startService(startPluginIntent);
+                                mContext.bindService(startPluginIntent, serviceConn,
+                                        Context.BIND_AUTO_CREATE);
+                            }
                         } else {
+                            for (PluginConnection conn : mPluginConnections) {
+                                mContext.unbindService(conn.getServiceConnection());
+                                mContext.stopService(conn.getIntent());
+                            }
+                            mPluginConnections.clear();
                             mWebSocketServer.stop();
+
                             disableAllDevices();
                         }
                     }
                 });
 
-        mChangers.put(mContext.getString(R.string.jsonp_preference_key),
+        mChangers.put(mContext.getString(R.string.developer_mode_preference_key),
                 new ServerSettingChanger() {
                     @Override
                     public void change() {
-                        if (JsonpServerPreference.isEnabled(mContext)) {
+                        if (DeveloperModePreference.isEnabled(mContext)) {
                             if (mWsReceiverJsonp == null) {
                                 mWsReceiverJsonp = new BroadcastReceiver() {
 
@@ -175,7 +240,7 @@ public final class ServerManager {
                             }
 
                             mContext.registerReceiver(mWsReceiverJsonp, new IntentFilter(
-                                    WS_STARTED_INTENT));
+                                    PLUGIN_FILTER));
                             mTransportJsonp.open(LOCALHOST, WS_PORT_NO, mAcceptedOrigin);
                             mClientJsonp.hello("realm", new WampWelcomeListener() {
 
@@ -203,56 +268,6 @@ public final class ServerManager {
                         }
                     }
                 });
-
-        mChangers.put(mContext.getString(R.string.snap_preference_key), new ServerSettingChanger() {
-            @Override
-            public void change() {
-                if (SnapServerPreference.isEnabled(mContext)) {
-                    if (mWsReceiverSnap == null) {
-                        mWsReceiverSnap = new BroadcastReceiver() {
-
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                mTransportSnap.open(LOCALHOST, WS_PORT_NO, mAcceptedOrigin);
-                                mClientSnap.hello("realm", new WampWelcomeListener() {
-
-                                    @Override
-                                    public void onWelcome(int session, JSONObject details) {
-                                    }
-
-                                });
-                            }
-                        };
-                    }
-
-                    mContext.registerReceiver(mWsReceiverSnap, new IntentFilter(
-                            WS_STARTED_INTENT));
-                    mTransportSnap.open(LOCALHOST, WS_PORT_NO, mAcceptedOrigin);
-                    mClientSnap.hello("realm", new WampWelcomeListener() {
-
-                        @Override
-                        public void onWelcome(int session, JSONObject details) {
-                        }
-
-                    });
-                    mModels.addModel(SnapServerModel.SNAP_BASE_URI,
-                            new SnapServerModel(mContext, mClientSnap));
-                } else {
-                    if (mWsReceiverSnap != null) {
-                        mContext.unregisterReceiver(mWsReceiverSnap);
-                        mWsReceiverSnap = null;
-                    }
-                    mTransportSnap.close();
-                    mModels.removeModel(SnapServerModel.SNAP_BASE_URI);
-                    mClientSnap.goodbye("exit.snap.server", new WampGoodbyeListener() {
-
-                        @Override
-                        public void onGoodbye(JSONObject details, String reason) {
-                        }
-                    });
-                }
-            }
-        });
     }
 
     public ServerManager(Context context) {
@@ -273,20 +288,10 @@ public final class ServerManager {
         mClientJsonp = new KadecotAppClientWrapper();
         mClientJsonp.connect(mProxyJsonp);
 
-        mTransportSnap = new WampWebSocketTransport();
-        mProxySnap = new ProxyPeer(mTransportSnap);
-        mTransportSnap.setOnWampMessageListener(new OnWampMessageListener() {
-            @Override
-            public void onMessage(WampMessage msg) {
-                mProxySnap.transmit(msg);
-            }
-        });
-
-        mClientSnap = new KadecotAppClientWrapper();
-        mClientSnap.connect(mProxySnap);
-
         mModels = new KadecotServerModel();
         mHttpServer = new HttpServer(JSONP_PORT_NO, mModels);
+        mPluginConnections = new ArrayList<PluginConnection>();
+        mPackageManager = mContext.getPackageManager();
 
         setupChangers();
     }
@@ -320,17 +325,16 @@ public final class ServerManager {
 
     private void stopServers() {
 
+        for (PluginConnection conn : mPluginConnections) {
+            mContext.unbindService(conn.getServiceConnection());
+            mContext.stopService(conn.getIntent());
+        }
+        mPluginConnections.clear();
         mWebSocketServer.stop();
 
         mModels.removeModel(JsonpServerModel.JSONP_BASE_URI);
         mClientJsonp.goodbye("exit.jsonp.server", new WampGoodbyeListener() {
 
-            @Override
-            public void onGoodbye(JSONObject details, String reason) {
-            }
-        });
-
-        mClientSnap.goodbye("exit.snap.server", new WampGoodbyeListener() {
             @Override
             public void onGoodbye(JSONObject details, String reason) {
             }
@@ -348,10 +352,6 @@ public final class ServerManager {
         if (mWsReceiverJsonp != null) {
             mContext.unregisterReceiver(mWsReceiverJsonp);
             mWsReceiverJsonp = null;
-        }
-        if (mWsReceiverSnap != null) {
-            mContext.unregisterReceiver(mWsReceiverSnap);
-            mWsReceiverSnap = null;
         }
         mContext.getSharedPreferences(mContext.getString(R.string.preferences_file_name),
                 Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(mListener);

@@ -445,10 +445,18 @@ public class DeviceListFragment extends ListFragment {
                     .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.NICKNAME));
             final long deviceId = cursor.getLong(cursor
                     .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.DEVICE_ID));
+            final String location = cursor.getString(cursor
+                    .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.LOCATION));
+            final String subLocation = cursor.getString(cursor
+                    .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION));
             final String protocol = cursor.getString(cursor
                     .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.PROTOCOL));
             final String deviceType = cursor.getString(cursor
                     .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.DEVICE_TYPE));
+            final String ipaddress = cursor.getString(cursor
+                    .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.IP_ADDR));
+            final int status = cursor.getInt(cursor
+                    .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.STATUS));
 
             final ImageView menu = (ImageView) view.findViewById(R.id.menu);
             menu.setOnClickListener(new View.OnClickListener() {
@@ -465,8 +473,12 @@ public class DeviceListFragment extends ListFragment {
                                 onChangeNickname(nickname, deviceId);
                                 return true;
                             }
+                            if (id == R.id.change_location) {
+                                onChangeLocation(location, subLocation, deviceId);
+                            }
                             if (id == R.id.launch_plugin_settings) {
-                                onLaunchPluginSetting(protocol, deviceType, deviceId, nickname);
+                                onLaunchPluginSetting(protocol, deviceType, deviceId, nickname,
+                                        ipaddress, status);
                                 return true;
                             }
                             return false;
@@ -533,6 +545,17 @@ public class DeviceListFragment extends ListFragment {
             dialog.show();
         }
 
+        private void onChangeLocation(final String currentLocation,
+                final String currentSubLocation, final long deviceId) {
+
+            Dialog dialog = ChangeLocationDialogFactory.create(mContext, currentLocation,
+                    currentSubLocation, deviceId);
+            dialog.getWindow()
+                    .setSoftInputMode(
+                            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            dialog.show();
+        }
+
         public boolean hasPlugin(String packageName, String activityName) {
             try {
                 mContext.getPackageManager().getActivityInfo(
@@ -544,7 +567,7 @@ public class DeviceListFragment extends ListFragment {
         }
 
         private void onLaunchPluginSetting(String protocol, String deviceType, Long deviceId,
-                String nickname) {
+                String nickname, String ipaddress, int status) {
             ContentProviderClient client = mContext.getContentResolver()
                     .acquireContentProviderClient(KadecotCoreStore.Protocols.CONTENT_URI);
             Cursor c;
@@ -587,6 +610,8 @@ public class DeviceListFragment extends ListFragment {
                     intent.putExtra("nickname", nickname);
                     intent.putExtra("deviceType", deviceType);
                     intent.putExtra("deviceId", deviceId);
+                    intent.putExtra("ipAddress", ipaddress);
+                    intent.putExtra("status", status);
                     mContext.startActivity(intent);
                 } else {
                     Toast.makeText(mContext, R.string.currently_unavailable,

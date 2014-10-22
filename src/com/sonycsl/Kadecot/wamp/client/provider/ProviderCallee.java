@@ -32,6 +32,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ProviderCallee extends WampCallee {
+
+    private static final String PROVIDER_INTERNAL_ERROR = "provider internal error";
+
     private final Context mContext;
 
     public ProviderCallee(Context context) throws RemoteException {
@@ -44,7 +47,8 @@ public class ProviderCallee extends WampCallee {
     }
 
     @Override
-    protected WampMessage invocation(String procedure, WampMessage msg) {
+    protected void invocation(String procedure, WampMessage msg,
+            WampInvocationReplyListener listener) {
 
         if (!msg.isInvocationMessage()) {
             throw new IllegalArgumentException();
@@ -53,13 +57,26 @@ public class ProviderCallee extends WampCallee {
         WampInvocationMessage iMsg = msg.asInvocationMessage();
         Procedure proc = Procedure.getEnum(procedure);
         if (proc == null) {
-            return createError(iMsg, WampError.NO_SUCH_PROCEDURE);
+            listener.replyError(createError(iMsg, WampError.NO_SUCH_PROCEDURE).asErrorMessage());
+            return;
         }
 
         try {
-            return (WampMessage) ProviderCallee.this.getClass()
+            WampMessage reply = (WampMessage) ProviderCallee.this.getClass()
                     .getDeclaredMethod(proc.getMethod(),
                             WampInvocationMessage.class).invoke(ProviderCallee.this, msg);
+            if (reply.isYieldMessage()) {
+                listener.replyYield(reply.asYieldMessage());
+                return;
+            } else if (reply.isErrorMessage()) {
+                listener.replyError(reply.asErrorMessage());
+                return;
+            } else {
+                listener.replyError(WampMessageFactory.createError(msg.getMessageType(), msg
+                        .asInvocationMessage().getRequestId(), new JSONObject(),
+                        PROVIDER_INTERNAL_ERROR).asErrorMessage());
+                return;
+            }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
@@ -70,7 +87,7 @@ public class ProviderCallee extends WampCallee {
             e.printStackTrace();
         }
 
-        return createError(iMsg, WampError.INVALID_ARGUMENT);
+        listener.replyError(createError(iMsg, WampError.INVALID_ARGUMENT).asErrorMessage());
     }
 
     private boolean isDeviceExists(WampInvocationMessage msg) throws RemoteException,
@@ -391,6 +408,13 @@ public class ProviderCallee extends WampCallee {
                             KadecotCoreStore.Devices.DeviceColumns.IP_ADDR,
                             cursor.getString(cursor
                                     .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.IP_ADDR)));
+
+                    JSONObject location = new JSONObject();
+                    location.put("main", cursor.getString(cursor
+                            .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.LOCATION)));
+                    location.put("sub", cursor.getString(cursor
+                            .getColumnIndex(KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION)));
+                    json.put(KadecotCoreStore.Devices.DeviceColumns.LOCATION, location);
                 } catch (JSONException e) {
                     continue;
                 }

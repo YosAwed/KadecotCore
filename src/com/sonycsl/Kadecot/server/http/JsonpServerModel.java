@@ -45,7 +45,7 @@ public class JsonpServerModel implements ServerResponseModel {
 
     private static final String PROCEDURE_HEAD = "com.sonycsl.kadecot.";
 
-    private static final String BDR_PROTOCOL = "sonyblurayrecorder";
+    private static final int REQUEST_TIMEOUT = 10;
 
     private KadecotAppClientWrapper mClient;
 
@@ -151,13 +151,11 @@ public class JsonpServerModel implements ServerResponseModel {
 
                     for (int index = 0; index < orgArray.length(); index++) {
                         JSONObject obj = orgArray.getJSONObject(index);
-                        if (!obj.getString("protocol").equals(BDR_PROTOCOL)) {
-                            newArray.put(obj);
-                        }
+                        newArray.put(obj);
                     }
                     getDeviceListResult.argumentsKw.put("deviceList", newArray);
 
-                } catch (Exception e) {
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
@@ -211,9 +209,6 @@ public class JsonpServerModel implements ServerResponseModel {
             for (int devi = 0; devi < deviceList.length(); devi++) {
                 JSONObject device = deviceList.getJSONObject(devi);
                 if (device.getLong(DEVICE_ID) == deviceId) {
-                    if (device.getString("protocol").equals(BDR_PROTOCOL)) {
-                        return null;
-                    }
                     return device;
                 }
             }
@@ -334,7 +329,7 @@ public class JsonpServerModel implements ServerResponseModel {
                 });
 
         try {
-            if (!latch.await(1, TimeUnit.SECONDS)) {
+            if (!latch.await(REQUEST_TIMEOUT, TimeUnit.SECONDS)) {
                 holder.success = false;
                 holder.error = "Request Timeout Error";
                 Log.e(TAG, holder.error, new Throwable());

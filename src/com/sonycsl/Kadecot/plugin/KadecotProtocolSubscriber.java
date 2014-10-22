@@ -5,47 +5,66 @@
 
 package com.sonycsl.Kadecot.plugin;
 
-import com.sonycsl.Kadecot.plugin.KadecotProtocolClient.ProtocolSearchEventListener;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
 import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper;
+import com.sonycsl.wamp.message.WampEventMessage;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.role.WampSubscriber;
 
 public class KadecotProtocolSubscriber extends WampSubscriber {
     private ProtocolSearchEventListener mSearchEventListener;
+    private TopicSubscriptionListener mSubscribeListener;
+    private EventListener mEventListener;
 
-    private OnTopicListener mTopicListener;
-
-    public interface OnTopicListener {
-        public void onTopicStarted(String topic);
-
-        public void onTopicStopped(String topic);
+    public interface ProtocolSearchEventListener {
+        public void onSearchEvent(WampEventMessage msg);
     }
 
-    public KadecotProtocolSubscriber(ProtocolSearchEventListener searchEventListener,
-            OnTopicListener topicListener) {
-        this.mSearchEventListener = searchEventListener;
-        this.mTopicListener = topicListener;
+    public interface TopicSubscriptionListener {
+        public void onSubscribedEvent(String topic, WampEventMessage msg);
+
+        public void onUnsubscribedEvent(String topic, WampEventMessage msg);
+    }
+
+    public interface EventListener {
+        public void onEvent(String topic, WampEventMessage msg);
+    }
+
+    KadecotProtocolSubscriber(ProtocolSearchEventListener protocolSearchEventListener) {
+        mSearchEventListener = protocolSearchEventListener;
+    }
+
+    void setSubscribeListener(TopicSubscriptionListener listener) {
+        mSubscribeListener = listener;
+    }
+
+    void setEventListener(EventListener listener) {
+        mEventListener = listener;
     }
 
     @Override
-    protected void onEvent(String topic, WampMessage msg) {
-        if (topic.equals(KadecotWampTopic.TOPIC_PRIVATE_SEARCH)) {
-            if (mSearchEventListener != null) {
-                mSearchEventListener.search();
-            }
+    protected final void onEvent(String topic, WampMessage msg) {
+        if (KadecotWampTopic.TOPIC_PRIVATE_SEARCH.equals(topic)) {
+            mSearchEventListener.onSearchEvent(msg.asEventMessage());
+            return;
         }
 
-        if (topic.equals(WampProviderAccessHelper.Topic.START.getUri())) {
-            if (mTopicListener != null) {
-                mTopicListener.onTopicStarted(topic);
+        if (WampProviderAccessHelper.Topic.START.getUri().equals(topic)) {
+            if (mSubscribeListener != null) {
+                mSubscribeListener.onSubscribedEvent(topic, msg.asEventMessage());
             }
+            return;
         }
 
-        if (topic.equals(WampProviderAccessHelper.Topic.STOP.getUri())) {
-            if (mTopicListener != null) {
-                mTopicListener.onTopicStopped(topic);
+        if (WampProviderAccessHelper.Topic.STOP.getUri().equals(topic)) {
+            if (mSubscribeListener != null) {
+                mSubscribeListener.onUnsubscribedEvent(topic, msg.asEventMessage());
             }
+            return;
+        }
+
+        if (mEventListener != null) {
+            mEventListener.onEvent(topic, msg.asEventMessage());
         }
     }
 }

@@ -10,19 +10,24 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.Loader;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.http.AndroidHttpClient;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sonycsl.Kadecot.content.JsonLoader;
 import com.sonycsl.Kadecot.content.WifiConnectionBroadcastReceiver;
 import com.sonycsl.Kadecot.core.R;
+import com.sonycsl.Kadecot.core.R.layout;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
 
 import org.json.JSONArray;
@@ -139,26 +144,32 @@ public class AppListFragment extends ListFragment implements LoaderCallbacks<JSO
 
     private static final class AppsJsonAdapter extends ArrayAdapter<JSONObject> {
 
+        private static final String ICON_KEY = "icon";
         private static final String TITLE_KEY = "title";
         private static final String DESCRIPTION_KEY = "description";
         private static final String URL_KEY = "url";
 
         private final Context mContext;
         private final LayoutInflater mInflater;
+        private final Bitmap mDefaultIcon;
 
         public AppsJsonAdapter(Context context, JSONObject[] objects) {
-            super(context, android.R.layout.simple_list_item_2, objects);
+            super(context, layout.app_list_item, objects);
             mContext = context;
             mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mDefaultIcon = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.ic_action_help);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
             if (v == null) {
-                v = mInflater.inflate(android.R.layout.simple_list_item_2, parent, false);
+                v = mInflater.inflate(layout.app_list_item, parent, false);
             }
             try {
+                ((ImageView) (v.findViewById(R.id.deviceicon)))
+                        .setImageBitmap(mDefaultIcon);
                 ((TextView) (v.findViewById(android.R.id.text1))).setText(getItem(position)
                         .getString(TITLE_KEY));
                 ((TextView) (v.findViewById(android.R.id.text2))).setText(getItem(position)
@@ -167,6 +178,12 @@ public class AppListFragment extends ListFragment implements LoaderCallbacks<JSO
                 e.printStackTrace();
             }
             return v;
+        }
+
+        public Bitmap getAppImage(String data) {
+            data = data.replaceFirst("data:image/png;base64,", "");
+            byte[] bytes = Base64.decode(data, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
 
         public String getUrl(int position) throws JSONException {

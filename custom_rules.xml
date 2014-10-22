@@ -13,6 +13,11 @@
                        **/${lib.path}/wamp/KadecotWampTopic.class,
                        **/${lib.path}/wamp/client/KadecotWampClient*.class,
                        **/${lib.path}/wamp/client/provider/WampProviderAccessHelper*.class,
+                       **/${lib.path}/mock/**/*.class,
                        **/${lib.path}/plugin/**/*.class" />
     </target>
+
+    <import file="../tools/checkstyle/checkstyle_rules.xml" optional="true" />
+    <import file="../tools/findbugs/findbugs_rules.xml" optional="true" />
+
 </project>

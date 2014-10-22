@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="living_room">Living room</string>
+    <string name="dining_room">Dining room</string>
+    <string name="kitchen">Kitchen</string>
+    <string name="bathroom">Bathroom</string>
+    <string name="lavatory">Lavatory</string>
+    <string name="washroom_changing_room">Washroom/changing room</string>
+    <string name="passageway">Passageway</string>
+    <string name="room">Room</string>
+    <string name="stairway">Stairway</string>
+    <string name="front_door">Front door</string>
+    <string name="storeroom">Storeroom</string>
+    <string name="garden_perimiter">Garden/perimeter</string>
+    <string name="garage">Garage</string>
+    <string name="veranda_balcony">Veranda/balcony</string>
+    <string name="others">Others</string>
+    <string name="free_definition">Free definition</string>
+    <string name="installation_location_not_specified">Installation location not specified</string>
+    <string name="installation_location_indefinite">Installation location indefinite</string>
+    <string name="position_information">Position information</string>
+    <string name="for_future_reserved">for future reserved</string>
+</resources>

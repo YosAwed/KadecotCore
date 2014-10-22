@@ -83,6 +83,15 @@ public class OnDiskProvider extends ContentProvider {
         return null;
     }
 
+    private ContentValues replaceLocation(ContentValues values) {
+        if (values.containsKey(KadecotCoreStore.Devices.DeviceColumns.LOCATION)) {
+            String location = values.getAsString(KadecotCoreStore.Devices.DeviceColumns.LOCATION);
+            values.put(KadecotCoreStore.Devices.DeviceColumns.LOCATION,
+                    KadecotLocation.toEnglish(location, getContext()));
+        }
+        return values;
+    }
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = mHelper.getWritableDatabase();
@@ -90,7 +99,7 @@ public class OnDiskProvider extends ContentProvider {
         switch (URI_MATCHER.match(uri)) {
             case DEVICE:
                 rowUri = ContentUris.withAppendedId(uri,
-                        db.insert(DatabaseHelper.DEVICE_TABLE, null, values));
+                        db.insert(DatabaseHelper.DEVICE_TABLE, null, replaceLocation(values)));
                 getContext().getContentResolver().notifyChange(
                         KadecotCoreStore.Devices.CONTENT_URI, null);
                 break;
@@ -218,8 +227,8 @@ public class OnDiskProvider extends ContentProvider {
         SQLiteDatabase db = mHelper.getWritableDatabase();
         switch (URI_MATCHER.match(uri)) {
             case DEVICE:
-                numOfRows = db.update(DatabaseHelper.DEVICE_TABLE, values, selection,
-                        selectionArgs);
+                numOfRows = db.update(DatabaseHelper.DEVICE_TABLE, replaceLocation(values),
+                        selection, selectionArgs);
                 getContext().getContentResolver().notifyChange(
                         KadecotCoreStore.Devices.CONTENT_URI, null);
                 return numOfRows;
@@ -243,7 +252,7 @@ public class OnDiskProvider extends ContentProvider {
     public static final class DatabaseHelper extends SQLiteOpenHelper {
 
         private static final String DB_NAME = "kadecotcore.db";
-        private static final int DB_VERSION = 1;
+        private static final int DB_VERSION = 2;
 
         public static final String DEVICE_TABLE = "devices";
         public static final String TOPIC_TABLE = "topics";
@@ -251,8 +260,14 @@ public class OnDiskProvider extends ContentProvider {
         public static final String AP_TABLE = "aps";
         public static final String HANDSHAKE_TABLE = "handshakes";
 
+        private static final String DEFAULT_MAIN_LOCATION = "Others";
+        private static final String DEFAULT_SUB_LOCATION = "";
+
+        private Context mContext;
+
         public DatabaseHelper(Context context) {
             super(context, DB_NAME, null, DB_VERSION);
+            mContext = context;
         }
 
         @Override
@@ -269,6 +284,10 @@ public class OnDiskProvider extends ContentProvider {
                     KadecotCoreStore.Devices.DeviceColumns.NICKNAME + " TEXT NOT NULL, " +
                     KadecotCoreStore.Devices.DeviceColumns.IP_ADDR + " TEXT NOT NULL, " +
                     KadecotCoreStore.Devices.DeviceColumns.BSSID + " TEXT NOT NULL, " +
+                    KadecotCoreStore.Devices.DeviceColumns.LOCATION
+                    + " TEXT NOT NULL DEFAULT '" + DEFAULT_MAIN_LOCATION + "', " +
+                    KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION
+                    + " TEXT NOT NULL DEFAULT '" + DEFAULT_SUB_LOCATION + "', " +
                     KadecotCoreStore.Devices.DeviceColumns.UTC_UPDATED
                     + " DATETIME DEFAULT (datetime('now')), " +
                     KadecotCoreStore.Devices.DeviceColumns.LOCAL_UPDATED
@@ -332,14 +351,23 @@ public class OnDiskProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL("drop table " + DEVICE_TABLE + ";");
-            db.execSQL("drop table " + TOPIC_TABLE + ";");
-            db.execSQL("drop table " + PROC_TABLE + ";");
-            db.execSQL("drop table " + AP_TABLE + ";");
-            db.execSQL("drop table " + HANDSHAKE_TABLE + ";");
+            if (oldVersion == 1 && newVersion == 2) {
+                db.execSQL("ALTER TABLE " + DEVICE_TABLE + " ADD COLUMN "
+                        + KadecotCoreStore.Devices.DeviceColumns.LOCATION
+                        + " TEXT NOT NULL DEFAULT '" + DEFAULT_MAIN_LOCATION + "';");
+                db.execSQL("ALTER TABLE " + DEVICE_TABLE + " ADD COLUMN "
+                        + KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION
+                        + " TEXT NOT NULL DEFAULT '" + DEFAULT_SUB_LOCATION + "';");
+                return;
+            }
+
+            db.execSQL("DROP TABLE " + DEVICE_TABLE + ";");
+            db.execSQL("DROP TABLE " + TOPIC_TABLE + ";");
+            db.execSQL("DROP TABLE " + PROC_TABLE + ";");
+            db.execSQL("DROP TABLE " + AP_TABLE + ";");
+            db.execSQL("DROP TABLE " + HANDSHAKE_TABLE + ";");
             onCreate(db);
         }
-
     }
 
 }

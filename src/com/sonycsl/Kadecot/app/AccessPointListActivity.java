@@ -11,15 +11,15 @@ import android.os.Bundle;
 
 import com.sonycsl.Kadecot.core.R;
 
-public class OriginListActivity extends Activity {
+public class AccessPointListActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_originlist);
+        setContentView(R.layout.activity_accesspoint_list);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, OriginListFragment.newInstance(0))
+                    .add(R.id.container, AccessPointListFragment.newInstance(0))
                     .commit();
         }
         NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

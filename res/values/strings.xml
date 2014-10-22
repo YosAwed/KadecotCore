@@ -1,50 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">KadecotCore</string>
 
     <!-- PreferenceCategory -->
-    <string name="preference_category_servers">Servers</string>
+    <string name="preference_category_servers">Server Settings</string>
     <string name="preference_category_devices">Devices</string>
-    <string name="preference_category_applications">Applications</string>
-    <string name="preference_category_plugins">Plug-ins</string>
+    <string name="preference_category_network">Network</string>
     <string name="preference_category_information">Information</string>
 
     <!-- SharedPreference -->
     <string name="preferences_file_name">kadecotcore_preferences</string>
     <string name="persistent_mode_preference_key">persistent_mode_preference_key</string>
+    <string name="developer_mode_preference_key">developer_mode_preference_key</string>
     <string name="websocket_preference_key">websocket_preference_key</string>
     <string name="jsonp_preference_key">jsonp_preference_key</string>
-    <string name="snap_preference_key">snap_preference_key</string>
     <string name="log_preference_key">log_preference_key</string>
+    <string name="access_point_list_preference_key">access_point_list_preference_key</string>
     <string name="delete_all_inactive_devices_preference_key">delete_all_inactive_device_preference_key</string>
     <string name="origin_list_preference_key">main_page_preference_key</string>
     <string name="plugin_list_preference_key">plugin_list_preference_key</string>
     <string name="about_kadecot_key">about_kadecot_key</string>
+    <string name="open_source_licenses_key">open_source_licenses_key</string>
 
     <!-- Title -->
-    <string name="title_activity_origin_list">Access Control</string>
+    <string name="title_activity_origin_list">Permission settings of your web app.</string>
     <string name="title_activity_plugin_list">Plug-in List</string>
     <string name="title_activity_eula">EULA</string>
+    <string name="title_activity_access_point_list">Access Point List</string>
     <string name="title_dialog_change_nickname">Change Nickname</string>
     <string name="title_popup_menu_item_change_nick_name">Change Nickname</string>
+    <string name="title_dialog_change_location">Change Location</string>
+    <string name="title_popup_menu_item_change_location">Change Location</string>
     <string name="title_popup_menu_item_launch_plugin_settings">Plug-in Settings</string>
     <string name="title_background_available">Run in background</string>
     <string name="title_background_unavailable">Background service is turned off.</string>
     <string name="title_persistent_mode">Persistent Mode</string>
     <string name="title_jsonp_server">Run JSONP Server</string>
-    <string name="title_snap_server">Run Snap! Server</string>
+    <string name="title_developer_mode">Developer Mode</string>
     <string name="title_enable_log">Enable Log</string>
     <string name="title_delete_all_inactive_devices">Delete All Inactive Devices</string>
     <string name="title_about_kadecot">About Kadecot</string>
+    <string name="title_open_source_licenses">Open Source Licenses</string>
 
     <!-- Summary -->
     <string name="summary_persistent_mode">keep Kadecot server in the background</string>
     <string name="summary_jsonp_server">causes security hazard!</string>
+    <string name="summary_developer_mode">JSONP server is started. causes security hazard</string>
     <string name="summary_enable_log">for HomeNavi app</string>
 
     <!-- Wording -->
     <string name="success_change_nickname">Nickname updated.</string>
+    <string name="success_change_location">Location updated.</string>
     <string name="no_device">No device</string>
+    <string name="no_access_point">No Allowed AccessPoint</string>
     <string name="unsupported">Sorry, controller unavailable.</string>
     <string name="currently_unavailable">Currently unavailable</string>
     <string name="background_confirmation">Do you want to keep Kadecot server in the background?</string>
