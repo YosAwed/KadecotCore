@@ -8,6 +8,8 @@ KadecotCore
 
 * [ECHONET Lite][] プロトコルをサポートした家電やセンサーを JSONP や WebSocket の WebAPI から制御・情報取得できる  
 * ライブラリプロジェクトとして構築されているので、単体動作も他プロジェクトからリンクして用いることも可能  
+* プラグインを開発することにより、自分の好きなプロトコルを自由に追加できる
+- [Hueプラグイン by ajimitei](https://github.com/ajimitei/huePlugin)
 
 KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play から配布されています。  
 いくつかの機能が追加されていますので、ホームサーバーの開発に興味がなく単に利用されたい場合はそちらをご利用ください。  
