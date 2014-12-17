@@ -6,12 +6,10 @@
 package com.sonycsl.Kadecot.service;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -19,19 +17,17 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
-import android.util.SparseArray;
 
-import com.sonycsl.Kadecot.app.OriginListActivity;
 import com.sonycsl.Kadecot.content.WifiConnectionBroadcastReceiver;
 import com.sonycsl.Kadecot.core.R;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
@@ -41,58 +37,66 @@ import com.sonycsl.Kadecot.preference.WebSocketServerPreference;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.server.websocket.ClientAuthCallback;
 import com.sonycsl.Kadecot.server.websocket.OpeningHandshake;
-import com.sonycsl.Kadecot.service.IPublisher.OnPublishedListener;
-import com.sonycsl.wamp.WampClient;
-import com.sonycsl.wamp.WampError;
+import com.sonycsl.Kadecot.wamp.WampTopology;
+import com.sonycsl.Kadecot.wamp.util.WampLocatorCallback;
 import com.sonycsl.wamp.WampPeer;
-import com.sonycsl.wamp.message.WampMessage;
-import com.sonycsl.wamp.message.WampMessageFactory;
-import com.sonycsl.wamp.message.WampPublishedMessage;
-import com.sonycsl.wamp.role.WampPublisher;
-import com.sonycsl.wamp.role.WampRole;
-import com.sonycsl.wamp.transport.ProxyPeer;
-import com.sonycsl.wamp.transport.WampWebSocketTransport;
-import com.sonycsl.wamp.transport.WampWebSocketTransport.OnWampMessageListener;
-import com.sonycsl.wamp.util.WampRequestIdGenerator;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-public final class KadecotService extends Service implements ClientAuthCallback {
+public final class KadecotService extends Service implements ClientAuthCallback,
+        WampLocatorCallback {
+
+    public static final String CUSTOM_URL_SCHEME = "kadecot:";
 
     private static final int FOREGROUND_ID = 100;
+    private static final String ACCESS_TOKEN_PARAM_KEY = "access_token";
 
-    private static final Set<String> SUPPORTED_KEYS;
+    public static final int MSGR_INTERFACE_VERSION = 1;
 
-    static {
-        SUPPORTED_KEYS = new HashSet<String>();
-    }
+    public static final String MSGR_KEY_REQ_WAMP = "requestWamp";
+
+    public static final String MSGR_KEY_CONNECT = "connect";
+
+    public static final String MSGR_KEY_ENABLE_WS = "enableWebsocket";
+    public static final String MSGR_KEY_GET_WS_STATUS = "getWebsocketStatus";
+    public static final String MSGR_KEY_WS_STATUS = "websocketStatus";
+
+    public static final String MSGR_KEY_ENABLE_DEVMODE = "enableDevMode";
+    public static final String MSGR_KEY_GET_DEVMODE_STATUS = "getDevModeStatus";
+    public static final String MSGR_KEY_DEVMODE_STATUS = "devModeStatus";
+
+    private Map<String, OnChangeListener> mSupportedPrefs;
 
     private ServerManager mServerManager;
 
     private SharedPreferences mPreferences;
 
-    private IWampClientImpl mIWampClient;
+    private RequestHandler mHandler;
+    private Messenger mMessenger;
 
-    private int mId = 0;
+    public interface OnChangeListener {
+        public void onChange(String key);
+    }
 
     private OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-            if (!SUPPORTED_KEYS.contains(key)) {
+            if (!mSupportedPrefs.keySet().contains(key)) {
                 return;
             }
+            mSupportedPrefs.get(key).onChange(key);
             changeNotification(sp);
         }
     };
@@ -101,15 +105,6 @@ public final class KadecotService extends Service implements ClientAuthCallback 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() == null) {
-                return;
-            }
-
-            if (intent.getAction().equals(ServerManager.PLUGIN_FILTER)) {
-                String origin = "";
-                if (intent.hasExtra(ServerManager.EXTRA_ACCEPTED_ORIGIN)) {
-                    origin = intent.getStringExtra(ServerManager.EXTRA_ACCEPTED_ORIGIN);
-                }
-                mIWampClient.connect(origin);
                 return;
             }
 
@@ -138,6 +133,7 @@ public final class KadecotService extends Service implements ClientAuthCallback 
     };
 
     private MulticastDnsTrigger mTrigger;
+    private WampTopology mTopology;
 
     public KadecotService() {
         super();
@@ -146,29 +142,60 @@ public final class KadecotService extends Service implements ClientAuthCallback 
     @Override
     public void onCreate() {
         super.onCreate();
-        SUPPORTED_KEYS.add(getString(R.string.persistent_mode_preference_key));
-        SUPPORTED_KEYS.add(getString(R.string.websocket_preference_key));
-        SUPPORTED_KEYS.add(getString(R.string.developer_mode_preference_key));
 
-        mServerManager = new ServerManager(this);
+        mTopology = new WampTopology();
+        mHandler = new RequestHandler(this);
+        mHandler.setWampLocatorCallback(this);
+        mMessenger = new Messenger(mHandler);
+        mServerManager = new ServerManager(this, mTopology);
         mServerManager.setClientAuthCallback(this);
         mPreferences = getSharedPreferences(getString(R.string.preferences_file_name),
                 MODE_PRIVATE);
+
+        mSupportedPrefs = new HashMap<String, OnChangeListener>();
+        mSupportedPrefs.put(getString(R.string.persistent_mode_preference_key),
+                new OnChangeListener() {
+
+                    @Override
+                    public void onChange(String key) {
+                    }
+                });
+        mSupportedPrefs.put(getString(R.string.websocket_preference_key), new OnChangeListener() {
+
+            @Override
+            public void onChange(String key) {
+                mHandler.sendWebsocketStatus(WebSocketServerPreference
+                        .isEnabled(getApplicationContext()));
+            }
+        });
+        mSupportedPrefs.put(getString(R.string.developer_mode_preference_key),
+                new OnChangeListener() {
+
+                    @Override
+                    public void onChange(String key) {
+                        mHandler.sendDeveloperModeStatus(DeveloperModePreference
+                                .isEnabled(getApplicationContext()));
+                    }
+                });
         mPreferences.registerOnSharedPreferenceChangeListener(mListener);
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        filter.addAction(ServerManager.PLUGIN_FILTER);
+        filter.addAction(ServerManager.ACTION_APP);
         registerReceiver(mReceiver, filter);
         mTrigger = new MulticastDnsTrigger(KadecotService.this);
         registerReceiver(mTrigger, filter);
-        mIWampClient = new IWampClientImpl(KadecotService.this);
+        try {
+            mTopology.start();
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("Topology does not work normally.");
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        mIWampClient.disconnect();
+        mTopology.stop();
         mServerManager.stop();
 
         unregisterReceiver(mTrigger);
@@ -192,7 +219,7 @@ public final class KadecotService extends Service implements ClientAuthCallback 
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new LocalBinder();
+        return mMessenger.getBinder();
     }
 
     private void changeNotification(SharedPreferences sp) {
@@ -221,29 +248,35 @@ public final class KadecotService extends Service implements ClientAuthCallback 
                 .setSmallIcon(R.drawable.ic_stat_notify_kadecot)
                 .setTicker("Kadecot Server").setWhen(System.currentTimeMillis())
                 .setContentTitle("Kadecot Server").setContentText(contentText)
-                .setContentIntent(pendIntent).build();
+                .setContentIntent(pendIntent).setColor(Color.BLACK).build();
         notice.flags |= Notification.FLAG_NO_CLEAR;
         startForeground(FOREGROUND_ID, notice);
     }
 
-    public class LocalBinder extends Binder {
-        public IWampClient getWampClient() {
-            return mIWampClient;
-        }
+    @Override
+    public void locate(WampPeer peer) {
+        peer.connect(mTopology.getRouter());
     }
 
     @Override
-    public boolean authenticate(OpeningHandshake handShake) {
-        final String origin = handShake.getOrigin();
+    public boolean isAuthenticated(OpeningHandshake handshake) {
+        final String origin = handshake.getOrigin();
+        final String token = handshake.getParameter(ACCESS_TOKEN_PARAM_KEY);
 
         if (origin.equals("")) {
+            return false;
+        }
+
+        if (token.equals("")) {
             return false;
         }
 
         try {
             new URL(origin);
         } catch (MalformedURLException e) {
-            return false;
+            if (!origin.startsWith(CUSTOM_URL_SCHEME)) {
+                return false;
+            }
         }
 
         ContentProviderClient client = getContentResolver()
@@ -254,10 +287,13 @@ public final class KadecotService extends Service implements ClientAuthCallback 
             cursor = client.query(KadecotCoreStore.Handshakes.CONTENT_URI,
                     new String[] {
                             KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN,
+                            KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN,
                             KadecotCoreStore.Handshakes.HandshakeColumns.STATUS
                     }
-                    , KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN + "=?", new String[] {
-                        origin
+                    , KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN + "=? AND "
+                            + KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN + "=?"
+                    , new String[] {
+                            origin, token
                     }, null);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -281,134 +317,42 @@ public final class KadecotService extends Service implements ClientAuthCallback 
             cursor.close();
         }
 
-        client = getContentResolver().acquireContentProviderClient(
-                KadecotCoreStore.Handshakes.CONTENT_URI);
-        ContentValues values = new ContentValues();
-        values.put(KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN, origin);
-        values.put(KadecotCoreStore.Handshakes.HandshakeColumns.STATUS, 0);
-        try {
-            client.insert(KadecotCoreStore.Handshakes.CONTENT_URI, values);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } finally {
-            client.release();
-        }
-
-        NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_stat_notify_kadecot)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.icon))
-                .setTicker(getString(R.string.notify_access_control_ticker))
-                .setContentTitle(getString(R.string.notify_access_control_title))
-                .setContentText(getString(R.string.notify_access_control_text, origin))
-                .setAutoCancel(true);
-
-        NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle(builder);
-        style.setBigContentTitle(getString(R.string.notify_access_control_title));
-        style.bigText(getString(R.string.notify_access_control_text, origin));
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, OriginListActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(pendingIntent);
-        notifyMgr.notify(mId++, builder.build());
-        if (mId == Integer.MAX_VALUE) {
-            mId = 0;
-        }
-
         return false;
     }
 
-    private static final class IWampClientImpl implements IWampClient {
-
-        private final Context mContext;
-        private final WampWebSocketTransport mTransport;
-        private final KadecotServiceClient mClient;
-
-        public IWampClientImpl(Context context) {
-            mContext = context;
-            mTransport = new WampWebSocketTransport();
-            final ProxyPeer proxy = new ProxyPeer(mTransport);
-            mTransport.setOnWampMessageListener(new OnWampMessageListener() {
-                @Override
-                public void onMessage(WampMessage msg) {
-                    proxy.transmit(msg);
-                }
-            });
-
-            mClient = new KadecotServiceClient();
-            mClient.connect(proxy);
+    @Override
+    public Set<String> getScopeSet(OpeningHandshake handshake) {
+        if (!isAuthenticated(handshake)) {
+            return new HashSet<String>();
+        }
+        ContentProviderClient client = getContentResolver()
+                .acquireContentProviderClient(
+                        KadecotCoreStore.Handshakes.CONTENT_URI);
+        Cursor cursor;
+        try {
+            cursor = client.query(KadecotCoreStore.Handshakes.CONTENT_URI,
+                    new String[] {
+                        KadecotCoreStore.Handshakes.HandshakeColumns.SCOPE
+                    },
+                    KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN + "=?",
+                    new String[] {
+                        handshake.getParameter(ACCESS_TOKEN_PARAM_KEY)
+                    }, null);
+        } catch (RemoteException e) {
+            return new HashSet<String>();
+        } finally {
+            client.release();
+        }
+        if (cursor.getCount() != 1) {
+            cursor.close();
+            return new HashSet<String>();
         }
 
-        public void connect(String origin) {
-            mTransport.open(ConnectivityManagerUtil.getIPAddress(mContext),
-                    ServerManager.WS_PORT_NO, origin);
-            mClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
-        }
-
-        public void disconnect() {
-            mClient.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
-                    WampError.GOODBYE_AND_OUT));
-            mTransport.close();
-        }
-
-        @Override
-        public IPublisher asPublisher() {
-            return new IPublisher() {
-                @Override
-                public void publish(String topic, JSONObject argsKw, OnPublishedListener listener) {
-                    mClient.publish(topic, argsKw, listener);
-                }
-            };
-        }
-    }
-
-    private static class KadecotServiceClient extends WampClient {
-
-        private SparseArray<OnPublishedListener> mRequestIdMap;
-
-        public KadecotServiceClient() {
-            mRequestIdMap = new SparseArray<IPublisher.OnPublishedListener>();
-        }
-
-        @Override
-        protected Set<WampRole> getClientRoleSet() {
-            Set<WampRole> role = new HashSet<WampRole>();
-            role.add(new WampPublisher());
-            return role;
-        }
-
-        public void publish(String topic, JSONObject argsKw, OnPublishedListener listener) {
-            int requestId = WampRequestIdGenerator.getId();
-            if (listener != null) {
-                mRequestIdMap.put(requestId, listener);
-            }
-            transmit(WampMessageFactory.createPublish(requestId, new JSONObject(), topic,
-                    new JSONArray(), argsKw));
-        }
-
-        @Override
-        protected void onConnected(WampPeer peer) {
-        }
-
-        @Override
-        protected void onReceived(WampMessage msg) {
-            if (msg.isPublishedMessage()) {
-                WampPublishedMessage pubMsg = msg.asPublishedMessage();
-                OnPublishedListener listener = mRequestIdMap.get(pubMsg.getRequestId());
-                if (listener != null) {
-                    mRequestIdMap.remove(pubMsg.getRequestId());
-                    listener.onPublished(pubMsg.getPublicationId());
-                }
-            }
-        }
-
-        @Override
-        protected void preTransmitted(WampPeer peer, WampMessage msg) {
-        }
-
-        @Override
-        protected void postTransmitted(WampPeer peer, WampMessage msg) {
-        }
+        cursor.moveToFirst();
+        String[] scopes = cursor.getString(cursor
+                .getColumnIndex(KadecotCoreStore.Handshakes.HandshakeColumns.SCOPE)).split(",");
+        cursor.close();
+        return new HashSet<String>(Arrays.asList(scopes));
     }
 
     private static final class MulticastDnsTrigger extends WifiConnectionBroadcastReceiver {

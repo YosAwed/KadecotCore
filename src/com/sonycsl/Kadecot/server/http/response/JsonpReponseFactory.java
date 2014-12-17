@@ -3,7 +3,7 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.Kadecot.server.http;
+package com.sonycsl.Kadecot.server.http.response;
 
 import android.util.Log;
 
@@ -13,6 +13,7 @@ import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampCallListener;
 import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper;
 
 import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Method;
 import fi.iki.elonen.NanoHTTPD.Response;
 
@@ -24,13 +25,11 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class JsonpServerModel implements ServerResponseModel {
+public class JsonpReponseFactory extends ResponseFactory {
 
-    private static final String TAG = JsonpServerModel.class.getSimpleName();
+    private static final String TAG = JsonpReponseFactory.class.getSimpleName();
 
-    public static final String JSONP_SERVICE_VERSION = "v1";
-
-    public static final String JSONP_BASE_URI = "jsonp";
+    private static final String JSONP_SERVICE_VERSION = "v1";
 
     private static final String DEVICES = "devices";
     private static final String PARAMS = "params";
@@ -47,9 +46,19 @@ public class JsonpServerModel implements ServerResponseModel {
 
     private static final int REQUEST_TIMEOUT = 10;
 
-    private KadecotAppClientWrapper mClient;
+    private final KadecotAppClientWrapper mClient;
 
-    private static class JsonpResponse extends Response {
+    public JsonpReponseFactory(KadecotAppClientWrapper client) {
+        mClient = client;
+    }
+
+    @Override
+    protected Response createResponse(IHTTPSession session, String rootPath) {
+        return createResponse(session.getMethod(), session.getUri().substring(rootPath.length()),
+                session.getParms());
+    }
+
+    private static final class JsonpResponse extends Response {
 
         public static final String MIME_JSONP = "application/javascript";
 
@@ -96,13 +105,8 @@ public class JsonpServerModel implements ServerResponseModel {
         public String error;
     }
 
-    public JsonpServerModel(KadecotAppClientWrapper client) {
-        mClient = client;
-    }
-
-    @Override
-    public Response createResponse(Method method, String uri, Map<String, String> params) {
-        String callback = params.remove(JsonpServerModel.CALLBACK);
+    private Response createResponse(Method method, String uri, Map<String, String> params) {
+        String callback = params.remove(JsonpReponseFactory.CALLBACK);
 
         if (method != Method.GET) {
             return new JsonpResponse(Response.Status.METHOD_NOT_ALLOWED, callback,
@@ -110,21 +114,13 @@ public class JsonpServerModel implements ServerResponseModel {
         }
 
         String[] directories = uri.split("/");
-
-        if (directories.length < 3) {
+        if (directories.length < 2) {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback,
                     Response.Status.BAD_REQUEST.toString());
         }
 
-        if (!JSONP_BASE_URI.equals(directories[1])) {
-            return new JsonpResponse(Response.Status.BAD_REQUEST, callback,
-                    Response.Status.BAD_REQUEST.toString());
-        }
-
-        if (directories[2].equals("v1")) {
+        if (directories[1].equals(JSONP_SERVICE_VERSION)) {
             return createResponseV1(directories, params, callback);
-
-            // Add version here
         } else {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback,
                     Response.Status.BAD_REQUEST.toString());
@@ -134,8 +130,8 @@ public class JsonpServerModel implements ServerResponseModel {
     private Response createResponseV1(String[] directories, Map<String, String> params,
             String callback) {
 
-        if (directories.length == 4) {
-            if (DEVICES.equals(directories[3])) {
+        if (directories.length == 3) {
+            if (DEVICES.equals(directories[2])) {
                 ResultHolder getDeviceListResult = syncCall(mClient,
                         WampProviderAccessHelper.Procedure.GET_DEVICE_LIST.getUri(),
                         new JSONObject(), new JSONObject());
@@ -165,13 +161,13 @@ public class JsonpServerModel implements ServerResponseModel {
             return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
         }
 
-        if (directories.length == 5) {
-            if (!DEVICES.equals(directories[3])) {
+        if (directories.length == 4) {
+            if (!DEVICES.equals(directories[2])) {
                 return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
             }
             long deviceId;
             try {
-                deviceId = Long.parseLong(directories[4]);
+                deviceId = Long.parseLong(directories[3]);
             } catch (NumberFormatException e) {
                 return new JsonpResponse(Response.Status.BAD_REQUEST, callback);
             }

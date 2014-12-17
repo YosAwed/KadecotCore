@@ -29,9 +29,12 @@ import android.net.http.AndroidHttpClient;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,34 +53,56 @@ import com.sonycsl.Kadecot.content.JsonLoader;
 import com.sonycsl.Kadecot.core.R;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
-import com.sonycsl.Kadecot.service.IWampClient;
 import com.sonycsl.Kadecot.service.KadecotService;
-import com.sonycsl.Kadecot.service.KadecotService.LocalBinder;
+import com.sonycsl.Kadecot.service.MessageReceiver;
+import com.sonycsl.Kadecot.service.ResponseHandler;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
+import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.util.PairKeyMap;
+import com.sonycsl.wamp.util.WampRequestIdGenerator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DeviceListFragment extends ListFragment {
+public class DeviceListFragment extends ListFragment implements MessageReceiver {
 
     private static final String CURSOR_LOADER_ID_KEY = "cursor";
     private static final String JSON_LOADER_ID_KEY = "json";
 
     private LayoutInflater mInflater;
-    private IWampClient mWampClient;
     private AndroidHttpClient mHttpClient;
+
+    private int mClientId;
+    private Messenger mMessenger;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mWampClient = ((LocalBinder) service).getWampClient();
+            mMessenger = new Messenger(service);
+            queryClientId();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mWampClient = null;
+            disposeClientId();
+            mMessenger = null;
+        }
+
+        private void queryClientId() {
+            int requestId = WampRequestIdGenerator.getId();
+            Message msg = Message.obtain(null, KadecotService.MSGR_INTERFACE_VERSION, 0, requestId);
+            msg.getData().putBoolean(KadecotService.MSGR_KEY_CONNECT, true);
+            msg.replyTo = new Messenger(new ResponseHandler(DeviceListFragment.this));
+            try {
+                mMessenger.send(msg);
+            } catch (RemoteException e) {
+                mMessenger = null;
+            }
+        }
+
+        private void disposeClientId() {
+            mClientId = -1;
         }
     };
 
@@ -307,8 +332,21 @@ public class DeviceListFragment extends ListFragment {
                     @Override
                     public void run() {
                         disableAllDevices();
-                        mWampClient.asPublisher().publish(KadecotWampTopic.TOPIC_PRIVATE_SEARCH,
-                                new JSONObject(), null);
+                        Message msg = Message.obtain(null, KadecotService.MSGR_INTERFACE_VERSION,
+                                mClientId, WampRequestIdGenerator.getId());
+                        msg.getData().putString(KadecotService.MSGR_KEY_REQ_WAMP,
+                                WampMessageFactory.createPublish(WampRequestIdGenerator.getId(),
+                                        new JSONObject(), KadecotWampTopic.TOPIC_PRIVATE_SEARCH)
+                                        .toString());
+                        if (mMessenger != null) {
+                            try {
+                                mMessenger.send(msg);
+                            } catch (RemoteException e) {
+                                // Never happens.
+                                throw new IllegalStateException(
+                                        "Can not send message through messenger.");
+                            }
+                        }
                         mHandler.postDelayed(refreshed, 2000);
                     }
                 };
@@ -492,6 +530,7 @@ public class DeviceListFragment extends ListFragment {
             final EditText editText = new EditText(mContext);
             editText.setText(currentNickname);
             editText.selectAll();
+            editText.setInputType(InputType.TYPE_CLASS_TEXT);
 
             Dialog dialog = new AlertDialog.Builder(mContext)
                     .setTitle(R.string.title_dialog_change_nickname)
@@ -619,6 +658,30 @@ public class DeviceListFragment extends ListFragment {
                 }
             } finally {
                 c.close();
+            }
+        }
+    }
+
+    @Override
+    public void onReceive(Message msg) {
+        if (msg.what != KadecotService.MSGR_INTERFACE_VERSION) {
+            return;
+        }
+
+        if (msg.getData().getBoolean(KadecotService.MSGR_KEY_CONNECT)) {
+            mClientId = msg.arg1;
+
+            Message wampHello = Message.obtain(null, KadecotService.MSGR_INTERFACE_VERSION,
+                    mClientId, WampRequestIdGenerator.getId());
+            wampHello.getData().putString(KadecotService.MSGR_KEY_REQ_WAMP,
+                    WampMessageFactory.createHello("realm", new JSONObject()).toString());
+            try {
+                if (mMessenger != null) {
+                    mMessenger.send(wampHello);
+                }
+            } catch (RemoteException e) {
+                // Never happens.
+                throw new IllegalStateException("Can not send messeage through messenger");
             }
         }
     }

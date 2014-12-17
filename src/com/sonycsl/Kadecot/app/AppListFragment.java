@@ -168,8 +168,13 @@ public class AppListFragment extends ListFragment implements LoaderCallbacks<JSO
                 v = mInflater.inflate(layout.app_list_item, parent, false);
             }
             try {
-                ((ImageView) (v.findViewById(R.id.deviceicon)))
-                        .setImageBitmap(mDefaultIcon);
+                if (getItem(position).has(ICON_KEY)) {
+                    ((ImageView) (v.findViewById(R.id.deviceicon)))
+                            .setImageBitmap(getAppImage(getItem(position).getString(ICON_KEY)));
+                } else {
+                    ((ImageView) (v.findViewById(R.id.deviceicon)))
+                            .setImageBitmap(mDefaultIcon);
+                }
                 ((TextView) (v.findViewById(android.R.id.text1))).setText(getItem(position)
                         .getString(TITLE_KEY));
                 ((TextView) (v.findViewById(android.R.id.text2))).setText(getItem(position)

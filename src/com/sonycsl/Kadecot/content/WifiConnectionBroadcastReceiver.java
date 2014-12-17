@@ -20,6 +20,10 @@ abstract public class WifiConnectionBroadcastReceiver extends BroadcastReceiver 
     }
 
     private boolean isConnected(Intent intent) {
+        if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)) {
+            return false;
+        }
+
         ConnectivityManager manager = (ConnectivityManager) mContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (manager == null) {
@@ -31,11 +35,14 @@ abstract public class WifiConnectionBroadcastReceiver extends BroadcastReceiver 
             return false;
         }
 
-        if (info.getType() != ConnectivityManager.TYPE_WIFI) {
-            return false;
+        switch (info.getType()) {
+            case ConnectivityManager.TYPE_WIFI:
+            case ConnectivityManager.TYPE_ETHERNET:
+                return info.isConnected();
+            default:
+                return false;
         }
 
-        return info.isConnected();
     }
 
     @Override

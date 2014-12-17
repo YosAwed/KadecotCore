@@ -252,7 +252,7 @@ public class OnDiskProvider extends ContentProvider {
     public static final class DatabaseHelper extends SQLiteOpenHelper {
 
         private static final String DB_NAME = "kadecotcore.db";
-        private static final int DB_VERSION = 2;
+        private static final int DB_VERSION = 3;
 
         public static final String DEVICE_TABLE = "devices";
         public static final String TOPIC_TABLE = "topics";
@@ -263,11 +263,8 @@ public class OnDiskProvider extends ContentProvider {
         private static final String DEFAULT_MAIN_LOCATION = "Others";
         private static final String DEFAULT_SUB_LOCATION = "";
 
-        private Context mContext;
-
         public DatabaseHelper(Context context) {
             super(context, DB_NAME, null, DB_VERSION);
-            mContext = context;
         }
 
         @Override
@@ -343,6 +340,10 @@ public class OnDiskProvider extends ContentProvider {
                     + " DATETIME DEFAULT (datetime('now', 'localtime')), " +
                     KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN +
                     " TEXT NOT NULL, " +
+                    KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN +
+                    " TEXT NOT NULL, " +
+                    KadecotCoreStore.Handshakes.HandshakeColumns.SCOPE +
+                    " TEXT NOT NULL, " +
                     KadecotCoreStore.Handshakes.HandshakeColumns.STATUS
                     + " INTEGER NOT NULL, " +
                     "UNIQUE(" + KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN + ") " +
@@ -358,6 +359,57 @@ public class OnDiskProvider extends ContentProvider {
                 db.execSQL("ALTER TABLE " + DEVICE_TABLE + " ADD COLUMN "
                         + KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION
                         + " TEXT NOT NULL DEFAULT '" + DEFAULT_SUB_LOCATION + "';");
+                return;
+            }
+
+            if (oldVersion == 2 && newVersion == 3) {
+                db.execSQL("DROP TABLE IF EXISTS " + HANDSHAKE_TABLE + ";");
+                db.execSQL("CREATE TABLE IF NOT EXISTS " + HANDSHAKE_TABLE + " ( " +
+                        "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.UTC
+                        + " DATETIME DEFAULT (datetime('now')), " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.LOCALTIME
+                        + " DATETIME DEFAULT (datetime('now', 'localtime')), " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.SCOPE +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.STATUS
+                        + " INTEGER NOT NULL, " +
+                        "UNIQUE(" + KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN + ") " +
+                        ");");
+                return;
+            }
+
+            if (oldVersion == 1 && newVersion == 3) {
+                /* 1 -> 2 */
+                db.execSQL("ALTER TABLE " + DEVICE_TABLE + " ADD COLUMN "
+                        + KadecotCoreStore.Devices.DeviceColumns.LOCATION
+                        + " TEXT NOT NULL DEFAULT '" + DEFAULT_MAIN_LOCATION + "';");
+                db.execSQL("ALTER TABLE " + DEVICE_TABLE + " ADD COLUMN "
+                        + KadecotCoreStore.Devices.DeviceColumns.SUB_LOCATION
+                        + " TEXT NOT NULL DEFAULT '" + DEFAULT_SUB_LOCATION + "';");
+
+                /* 2 -> 3 */
+                db.execSQL("DROP TABLE IF EXISTS " + HANDSHAKE_TABLE + ";");
+                db.execSQL("CREATE TABLE IF NOT EXISTS " + HANDSHAKE_TABLE + " ( " +
+                        "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.UTC
+                        + " DATETIME DEFAULT (datetime('now')), " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.LOCALTIME
+                        + " DATETIME DEFAULT (datetime('now', 'localtime')), " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.TOKEN +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.SCOPE +
+                        " TEXT NOT NULL, " +
+                        KadecotCoreStore.Handshakes.HandshakeColumns.STATUS
+                        + " INTEGER NOT NULL, " +
+                        "UNIQUE(" + KadecotCoreStore.Handshakes.HandshakeColumns.ORIGIN + ") " +
+                        ");");
                 return;
             }
 

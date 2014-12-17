@@ -9,8 +9,9 @@
         android:layout_width="45dip"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
-        android:gravity="left"
-        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft" />
+        android:gravity="start"
+        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:paddingStart="?android:attr/listPreferredItemPaddingStart" />
 
     <TwoLineListItem
         android:layout_width="match_parent"
@@ -18,6 +19,8 @@
         android:minHeight="?android:attr/listPreferredItemHeight"
         android:mode="twoLine"
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:paddingRight="?android:attr/listPreferredItemPaddingRight"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
         <TextView
@@ -31,6 +34,7 @@
             android:id="@android:id/text2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignLeft="@android:id/text1"
             android:layout_alignStart="@android:id/text1"
             android:layout_below="@android:id/text1"
             android:textAppearance="?android:attr/textAppearanceSmall" />

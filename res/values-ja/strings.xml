@@ -20,12 +20,13 @@
     <string name="plugin_list_preference_key">plugin_list_preference_key</string>
     <string name="about_kadecot_key">about_kadecot_key</string>
     <string name="open_source_licenses_key">open_source_licenses_key</string>
+    <string name="help_preference_key">help_preference_key</string>
 
     <!-- Title -->
     <string name="title_activity_origin_list">ウェブアプリの許可設定</string>
     <string name="title_activity_plugin_list">Plug-in リスト</string>
     <string name="title_activity_eula">使用許諾</string>
-    <string name="title_activity_access_point_list">アクセスポイントリスト</string>
+    <string name="title_activity_access_point_list">ネットワークリスト</string>
     <string name="title_dialog_change_nickname">ニックネーム変更</string>
     <string name="title_popup_menu_item_change_nick_name">ニックネーム変更</string>
     <string name="title_dialog_change_location">場所変更</string>
@@ -40,6 +41,9 @@
     <string name="title_delete_all_inactive_devices">無効なデバイスの削除</string>
     <string name="title_about_kadecot">Kadecot について</string>
     <string name="title_open_source_licenses">オープンソースライセンス</string>
+    <string name="title_help">ヘルプ</string>
+    <string name="title_please_setup_your_kadecot_account">アカウントを設定してください</string>
+    <string name="title_account_settings">アカウント設定</string>
 
     <!-- Summary -->
     <string name="summary_persistent_mode">Kadecot サーバを常時起動します</string>
@@ -51,13 +55,14 @@
     <string name="success_change_nickname">ニックネームを更新しました</string>
     <string name="success_change_location">場所を更新しました</string>
     <string name="no_device">デバイスがありません</string>
-    <string name="no_access_point">許可したアクセスポイントはありません</string>
+    <string name="no_access_point">許可したネットワークはありません</string>
     <string name="unsupported">コントローラは利用できません</string>
     <string name="currently_unavailable">今は利用できません</string>
     <string name="background_confirmation">Kadecot をバックグラウンドで動作させ続けますか？</string>
     <string name="stop_server">サーバ停止</string>
     <string name="message_delete_all_inactive_devices">無効なデバイスをすべて削除してもよろしいですか？</string>
     <string name="no_application_available">利用できるアプリはありません</string>
+    <string name="loading">Loading..</string>
 
     <!-- Action Bar -->
     <string name="action_offline">オフライン</string>

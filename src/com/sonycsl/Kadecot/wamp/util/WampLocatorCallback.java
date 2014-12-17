@@ -3,8 +3,10 @@
  * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
  */
 
-package com.sonycsl.Kadecot.service;
+package com.sonycsl.Kadecot.wamp.util;
 
-public interface IWampClient {
-    public IPublisher asPublisher();
+import com.sonycsl.wamp.WampPeer;
+
+public interface WampLocatorCallback {
+    public void locate(WampPeer peer);
 }

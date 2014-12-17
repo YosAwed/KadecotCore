@@ -23,17 +23,13 @@ public class KadecotWampRouter extends WampRouter {
 
     public static final String REALM = "realm";
 
-    private final ContentResolver mResolver;
-
     public KadecotWampRouter(ContentResolver resolver) {
-        super();
-        mResolver = resolver;
     }
 
     @Override
     protected Set<WampRole> getRouterRoleSet() {
         Set<WampRole> roleSet = new HashSet<WampRole>();
-        roleSet.add(new WampBroker(new KadecotTopicResolver(mResolver)) {
+        roleSet.add(new WampBroker() {
             @Override
             protected JSONObject createEventDetails(JSONObject publishOptions) {
                 return publishOptions;

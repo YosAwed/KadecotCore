@@ -7,17 +7,13 @@ package com.sonycsl.Kadecot.server.websocket;
 
 import android.os.Build;
 
-import com.sonycsl.Kadecot.plugin.KadecotProtocolSetupCallback;
-import com.sonycsl.Kadecot.plugin.KadecotWampSetupCallback;
-import com.sonycsl.Kadecot.wamp.client.KadecotWampClient;
-import com.sonycsl.Kadecot.wamp.router.KadecotWampRouter;
-import com.sonycsl.Kadecot.wamp.util.KadecotWampPeerLocator;
-import com.sonycsl.wamp.WampError;
-import com.sonycsl.wamp.WampRouter;
+import com.sonycsl.Kadecot.wamp.util.WampLocatorCallback;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.transport.WebSocketPeer;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
@@ -29,18 +25,17 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class WebSocketServer {
 
@@ -52,9 +47,8 @@ public class WebSocketServer {
 
     private boolean mIsStarted = false;
 
-    private final WampTopology mTopology;
-
     private ClientAuthCallback mClientAuthCallback = null;
+    private WampLocatorCallback mWampLocatorCallback = null;
 
     public WebSocketServer(int portno, String supportProtocol) {
         if (Build.PRODUCT.startsWith("sdk")) {
@@ -64,7 +58,6 @@ public class WebSocketServer {
 
         mPortNo = portno;
         mSupportProtocol = supportProtocol;
-        mTopology = new WampTopology();
         WebSocketImpl.DEBUG = false;// true;
         mDraftList = new ArrayList<Draft>();
         mDraftList.add(new Draft_17_Protocol(mSupportProtocol));
@@ -75,19 +68,11 @@ public class WebSocketServer {
         mDraftList.add(new Draft_76());
         mDraftList.add(new Draft_75_Protocol(mSupportProtocol));
         mDraftList.add(new Draft_75());
-        mWampWebSocketServer = new WampWebSocketServer(new InetSocketAddress(mPortNo), mDraftList,
-                mTopology);
+        mWampWebSocketServer = new WampWebSocketServer(new InetSocketAddress(mPortNo), mDraftList);
     }
 
     public synchronized void start() {
         if (mIsStarted) {
-            return;
-        }
-
-        try {
-            mTopology.start();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
             return;
         }
         mWampWebSocketServer.start();
@@ -104,7 +89,6 @@ public class WebSocketServer {
         }
 
         try {
-            mTopology.stop();
             mWampWebSocketServer.stop();
         } catch (IOException e) {
             e.printStackTrace();
@@ -112,9 +96,9 @@ public class WebSocketServer {
             e.printStackTrace();
         }
 
-        mWampWebSocketServer = new WampWebSocketServer(new InetSocketAddress(mPortNo),
-                mDraftList, mTopology);
+        mWampWebSocketServer = new WampWebSocketServer(new InetSocketAddress(mPortNo), mDraftList);
         mWampWebSocketServer.setClientAuthCallback(mClientAuthCallback);
+        mWampWebSocketServer.setWampLocatorCallback(mWampLocatorCallback);
         mIsStarted = false;
     }
 
@@ -123,126 +107,28 @@ public class WebSocketServer {
         mWampWebSocketServer.setClientAuthCallback(mClientAuthCallback);
     }
 
-    private static final class WampTopology {
-
-        private Map<KadecotWampClient, KadecotWampSetupCallback> mWampCallbacks = new HashMap<KadecotWampClient, KadecotWampSetupCallback>();
-        private Map<KadecotWampClient, KadecotProtocolSetupCallback> mProtocolCallbacks = new HashMap<KadecotWampClient, KadecotProtocolSetupCallback>();
-
-        public WampTopology() {
-            for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
-                client.connect(KadecotWampPeerLocator.getRouter());
-            }
-            for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
-                client.connect(KadecotWampPeerLocator.getRouter());
-            }
-        }
-
-        public WampRouter getRouter() {
-            return KadecotWampPeerLocator.getRouter();
-        }
-
-        public void start() throws InterruptedException {
-            final CountDownLatch systemSetup = new CountDownLatch(
-                    KadecotWampPeerLocator.getSystemClients().length);
-            for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
-                KadecotWampSetupCallback callback = new KadecotWampSetupCallback(
-                        client.getTopicsToSubscribe(), client.getRegisterableProcedures()
-                                .keySet(),
-                        new KadecotWampSetupCallback.OnCompletionListener() {
-                            @Override
-                            public void onCompletion() {
-                                systemSetup.countDown();
-                            }
-                        });
-                mWampCallbacks.put(client, callback);
-                client.setCallback(callback);
-            }
-
-            for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
-                client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
-                        new JSONObject()));
-            }
-
-            if (!systemSetup.await(5, TimeUnit.SECONDS)) {
-                throw new IllegalArgumentException();
-            }
-
-            final CountDownLatch wampSetup = new CountDownLatch(
-                    KadecotWampPeerLocator.getProtocolClients().length);
-            for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
-                KadecotProtocolSetupCallback protocolCallback = new KadecotProtocolSetupCallback(
-                        client.getSubscribableTopics(),
-                        client.getRegisterableProcedures(),
-                        new KadecotProtocolSetupCallback.OnCompletionListener() {
-                            @Override
-                            public void onCompletion() {
-                            }
-                        });
-                mProtocolCallbacks.put(client, protocolCallback);
-                client.setCallback(protocolCallback);
-
-                KadecotWampSetupCallback wampCallback = new KadecotWampSetupCallback(
-                        client.getTopicsToSubscribe(), client.getRegisterableProcedures().keySet(),
-                        new KadecotWampSetupCallback.OnCompletionListener() {
-                            @Override
-                            public void onCompletion() {
-                                wampSetup.countDown();
-                            }
-                        });
-                mWampCallbacks.put(client, wampCallback);
-                client.setCallback(wampCallback);
-            }
-
-            for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
-                client.transmit(WampMessageFactory.createHello(KadecotWampRouter.REALM,
-                        new JSONObject()));
-            }
-
-            if (!wampSetup.await(5, TimeUnit.SECONDS)) {
-                throw new IllegalArgumentException();
-            }
-
-        }
-
-        public void stop() {
-            for (KadecotWampClient client : KadecotWampPeerLocator.getProtocolClients()) {
-                client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
-                        WampError.CLOSE_REALM));
-            }
-
-            for (KadecotWampClient client : KadecotWampPeerLocator.getSystemClients()) {
-                client.transmit(WampMessageFactory.createGoodbye(new JSONObject(),
-                        WampError.CLOSE_REALM));
-            }
-
-            for (Entry<KadecotWampClient, KadecotWampSetupCallback> entry : mWampCallbacks
-                    .entrySet()) {
-                entry.getKey().removeCallback(entry.getValue());
-            }
-
-            for (Entry<KadecotWampClient, KadecotProtocolSetupCallback> entry : mProtocolCallbacks
-                    .entrySet()) {
-                entry.getKey().removeCallback(entry.getValue());
-            }
-        }
-
+    public void setWampLocatorCallback(WampLocatorCallback callback) {
+        mWampLocatorCallback = callback;
+        mWampWebSocketServer.setWampLocatorCallback(mWampLocatorCallback);
     }
 
     private static final class WampWebSocketServer extends
             org.java_websocket.server.WebSocketServer {
 
         private final Map<WebSocket, WebSocketPeer> mClients = new ConcurrentHashMap<WebSocket, WebSocketPeer>();
-        private final WampTopology mTopology;
         private ClientAuthCallback mAuthCallback = null;
+        private WampLocatorCallback mWampLocator;
 
-        public WampWebSocketServer(InetSocketAddress address, List<Draft> draftList,
-                WampTopology topology) {
+        public WampWebSocketServer(InetSocketAddress address, List<Draft> draftList) {
             super(address, draftList);
-            mTopology = topology;
         }
 
         public void setClientAuthCallback(ClientAuthCallback callback) {
             mAuthCallback = callback;
+        }
+
+        public void setWampLocatorCallback(WampLocatorCallback callback) {
+            mWampLocator = callback;
         }
 
         @Override
@@ -251,12 +137,17 @@ public class WebSocketServer {
                 conn.close();
                 return;
             }
-            if (!mAuthCallback.authenticate(convertTo(handshake))) {
+            if (!mAuthCallback.isAuthenticated(convertTo(handshake))) {
                 conn.close();
                 return;
             }
-            WebSocketPeer client = new WebSocketPeer(conn);
-            client.connect(mTopology.getRouter());
+
+            if (mWampLocator == null) {
+                return;
+            }
+            WebSocketPeer client = new AuthorizedWebSocketPeer(conn,
+                    mAuthCallback.getScopeSet(convertTo(handshake)));
+            mWampLocator.locate(client);
             mClients.put(conn, client);
         }
 
@@ -338,6 +229,31 @@ public class WebSocketServer {
                 @Override
                 public String getConnection() {
                     return src.getFieldValue("Connection");
+                }
+
+                @Override
+                public List<NameValuePair> getParameters() {
+                    URI uri;
+                    try {
+                        String dummy = getOrigin();
+                        uri = new URI(dummy + src.getResourceDescriptor());
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                        return new LinkedList<NameValuePair>();
+                    }
+                    return URLEncodedUtils.parse(uri, "UTF-8");
+                }
+
+                @Override
+                public String getParameter(String name) {
+                    Iterator<NameValuePair> itr = getParameters().iterator();
+                    while (itr.hasNext()) {
+                        NameValuePair pair = itr.next();
+                        if (pair.getName().equals(name)) {
+                            return pair.getValue();
+                        }
+                    }
+                    return "";
                 }
             };
         }

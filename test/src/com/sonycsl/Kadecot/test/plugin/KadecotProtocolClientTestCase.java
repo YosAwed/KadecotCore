@@ -12,7 +12,6 @@ import com.sonycsl.Kadecot.plugin.KadecotProtocolClient.InitializeListener;
 import com.sonycsl.Kadecot.plugin.KadecotProtocolSubscriber.EventListener;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.wamp.KadecotWampTopic;
-import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper;
 import com.sonycsl.wamp.WampPeer;
 import com.sonycsl.wamp.WampPeer.Callback;
 import com.sonycsl.wamp.message.WampEventMessage;
@@ -130,10 +129,6 @@ public class KadecotProtocolClientTestCase extends TestCase {
             return mMessages;
         }
 
-        public void clearMessages() {
-            mMessages.clear();
-        }
-
         @Override
         public void preTransmit(WampPeer transmitter, WampMessage msg) {
         }
@@ -191,12 +186,11 @@ public class KadecotProtocolClientTestCase extends TestCase {
     }
 
     public void testRxWelcome() {
-        mProtocolClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
-
         TestableCallback callback = new TestableCallback();
         callback.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
         mProtocolClient.setCallback(callback);
-        mPeer.transmit(WampMessageFactory.createWelcome(0, new JSONObject()));
+
+        mProtocolClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
 
         try {
             assertTrue(callback.await(1, TimeUnit.SECONDS));
@@ -219,24 +213,14 @@ public class KadecotProtocolClientTestCase extends TestCase {
             }
         });
 
-        TestableCallback helloCallback = new TestableCallback();
-        helloCallback.setTargetMessageType(WampMessageType.HELLO, new CountDownLatch(1));
-        mPeer.setCallback(helloCallback);
-
-        mProtocolClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
-        try {
-            assertTrue(helloCallback.await(1, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
-            fail();
-        }
         mPeer.clearMessages();
 
         String[] systemTopics = {
                 KadecotWampTopic.TOPIC_PRIVATE_SEARCH,
-                WampProviderAccessHelper.Topic.START.getUri(),
-                WampProviderAccessHelper.Topic.STOP.getUri()
         };
-        final CountDownLatch initSequencelatch = new CountDownLatch(systemTopics.length
+        int helloTimes = 1;
+        final CountDownLatch initSequencelatch = new CountDownLatch(helloTimes
+                + systemTopics.length
                 + mProtocolClient.getRegisterableProcedures().keySet().size()
                 + mProtocolClient.getTopicsToSubscribe().size());
 
@@ -244,7 +228,7 @@ public class KadecotProtocolClientTestCase extends TestCase {
         callback.setCountDownLatch(initSequencelatch);
         mPeer.setCallback(callback);
 
-        mPeer.transmit(WampMessageFactory.createWelcome(0, new JSONObject()));
+        mProtocolClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
 
         try {
             assertTrue(initSequencelatch.await(1, TimeUnit.SECONDS));
@@ -254,6 +238,10 @@ public class KadecotProtocolClientTestCase extends TestCase {
 
         List<WampMessage> subOrRegMessage = mPeer.getAllMessages();
         for (WampMessage msg : subOrRegMessage) {
+            if (msg.isHelloMessage()) {
+                continue;
+            }
+
             if (msg.isRegisterMessage()) {
                 mPeer.transmit(WampMessageFactory.createRegistered(msg.asRegisterMessage()
                         .getRequestId(), WampRequestIdGenerator.getId()));
@@ -362,7 +350,7 @@ public class KadecotProtocolClientTestCase extends TestCase {
         mProtocolClient.setDeviceRegistrationListener(new DeviceRegistrationListener() {
 
             @Override
-            public void onRegistered(long deviceId, String uuid) {
+            public void onRegistered(long deviceId, String uuid, JSONObject argsKw) {
                 latch.countDown();
             }
         });

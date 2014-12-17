@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
+ * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
+ */
 
 package com.sonycsl.Kadecot.app;
 
@@ -24,7 +28,7 @@ public class ChangeLocationDialogFactory {
             final String currentSubLocation, final long deviceId) {
 
         LayoutInflater inflater = (LayoutInflater) context
-                .getSystemService(context.LAYOUT_INFLATER_SERVICE);
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final LinearLayout layout = (LinearLayout) inflater.inflate(
                 R.layout.change_location_dialog, null);
         final Spinner spinner = (Spinner) layout.findViewById(R.id.location_spinner);
@@ -87,11 +91,14 @@ public class ChangeLocationDialogFactory {
         TypedArray ta = context.getResources().obtainTypedArray(R.array.location_label);
         for (int i = 0; i < ta.length(); i++) {
             if (currentLocation.equals(ta.getString(i))) {
+                ta.recycle();
                 return i;
             }
         }
 
         // return "Others" position
-        return ta.length() - 1;
+        int length = ta.length();
+        ta.recycle();
+        return length - 1;
     }
 }

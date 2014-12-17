@@ -6,6 +6,8 @@
 package com.sonycsl.Kadecot.app;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.ContentProviderClient;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -100,6 +102,28 @@ public class SettingsFragment extends PreferenceFragment {
             });
         }
 
+        ps = (PreferenceScreen) findPreference(getString(R.string.help_preference_key));
+        if (ps != null) {
+            ps.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    final String tag = HelpDialogFragment.class.getSimpleName();
+                    Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+                    if (fragment != null) {
+                        ft.remove(fragment);
+                    }
+
+                    fragment = new HelpDialogFragment();
+                    ft.add(fragment, tag);
+                    ft.commitAllowingStateLoss();
+                    return true;
+                }
+            });
+        }
+
         ps = (PreferenceScreen) findPreference(getString(R.string.about_kadecot_key));
         if (ps != null) {
             ps.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -118,7 +142,42 @@ public class SettingsFragment extends PreferenceFragment {
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    startActivity(new Intent(getActivity(), LicensesActivity.class));
+                    final String tag = "license";
+                    Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+                    if (fragment != null) {
+                        ft.remove(fragment);
+                    }
+
+                    fragment = WebViewDialogFragment.getInstance(
+                            getString(R.string.title_open_source_licenses),
+                            "file:///android_asset/licenses.html");
+                    ft.add(fragment, tag);
+                    ft.commitAllowingStateLoss();
+                    return true;
+                }
+            });
+        }
+
+        ps = (PreferenceScreen) findPreference(getString(R.string.account_settings_preference_key));
+        if (ps != null) {
+            ps.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    final String tag = AccountSettingsDialogFragment.class.getSimpleName();
+                    Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+                    if (fragment != null) {
+                        ft.remove(fragment);
+                    }
+
+                    fragment = AccountSettingsDialogFragment
+                            .getInstance(getString(R.string.title_account_settings));
+                    ft.add(fragment, tag);
+                    ft.commitAllowingStateLoss();
                     return true;
                 }
             });
@@ -143,9 +202,11 @@ public class SettingsFragment extends PreferenceFragment {
                         KadecotCoreStore.Devices.CONTENT_URI);
         try {
             client.delete(KadecotCoreStore.Devices.CONTENT_URI,
-                    KadecotCoreStore.Devices.DeviceColumns.STATUS + " =?",
+                    KadecotCoreStore.Devices.DeviceColumns.STATUS + " =? AND " +
+                            KadecotCoreStore.Devices.DeviceColumns.BSSID + "=?",
                     new String[] {
-                        String.valueOf(0)
+                            String.valueOf(0),
+                            ConnectivityManagerUtil.getCurrentNetworkID(getActivity()).getBssid()
                     });
         } catch (RemoteException e) {
             e.printStackTrace();

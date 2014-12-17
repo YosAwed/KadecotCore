@@ -93,7 +93,7 @@ public class PluginListFragment extends ListFragment implements LoaderCallbacks<
 
     private static String getProtocolName(Cursor cursor) {
         return cursor.getString(cursor
-                .getColumnIndex(KadecotCoreStore.DeviceTypes.DeviceTypeColumns.PROTOCOL));
+                .getColumnIndex(KadecotCoreStore.Protocols.ProtocolColumns.PROTOCOL));
     }
 
     @Override

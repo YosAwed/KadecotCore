@@ -25,28 +25,30 @@ import com.sonycsl.Kadecot.preference.DeveloperModePreference;
 import com.sonycsl.Kadecot.preference.WebSocketServerPreference;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.server.http.HttpServer;
-import com.sonycsl.Kadecot.server.http.JsonpServerModel;
-import com.sonycsl.Kadecot.server.http.KadecotServerModel;
-import com.sonycsl.Kadecot.server.http.MainAppServerModel;
+import com.sonycsl.Kadecot.server.http.response.FileResponseFactory;
+import com.sonycsl.Kadecot.server.http.response.JsonpReponseFactory;
+import com.sonycsl.Kadecot.server.http.response.OauthResponseFactory;
 import com.sonycsl.Kadecot.server.websocket.ClientAuthCallback;
 import com.sonycsl.Kadecot.server.websocket.OpeningHandshake;
 import com.sonycsl.Kadecot.server.websocket.WebSocketServer;
+import com.sonycsl.Kadecot.wamp.WampTopology;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampGoodbyeListener;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampWelcomeListener;
-import com.sonycsl.wamp.message.WampMessage;
-import com.sonycsl.wamp.transport.ProxyPeer;
-import com.sonycsl.wamp.transport.WampWebSocketTransport;
-import com.sonycsl.wamp.transport.WampWebSocketTransport.OnWampMessageListener;
+import com.sonycsl.Kadecot.wamp.util.WampLocatorCallback;
+import com.sonycsl.wamp.WampPeer;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class ServerManager {
@@ -61,11 +63,38 @@ public final class ServerManager {
 
     public static final int JSONP_PORT_NO = 31413;
 
-    private static final String LOCALHOST = "localhost";
+    private static final String JSONP_ROOT_PATH = "/jsonp";
 
-    public static final String PLUGIN_FILTER = "com.sonycsl.kadecot.plugin";
+    private static final String OAUTH_ROOT_PATH = "/apps";
+
+    public static final String ACTION_APP = "com.sonycsl.kadecot.app";
+
+    private static final String ACTION_PLUGIN = "com.sonycsl.kadecot.plugin";
+
+    private static final String PERMISSION_WEBSOCKET = "com.sonycsl.kadecot.permission.ACCESS_WEBSOCKET_SERVER";
 
     public static final String EXTRA_ACCEPTED_ORIGIN = "acceptedOrigin";
+
+    public static final String EXTRA_ACCEPTED_TOKEN = "acceptedToken";
+
+    private static final String ANDROID_APP_ORIGIN = "http://app.kadecot.net";
+
+    private static final String ANDROID_APP_TOKEN = UUID.randomUUID().toString();
+
+    private static final String ANDROID_PLUGIN_ORIGIN = UUID.randomUUID().toString();
+
+    private static final String ANDROID_PLUGIN_TOKEN = UUID.randomUUID().toString();
+
+    private static final Set<String> ANDROID_APP_SCOPE;
+
+    private static final Set<String> ANDROID_PLUGIN_SCOPE;
+
+    static {
+        Set<String> scopes = new HashSet<String>();
+        scopes.add("com.sonycsl.kadecot");
+        ANDROID_APP_SCOPE = Collections.unmodifiableSet(scopes);
+        ANDROID_PLUGIN_SCOPE = Collections.unmodifiableSet(scopes);
+    }
 
     private final Map<String, ServerSettingChanger> mChangers;
 
@@ -78,10 +107,6 @@ public final class ServerManager {
     private KadecotAppClientWrapper mClientJsonp;
 
     private HttpServer mHttpServer;
-
-    private KadecotServerModel mModels;
-
-    private ProxyPeer mProxyJsonp;
 
     private PackageManager mPackageManager;
     private Collection<PluginConnection> mPluginConnections;
@@ -119,13 +144,27 @@ public final class ServerManager {
 
     private ClientAuthCallback mAuthCallback;
 
-    private final String mAcceptedOrigin = UUID.randomUUID().toString();
-
     private final ClientAuthCallback mAuthCallbackAdapter = new ClientAuthCallback() {
 
+        private static final String ACCESS_TOKEN = "access_token";
+
+        private boolean fromAndroidApp(OpeningHandshake handshake) {
+            return ANDROID_APP_ORIGIN.equals(handshake.getOrigin())
+                    && ANDROID_APP_TOKEN.equals(handshake.getParameter(ACCESS_TOKEN));
+        }
+
+        private boolean fromAndroidPlugin(OpeningHandshake handshake) {
+            return ANDROID_PLUGIN_ORIGIN.equals(handshake.getOrigin())
+                    && ANDROID_PLUGIN_TOKEN.equals(handshake.getParameter(ACCESS_TOKEN));
+        }
+
         @Override
-        public boolean authenticate(OpeningHandshake handShake) {
-            if (mAcceptedOrigin.equals(handShake.getOrigin())) {
+        public boolean isAuthenticated(OpeningHandshake handshake) {
+            if (fromAndroidApp(handshake)) {
+                return true;
+            }
+
+            if (fromAndroidPlugin(handshake)) {
                 return true;
             }
 
@@ -133,13 +172,30 @@ public final class ServerManager {
                 return false;
             }
 
-            return mAuthCallback.authenticate(handShake);
+            return mAuthCallback.isAuthenticated(handshake);
+        }
+
+        @Override
+        public Set<String> getScopeSet(OpeningHandshake handshake) {
+            if (fromAndroidApp(handshake)) {
+                return ANDROID_APP_SCOPE;
+            }
+
+            if (fromAndroidPlugin(handshake)) {
+                return ANDROID_PLUGIN_SCOPE;
+            }
+
+            if (mAuthCallback == null) {
+                return new HashSet<String>();
+            }
+
+            return mAuthCallback.getScopeSet(handshake);
         }
     };
 
-    private WampWebSocketTransport mTransportJsonp;
-
     private BroadcastReceiver mWsReceiverJsonp;
+
+    private WampTopology mTopology;
 
     private void disableAllDevices() {
         ContentValues values = new ContentValues();
@@ -164,24 +220,28 @@ public final class ServerManager {
                         if (WebSocketServerPreference.isEnabled(mContext)) {
                             mWebSocketServer.start();
 
-                            /**
-                             * Broadcast intent for inner WAMP clients. <br>
-                             * TODO: Remove this broadcast
-                             */
-                            Intent intent = new Intent(PLUGIN_FILTER);
+                            Intent intent = new Intent(ACTION_APP);
                             intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                            intent.putExtra(EXTRA_ACCEPTED_ORIGIN, mAcceptedOrigin);
-                            mContext.sendBroadcast(intent);
+                            intent.putExtra(EXTRA_ACCEPTED_ORIGIN, ANDROID_APP_ORIGIN);
+                            intent.putExtra(EXTRA_ACCEPTED_TOKEN, ANDROID_APP_TOKEN);
+                            mContext.sendBroadcast(intent, PERMISSION_WEBSOCKET);
 
                             /**
                              * Get some plug-in information.
                              */
                             List<ResolveInfo> plugins = mPackageManager.queryIntentServices(
-                                    new Intent(ServerManager.PLUGIN_FILTER), 0);
+                                    new Intent(ServerManager.ACTION_PLUGIN), 0);
 
                             for (ResolveInfo plugin : plugins) {
-                                final Intent startPluginIntent = new Intent(plugin.serviceInfo.name);
-                                startPluginIntent.putExtra(EXTRA_ACCEPTED_ORIGIN, mAcceptedOrigin);
+                                ComponentName component = new ComponentName(
+                                        plugin.serviceInfo.packageName,
+                                        plugin.serviceInfo.name);
+                                final Intent startPluginIntent = new Intent();
+                                startPluginIntent.setComponent(component);
+                                startPluginIntent.putExtra(EXTRA_ACCEPTED_ORIGIN,
+                                        ANDROID_PLUGIN_ORIGIN);
+                                startPluginIntent.putExtra(EXTRA_ACCEPTED_TOKEN,
+                                        ANDROID_PLUGIN_TOKEN);
                                 final ServiceConnection serviceConn = new ServiceConnection() {
 
                                     @Override
@@ -226,8 +286,6 @@ public final class ServerManager {
 
                                     @Override
                                     public void onReceive(Context context, Intent intent) {
-                                        mTransportJsonp
-                                                .open(LOCALHOST, WS_PORT_NO, mAcceptedOrigin);
                                         mClientJsonp.hello("realm", new WampWelcomeListener() {
 
                                             @Override
@@ -240,8 +298,7 @@ public final class ServerManager {
                             }
 
                             mContext.registerReceiver(mWsReceiverJsonp, new IntentFilter(
-                                    PLUGIN_FILTER));
-                            mTransportJsonp.open(LOCALHOST, WS_PORT_NO, mAcceptedOrigin);
+                                    ACTION_PLUGIN));
                             mClientJsonp.hello("realm", new WampWelcomeListener() {
 
                                 @Override
@@ -249,16 +306,14 @@ public final class ServerManager {
                                 }
 
                             });
-                            mModels.addModel(JsonpServerModel.JSONP_BASE_URI,
-                                    new JsonpServerModel(
-                                            mClientJsonp));
+                            mHttpServer.putResponseFactory(JSONP_ROOT_PATH,
+                                    new JsonpReponseFactory(mClientJsonp));
                         } else {
                             if (mWsReceiverJsonp != null) {
                                 mContext.unregisterReceiver(mWsReceiverJsonp);
                                 mWsReceiverJsonp = null;
                             }
-                            mTransportJsonp.close();
-                            mModels.removeModel(JsonpServerModel.JSONP_BASE_URI);
+                            mHttpServer.removeResponseFactory(JSONP_ROOT_PATH);
                             mClientJsonp.goodbye("exit.jsonp.server", new WampGoodbyeListener() {
 
                                 @Override
@@ -270,26 +325,26 @@ public final class ServerManager {
                 });
     }
 
-    public ServerManager(Context context) {
+    public ServerManager(Context context, WampTopology topology) {
         mContext = context.getApplicationContext();
+        mTopology = topology;
         mChangers = new HashMap<String, ServerManager.ServerSettingChanger>();
         mWebSocketServer = new WebSocketServer(WS_PORT_NO, WAMP_PROTOCOL);
         mWebSocketServer.setClientAuthCallback(mAuthCallbackAdapter);
-        mTransportJsonp = new WampWebSocketTransport();
-        mProxyJsonp = new ProxyPeer(mTransportJsonp);
-        mTransportJsonp.setOnWampMessageListener(new OnWampMessageListener() {
+        mWebSocketServer.setWampLocatorCallback(new WampLocatorCallback() {
 
             @Override
-            public void onMessage(WampMessage msg) {
-                mProxyJsonp.transmit(msg);
+            public void locate(WampPeer peer) {
+                peer.connect(mTopology.getRouter());
             }
         });
 
         mClientJsonp = new KadecotAppClientWrapper();
-        mClientJsonp.connect(mProxyJsonp);
+        mClientJsonp.connect(mTopology.getRouter());
 
-        mModels = new KadecotServerModel();
-        mHttpServer = new HttpServer(JSONP_PORT_NO, mModels);
+        mHttpServer = new HttpServer(JSONP_PORT_NO, new FileResponseFactory(mContext));
+        mHttpServer.putResponseFactory(OAUTH_ROOT_PATH, new OauthResponseFactory(mContext));
+
         mPluginConnections = new ArrayList<PluginConnection>();
         mPackageManager = mContext.getPackageManager();
 
@@ -301,7 +356,6 @@ public final class ServerManager {
     }
 
     public void startServers() {
-        mModels.addModel(MainAppServerModel.MAIN_BASE_URI, new MainAppServerModel(mContext));
         try {
             mHttpServer.start();
         } catch (IOException e) {
@@ -332,15 +386,14 @@ public final class ServerManager {
         mPluginConnections.clear();
         mWebSocketServer.stop();
 
-        mModels.removeModel(JsonpServerModel.JSONP_BASE_URI);
+        mHttpServer.removeResponseFactory(JSONP_ROOT_PATH);
+        mHttpServer.removeResponseFactory(OAUTH_ROOT_PATH);
         mClientJsonp.goodbye("exit.jsonp.server", new WampGoodbyeListener() {
 
             @Override
             public void onGoodbye(JSONObject details, String reason) {
             }
         });
-
-        mModels.removeModel(MainAppServerModel.MAIN_BASE_URI);
         mHttpServer.stop();
     }
 

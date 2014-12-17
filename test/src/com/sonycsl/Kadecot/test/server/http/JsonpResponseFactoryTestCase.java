@@ -5,8 +5,10 @@
 
 package com.sonycsl.Kadecot.test.server.http;
 
-import com.sonycsl.Kadecot.server.http.JsonpServerModel;
+import com.sonycsl.Kadecot.server.http.mock.MockHTTPSession;
+import com.sonycsl.Kadecot.server.http.response.JsonpReponseFactory;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper;
+import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampWelcomeListener;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;
 import com.sonycsl.wamp.mock.MockWampPeer;
@@ -30,10 +32,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class JsonpServerModelTestCase extends TestCase {
+public class JsonpResponseFactoryTestCase extends TestCase {
 
     private MockWampPeer mMock;
-    private JsonpServerModel mServerModel;
+    private JsonpReponseFactory mFactory;
     private KadecotAppClientWrapper mClient;
 
     private static final String SERVICE_VERSION = "/v1";
@@ -44,16 +46,30 @@ public class JsonpServerModelTestCase extends TestCase {
         mClient = new KadecotAppClientWrapper();
 
         mClient.connect(mMock);
-        mServerModel = new JsonpServerModel(mClient);
+        mFactory = new JsonpReponseFactory(mClient);
     }
 
     public void testCtor() {
         assertNotNull(mMock);
         assertNotNull(mClient);
-        assertNotNull(mServerModel);
+        assertNotNull(mFactory);
     }
 
     public void testDeviceList() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final TestableCallback callback = new TestableCallback();
         callback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
         mMock.setCallback(callback);
@@ -75,9 +91,9 @@ public class JsonpServerModelTestCase extends TestCase {
 
             @Override
             public void run() {
-                Response response = mServerModel.createResponse(Method.GET, "/"
-                        + JsonpServerModel.JSONP_BASE_URI + SERVICE_VERSION + SLASH_DEVICES,
-                        new HashMap<String, String>());
+                MockHTTPSession session = new MockHTTPSession(Method.GET, "/jsonp"
+                        + SERVICE_VERSION + SLASH_DEVICES);
+                Response response = mFactory.create(session, "/jsonp");
                 try {
                     assertEquals(deviceListStr, inputStreamToString(response.getData()));
                 } catch (IOException e) {
@@ -106,6 +122,20 @@ public class JsonpServerModelTestCase extends TestCase {
     }
 
     public void testJsonp() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final TestableCallback callback = new TestableCallback();
         callback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
         mMock.setCallback(callback);
@@ -129,9 +159,10 @@ public class JsonpServerModelTestCase extends TestCase {
             public void run() {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("callback", "callback");
-                Response response = mServerModel.createResponse(Method.GET, "/"
-                        + JsonpServerModel.JSONP_BASE_URI + SERVICE_VERSION + SLASH_DEVICES,
-                        params);
+                MockHTTPSession session = new MockHTTPSession(Method.GET, "/jsonp"
+                        + SERVICE_VERSION + SLASH_DEVICES);
+                session.setParams(params);
+                Response response = mFactory.create(session, "/jsonp");
                 try {
                     assertEquals("callback(" + deviceListStr + ")",
                             inputStreamToString(response.getData()));
@@ -160,6 +191,20 @@ public class JsonpServerModelTestCase extends TestCase {
     }
 
     public void testGetProcedureList() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final TestableCallback callback = new TestableCallback();
         callback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
         mMock.setCallback(callback);
@@ -191,10 +236,9 @@ public class JsonpServerModelTestCase extends TestCase {
 
             @Override
             public void run() {
-                Response response = mServerModel.createResponse(Method.GET, "/"
-                        + JsonpServerModel.JSONP_BASE_URI + SERVICE_VERSION + SLASH_DEVICES + "/1",
-                        new HashMap<String, String>());
-
+                MockHTTPSession session = new MockHTTPSession(Method.GET, "/jsonp"
+                        + SERVICE_VERSION + SLASH_DEVICES + "/1");
+                Response response = mFactory.create(session, "/jsonp");
                 JSONObject procListJson = null;
                 try {
                     JSONArray array = new JSONArray()
@@ -244,6 +288,20 @@ public class JsonpServerModelTestCase extends TestCase {
     }
 
     public void testCallProcedure() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final TestableCallback callback = new TestableCallback();
         callback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
         mMock.setCallback(callback);
@@ -285,10 +343,10 @@ public class JsonpServerModelTestCase extends TestCase {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("procedure", procedure);
                 params.put("params", paramsJsonStr);
-                Response response = mServerModel.createResponse(Method.GET, "/"
-                        + JsonpServerModel.JSONP_BASE_URI + SERVICE_VERSION + SLASH_DEVICES
-                        + "/1", params
-                        );
+                MockHTTPSession session = new MockHTTPSession(Method.GET, "/jsonp"
+                        + SERVICE_VERSION + SLASH_DEVICES + "/1");
+                session.setParams(params);
+                Response response = mFactory.create(session, "/jsonp");
                 try {
                     assertEquals(resultStr, inputStreamToString(response.getData()));
                 } catch (IOException e) {

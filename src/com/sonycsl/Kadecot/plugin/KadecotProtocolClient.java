@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2014 Sony Computer Science Laboratories, Inc. All Rights Reserved.
+ * Copyright (C) 2014 Sony Corporation. All Rights Reserved.
+ */
 
 package com.sonycsl.Kadecot.plugin;
 
@@ -46,6 +50,15 @@ public abstract class KadecotProtocolClient extends KadecotWampClient implements
     private static final String DETAILS_CAUSE = "cause";
     private static final String DETAILS_NO_SUCH_DEVICE = "No such device";
 
+    private static final String PATTERN_MATCH = "match";
+    private static final String PATTERN_PREFIX = "prefix";
+
+    private static final String META_TOPICS = "metatopics";
+    private static final String META_ONLY = "metaonly";
+    private static final int META_ONLY_ENABLE = 1;
+    private static final String META_TOPICS_ADD = "wamp.metatopic.subscriber.add";
+    private static final String META_TOPICS_REMOVE = "wamp.metatopic.subscriber.remove";
+
     private WampCallee mCallee;
     private WampPublisher mPublisher;
     private WampCaller mCaller;
@@ -71,8 +84,6 @@ public abstract class KadecotProtocolClient extends KadecotWampClient implements
 
                 {
                     add(KadecotWampTopic.TOPIC_PRIVATE_SEARCH);
-                    add(WampProviderAccessHelper.Topic.START.getUri());
-                    add(WampProviderAccessHelper.Topic.STOP.getUri());
                 }
             });
 
@@ -83,7 +94,7 @@ public abstract class KadecotProtocolClient extends KadecotWampClient implements
     }
 
     public interface DeviceRegistrationListener {
-        public void onRegistered(long deviceId, String uuid);
+        public void onRegistered(long deviceId, String uuid, JSONObject argsKw);
     }
 
     public KadecotProtocolClient() {
@@ -190,7 +201,16 @@ public abstract class KadecotProtocolClient extends KadecotWampClient implements
             for (String topic : getTopicsToSubscribe()) {
                 final int requestId = WampRequestIdGenerator.getId();
                 mInitRequestIdStore.add(requestId);
-                transmit(WampMessageFactory.createSubscribe(requestId, new JSONObject(), topic));
+
+                try {
+                    final JSONObject options = new JSONObject().put(META_TOPICS,
+                            new JSONArray().put(META_TOPICS_ADD).put(META_TOPICS_REMOVE)).put(
+                            META_ONLY, META_ONLY_ENABLE).put(PATTERN_MATCH, PATTERN_PREFIX);
+                    transmit(WampMessageFactory.createSubscribe(requestId, options, topic));
+                } catch (JSONException e) {
+                    // Never happens.
+                    throw new IllegalStateException("Can not transmit Meta Event");
+                }
             }
             for (String procedure : getRegisterableProcedures().keySet()) {
                 final int requestId = WampRequestIdGenerator.getId();
@@ -251,7 +271,7 @@ public abstract class KadecotProtocolClient extends KadecotWampClient implements
 
                 mDeviceIdUuidMap.put(deviceId, uuid);
                 if (mDeviceRegListener != null) {
-                    mDeviceRegListener.onRegistered(deviceId, uuid);
+                    mDeviceRegListener.onRegistered(deviceId, uuid, argsKw);
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Never happens. no deviceId or no uuid.");

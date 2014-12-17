@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.os.RemoteException;
 
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
+import com.sonycsl.Kadecot.net.NetworkID;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 import com.sonycsl.Kadecot.wamp.client.provider.WampProviderAccessHelper.Procedure;
 import com.sonycsl.wamp.WampError;
@@ -184,8 +185,10 @@ public class ProviderCallee extends WampCallee {
             values.put(KadecotCoreStore.Devices.DeviceColumns.BSSID,
                     json.getString(KadecotCoreStore.Devices.DeviceColumns.BSSID));
         } else {
-            values.put(KadecotCoreStore.Devices.DeviceColumns.BSSID,
-                    ConnectivityManagerUtil.getWifiInfo(mContext).getBSSID());
+            NetworkID networkID = ConnectivityManagerUtil.getCurrentNetworkID(mContext);
+            if (networkID != null) {
+                values.put(KadecotCoreStore.Devices.DeviceColumns.BSSID, networkID.getBssid());
+            }
         }
 
         return values;
@@ -364,8 +367,18 @@ public class ProviderCallee extends WampCallee {
                 .acquireContentProviderClient(KadecotCoreStore.Devices.CONTENT_URI);
         Cursor cursor;
         try {
-            cursor = provider.query(KadecotCoreStore.Devices.CONTENT_URI, null, null,
-                    null, null);
+            NetworkID id = ConnectivityManagerUtil.getCurrentNetworkID(mContext);
+            if (id != null) {
+                cursor = provider.query(KadecotCoreStore.Devices.CONTENT_URI, null,
+                        KadecotCoreStore.Devices.DeviceColumns.BSSID + "=?",
+                        new String[] {
+                            id.getBssid()
+                        }, null);
+            } else {
+                /* return all devices when offline */
+                cursor = provider.query(KadecotCoreStore.Devices.CONTENT_URI, null, null, null,
+                        null);
+            }
         } catch (RemoteException e) {
             e.printStackTrace();
             return createError(msg, WampError.INVALID_ARGUMENT);

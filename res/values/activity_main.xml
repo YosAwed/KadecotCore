@@ -2,7 +2,7 @@
 <resources>
 
     <string name="title_attention">Attention</string>
-    <string name="message_connect_kadecot">Do you want to connect Kadecot to %1$s?</string>
-    <string name="message_connected">connected</string>
+    <string name="message_connect_kadecot">Current network is %1$s. Do you want to run Kadecot server?</string>
+    <string name="message_connected">Kadecot server is started.</string>
 
 </resources>

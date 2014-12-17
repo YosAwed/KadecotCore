@@ -5,6 +5,10 @@
 
 package com.sonycsl.Kadecot.server.websocket;
 
+import org.apache.http.NameValuePair;
+
+import java.util.List;
+
 public interface OpeningHandshake {
     public String getHost();
 
@@ -21,4 +25,8 @@ public interface OpeningHandshake {
     public String getSecWebSocketVersion();
 
     public String getFieldValue(String field);
+
+    public List<NameValuePair> getParameters();
+
+    public String getParameter(String name);
 }

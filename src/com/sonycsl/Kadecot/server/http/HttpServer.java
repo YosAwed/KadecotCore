@@ -5,20 +5,26 @@
 
 package com.sonycsl.Kadecot.server.http;
 
+import com.sonycsl.Kadecot.server.http.response.ResponseFactory;
+
 import fi.iki.elonen.NanoHTTPD;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HttpServer extends NanoHTTPD {
 
     private boolean mIsStarted;
-    private ServerResponseModel mModel;
+    private final Map<String, ResponseFactory> mFactories = Collections
+            .synchronizedMap(new HashMap<String, ResponseFactory>());
+    private final ResponseFactory mDefaultFactory;
+    private final String PATH_DELIMITER = "/";
 
-    public HttpServer(int port, ServerResponseModel model) {
+    public HttpServer(int port, ResponseFactory defaultFactory) {
         super(port);
-
-        mModel = model;
+        mDefaultFactory = defaultFactory;
     }
 
     @Override
@@ -41,11 +47,16 @@ public class HttpServer extends NanoHTTPD {
         super.stop();
     }
 
+    public ResponseFactory putResponseFactory(String rootPath, ResponseFactory factory) {
+        return mFactories.put(rootPath, factory);
+    }
+
+    public ResponseFactory removeResponseFactory(String rootPath) {
+        return mFactories.remove(rootPath);
+    }
+
     @Override
     public Response serve(IHTTPSession session) {
-
-        // Parse URI with "/"
-        String uri = session.getUri();
         try {
             session.parseBody(new HashMap<String, String>());
         } catch (IOException ioe) {
@@ -55,6 +66,23 @@ public class HttpServer extends NanoHTTPD {
             return new Response(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
         }
 
-        return mModel.createResponse(session.getMethod(), uri, session.getParms());
+        final String path = session.getUri();
+        final int start = path.indexOf(PATH_DELIMITER);
+        final int last = path.lastIndexOf(PATH_DELIMITER);
+
+        int end = start;
+        while (end != last) {
+            end = path.indexOf(PATH_DELIMITER, end + 1);
+            String rootPath = path.substring(start, end);
+            if (mFactories.containsKey(rootPath)) {
+                return mFactories.get(rootPath).create(session, rootPath);
+            }
+        }
+
+        if (mFactories.containsKey(path)) {
+            return mFactories.get(path).create(session, path);
+        }
+
+        return mDefaultFactory.create(session, PATH_DELIMITER);
     }
 }

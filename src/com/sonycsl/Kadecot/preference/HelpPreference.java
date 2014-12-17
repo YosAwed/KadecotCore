@@ -11,23 +11,26 @@ import android.content.SharedPreferences.Editor;
 
 import com.sonycsl.Kadecot.core.R;
 
-public final class JsonpServerPreference {
+public final class HelpPreference {
 
-    private JsonpServerPreference() {
+    private HelpPreference() {
         super();
     }
 
-    public static void setEnabled(Context context, boolean enabled) {
+    public static boolean isChecked(Context context) {
         SharedPreferences sp = context.getSharedPreferences(
                 context.getString(R.string.preferences_file_name), Context.MODE_PRIVATE);
-        Editor editor = sp.edit();
-        editor.putBoolean(context.getString(R.string.jsonp_preference_key), enabled);
-        editor.apply();
+        return sp.getBoolean(context.getString(R.string.help_preference_key), false);
     }
 
-    public static boolean isEnabled(Context context) {
-        SharedPreferences sp = context.getSharedPreferences(
+    public static void set(Context context, boolean value) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
                 context.getString(R.string.preferences_file_name), Context.MODE_PRIVATE);
-        return sp.getBoolean(context.getString(R.string.jsonp_preference_key), false);
+
+        if (sharedPreferences.getBoolean(context.getString(R.string.help_preference_key), false) != value) {
+            Editor editor = sharedPreferences.edit();
+            editor.putBoolean(context.getString(R.string.help_preference_key), value);
+            editor.apply();
+        }
     }
 }

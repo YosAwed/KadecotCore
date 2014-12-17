@@ -140,6 +140,16 @@ public class KadecotAppClientTestCase extends TestCase {
     }
 
     public void testRxSubscribed() {
+        TestableCallback welcomeListener = new TestableCallback();
+        welcomeListener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        mClient.setCallback(welcomeListener);
+        mClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
+
+        try {
+            assertTrue(welcomeListener.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         TestableCallback subscribeListener = new TestableCallback();
         subscribeListener.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
         mPeer.setCallback(subscribeListener);
@@ -164,6 +174,17 @@ public class KadecotAppClientTestCase extends TestCase {
     }
 
     public void testRxEvent() {
+        TestableCallback welcomeListener = new TestableCallback();
+        welcomeListener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        mClient.setCallback(welcomeListener);
+        mClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
+
+        try {
+            assertTrue(welcomeListener.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
+
         TestableCallback subscribeListener = new TestableCallback();
         subscribeListener.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
         mPeer.setCallback(subscribeListener);
@@ -213,6 +234,16 @@ public class KadecotAppClientTestCase extends TestCase {
     }
 
     public void testRxUnsubscribed() {
+        TestableCallback welcomeListener = new TestableCallback();
+        welcomeListener.setTargetMessageType(WampMessageType.WELCOME, new CountDownLatch(1));
+        mClient.setCallback(welcomeListener);
+        mClient.transmit(WampMessageFactory.createHello("realm", new JSONObject()));
+
+        try {
+            assertTrue(welcomeListener.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         TestableCallback subscribeListener = new TestableCallback();
         subscribeListener.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
         mPeer.setCallback(subscribeListener);

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.sonycsl.Kadecot.core"
     android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
         android:minSdkVersion="15"
-        android:targetSdkVersion="19" />
+        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -16,6 +17,15 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.sonycsl.kadecot.permission.ACCESS_WEBSOCKET_SERVER" />
+    <uses-permission android:name="com.sonycsl.kadecot.permission.ACCESS_KADECOT_SERVICE" />
+
+    <permission
+        android:name="com.sonycsl.kadecot.permission.ACCESS_WEBSOCKET_SERVER"
+        android:protectionLevel="signature" />
+    <permission
+        android:name="com.sonycsl.kadecot.permission.ACCESS_KADECOT_SERVICE"
+        android:protectionLevel="signature" />
 
     <application
         android:name="com.sonycsl.Kadecot.app.KadecotCoreApplication"
@@ -46,7 +56,10 @@
             android:label="@string/title_activity_plugin_list" >
         </activity>
 
-        <service android:name="com.sonycsl.Kadecot.service.KadecotService" />
+        <service
+            android:name="com.sonycsl.Kadecot.service.KadecotService"
+            android:exported="true"
+            android:permission="com.sonycsl.kadecot.permission.ACCESS_KADECOT_SERVICE" />
 
         <provider
             android:name="com.sonycsl.Kadecot.provider.OnDiskProvider"
@@ -55,12 +68,8 @@
         <provider
             android:name="com.sonycsl.Kadecot.provider.InMemoryProvider"
             android:authorities="com.sonycsl.kadecot.inmemory.provider"
-            android:exported="true" />
-
-        <activity
-            android:name="com.sonycsl.Kadecot.app.LicensesActivity"
-            android:label="@string/title_open_source_licenses" >
-        </activity>
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
     </application>
 
 </manifest>

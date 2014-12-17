@@ -8,6 +8,7 @@ package com.sonycsl.Kadecot.test.wamp.client;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampCallListener;
 import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampSubscribeListener;
+import com.sonycsl.Kadecot.wamp.client.KadecotAppClientWrapper.WampWelcomeListener;
 import com.sonycsl.wamp.message.WampMessage;
 import com.sonycsl.wamp.message.WampMessageFactory;
 import com.sonycsl.wamp.message.WampMessageType;
@@ -36,6 +37,21 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
     }
 
     public void testCall() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
+
         final CountDownLatch mResultLatch = new CountDownLatch(1);
         final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.CALL, new CountDownLatch(1));
@@ -117,6 +133,20 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
     }
 
     public void testSubscribe() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
         final TestableCallback mPeerCallback = new TestableCallback();
         mPeerCallback.setTargetMessageType(WampMessageType.SUBSCRIBE, new CountDownLatch(1));
@@ -210,6 +240,20 @@ public class KadecotAppClientWrapperTestCase extends TestCase {
     }
 
     public void testEvent() {
+        final CountDownLatch welcomeLatch = new CountDownLatch(1);
+        mClient.hello("realm", new WampWelcomeListener() {
+
+            @Override
+            public void onWelcome(int session, JSONObject details) {
+                welcomeLatch.countDown();
+            }
+        });
+
+        try {
+            assertTrue(welcomeLatch.await(1, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            fail();
+        }
         final CountDownLatch mSubscribedLatch = new CountDownLatch(1);
         final CountDownLatch mEventLatch = new CountDownLatch(1);
         final TestableCallback mPeerCallback = new TestableCallback();

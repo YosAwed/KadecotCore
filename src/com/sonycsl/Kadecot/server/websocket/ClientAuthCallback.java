@@ -5,6 +5,10 @@
 
 package com.sonycsl.Kadecot.server.websocket;
 
+import java.util.Set;
+
 public interface ClientAuthCallback {
-    public boolean authenticate(OpeningHandshake handShake);
+    public boolean isAuthenticated(OpeningHandshake handshake);
+
+    public Set<String> getScopeSet(OpeningHandshake handshake);
 }

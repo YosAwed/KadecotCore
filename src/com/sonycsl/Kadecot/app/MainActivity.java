@@ -22,7 +22,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
-import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -34,6 +33,7 @@ import android.widget.Toast;
 import com.sonycsl.Kadecot.content.WifiConnectionBroadcastReceiver;
 import com.sonycsl.Kadecot.core.R;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
+import com.sonycsl.Kadecot.net.NetworkID;
 import com.sonycsl.Kadecot.preference.EulaPreference;
 import com.sonycsl.Kadecot.preference.KadecotServicePreference;
 import com.sonycsl.Kadecot.preference.WebSocketServerPreference;
@@ -125,19 +125,18 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        WifiInfo info = ConnectivityManagerUtil.getWifiInfo(MainActivity.this);
-                        if (info == null || info.getBSSID() == null || info.getSSID() == null
-                                || info.getBSSID().equals("") || info.getSSID().equals("")) {
+                        NetworkID networkID = ConnectivityManagerUtil
+                                .getCurrentNetworkID(MainActivity.this);
+
+                        if (networkID == null) {
                             mHandler.postDelayed(this, 500);
                             return;
                         }
-                        String ssid = info.getSSID().replace("\"", "");
-                        String bssid = info.getBSSID();
-                        wifiSetUp(ssid, bssid);
+                        wifiSetUp(networkID.getSsid(), networkID.getBssid());
                         getActionBar().setTitle(getTitle());
                         getActionBar().setSubtitle(
                                 ConnectivityManagerUtil.getIPAddress(MainActivity.this) + ":"
-                                        + ServerManager.WS_PORT_NO + atSSID(ssid));
+                                        + ServerManager.WS_PORT_NO + atSSID(networkID.getSsid()));
                     }
                 });
             }

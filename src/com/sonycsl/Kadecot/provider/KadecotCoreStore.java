@@ -125,6 +125,10 @@ public class KadecotCoreStore {
 
             public static final String ORIGIN = "origin";
 
+            public static final String TOKEN = "token";
+
+            public static final String SCOPE = "scope";
+
             public static final String STATUS = "status";
         }
     }

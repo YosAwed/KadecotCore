@@ -14,7 +14,7 @@
     <string name="persistent_mode_preference_key">persistent_mode_preference_key</string>
     <string name="developer_mode_preference_key">developer_mode_preference_key</string>
     <string name="websocket_preference_key">websocket_preference_key</string>
-    <string name="jsonp_preference_key">jsonp_preference_key</string>
+    <string name="jsonp_preference_key" translatable="false">jsonp_preference_key</string>
     <string name="log_preference_key">log_preference_key</string>
     <string name="access_point_list_preference_key">access_point_list_preference_key</string>
     <string name="delete_all_inactive_devices_preference_key">delete_all_inactive_device_preference_key</string>
@@ -22,12 +22,16 @@
     <string name="plugin_list_preference_key">plugin_list_preference_key</string>
     <string name="about_kadecot_key">about_kadecot_key</string>
     <string name="open_source_licenses_key">open_source_licenses_key</string>
+    <string name="help_preference_key">help_preference_key</string>
+    <string name="account_settings_preference_key" translatable="false">account_settings_preference_key</string>
+    <string name="account_name_preference_key" translatable="false">account_name_preference_key</string>
+    <string name="account_pass_preference_key" translatable="false">account_pass_preference_key</string>
 
     <!-- Title -->
     <string name="title_activity_origin_list">Permission settings of your web app.</string>
     <string name="title_activity_plugin_list">Plug-in List</string>
     <string name="title_activity_eula">EULA</string>
-    <string name="title_activity_access_point_list">Access Point List</string>
+    <string name="title_activity_access_point_list">Network List</string>
     <string name="title_dialog_change_nickname">Change Nickname</string>
     <string name="title_popup_menu_item_change_nick_name">Change Nickname</string>
     <string name="title_dialog_change_location">Change Location</string>
@@ -42,6 +46,9 @@
     <string name="title_delete_all_inactive_devices">Delete All Inactive Devices</string>
     <string name="title_about_kadecot">About Kadecot</string>
     <string name="title_open_source_licenses">Open Source Licenses</string>
+    <string name="title_help">Help</string>
+    <string name="title_please_setup_your_kadecot_account">Please Setup Your Kadecot Account</string>
+    <string name="title_account_settings">Account Settings</string>
 
     <!-- Summary -->
     <string name="summary_persistent_mode">keep Kadecot server in the background</string>
@@ -53,15 +60,20 @@
     <string name="success_change_nickname">Nickname updated.</string>
     <string name="success_change_location">Location updated.</string>
     <string name="no_device">No device</string>
-    <string name="no_access_point">No Allowed AccessPoint</string>
+    <string name="no_access_point">No Allowed Network</string>
     <string name="unsupported">Sorry, controller unavailable.</string>
     <string name="currently_unavailable">Currently unavailable</string>
     <string name="background_confirmation">Do you want to keep Kadecot server in the background?</string>
     <string name="stop_server">Stop Server</string>
     <string name="message_delete_all_inactive_devices">Do you want to delete all inactive devices?</string>
     <string name="no_application_available">No application available</string>
+    <string name="loading">Loading..</string>
 
     <!-- Action Bar -->
     <string name="action_offline">Offline</string>
+
+    <!-- Account -->
+    <string name="account_name" translatable="false">Name</string>
+    <string name="account_pass" translatable="false">Password</string>
 
 </resources>

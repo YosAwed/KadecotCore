@@ -16,7 +16,6 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
@@ -30,6 +29,7 @@ import android.widget.TextView;
 
 import com.sonycsl.Kadecot.core.R;
 import com.sonycsl.Kadecot.net.ConnectivityManagerUtil;
+import com.sonycsl.Kadecot.net.NetworkID;
 import com.sonycsl.Kadecot.provider.KadecotCoreStore;
 
 public class AccessPointListFragment extends ListFragment implements LoaderCallbacks<Cursor> {
@@ -116,8 +116,9 @@ public class AccessPointListFragment extends ListFragment implements LoaderCallb
                 ListView listview = (ListView) parent;
                 Cursor cursor = (Cursor) listview.getItemAtPosition(position);
                 String ssid = getSSID(cursor);
-                String currentSsid = getCurrentSsid();
-                if (ssid.equals(currentSsid)) {
+                NetworkID networkID = ConnectivityManagerUtil.getCurrentNetworkID(getActivity());
+
+                if (networkID != null && ssid.equals(networkID.getSsid())) {
                     new CurrentSsidDialogFragment().show(getFragmentManager(), "currentSsidDialog");
                 } else {
                     AccessPointDeleteDialogFragment.newInstance(ssid, getLoaderId(),
@@ -134,16 +135,6 @@ public class AccessPointListFragment extends ListFragment implements LoaderCallb
         });
 
         setListAdapter(cursorAdapter);
-    }
-
-    private String getCurrentSsid() {
-        WifiInfo info = ConnectivityManagerUtil.getWifiInfo(getActivity());
-        if (info == null || info.getBSSID() == null || info.getSSID() == null
-                || info.getBSSID().equals("") || info.getSSID().equals("")) {
-            return "Offline";
-        }
-
-        return info.getSSID().replace("\"", "");
     }
 
     @Override
