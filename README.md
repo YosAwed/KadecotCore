@@ -13,8 +13,6 @@ KadecotCore
 
 KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play から配布されています。  
 いくつかの機能が追加されていますので、ホームサーバーの開発に興味がなく単に利用されたい場合はそちらをご利用ください。  
-ただし、2013年9月30日現在、Kadecot の方には KadecotCoreは 反映されておらず、次期バージョンでの対応となります。ご了承ください。  
-(Kadecotの次期アップデートは2013年10月中を予定しています）
 
 本アプリは内部で [OpenECHO][] を用いています。こちらも独立したオープンソースとして配布していますので、WebAPI 等が不要だという方はそちらをご参照ください。  
 
@@ -26,34 +24,35 @@ KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play か�
 また、開発者 ML みたいなものも作りたいと思っています。  
 ご興味のある方は、ひとまず info@kadecot.net まで空メールを送って頂ければ幸いです(特に返答システムはありませんのでご了承ください)。  
 
-[ECHONET Lite]: http://www.echonet.gr.jp/ "ECHONET Lite"
-[Kadecot]: http://kadecot.net/ "Kadecot"
-[OpenECHO]: https://github.com/SonyCSL/OpenECHO "OpenECHO"
-[株式会社ソニーコンピュータサイエンス研究所]: http://www.sonycsl.co.jp/ "株式会社ソニーコンピュータサイエンス研究所"
-[MITライセンス]: http://opensource.org/licenses/mit-license.php "MITライセンス"
+## 必要なもの
 
-===========
-本プロジェクトで用いているソフトウェアとライセンス
-
-| Software | License |
-| :--------: | :-------: |
-| jQuery/jQuery Mobile | jQuery/jQuery Mobile License |
-| Java-WebSocket | MIT |
-| AutobahnJS | MIT |
-
-以下ライセンス文章です：
-
-===========
-**jQuery/jQuery Mobile**
-
-Copyright (c) 2011 John Resig, http://jquery.com/
+* [repo](https://source.android.com/source/using-repo.html)
+* [android-sdk](http://developer.android.com/sdk/index.html)
 
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+## コードの取得方法
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+    $ mkdir work
+    $ cd work
+    $ repo init -u https://github.com/SonyCSL/manifest.git -b master
+    $ repo sync
+    $ repo start master --all
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## ビルド及びインストール方法
+
+### eclipse
+
+work 以下を import し KadecotSample を Run As -> Android Application してください。
+
+### ant
+
+    $ cd work/sample
+    $ ant debug
+    $ adb install bin/KadecotSample.apk
+
+
+以下本プロジェクトで用いているソフトウェアとライセンス文章です：
 
 ===========
 **Java-WebSocket**
@@ -70,32 +69,6 @@ Copyright (c) 2010-2012 Nathan Rajlich
  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-===========
-**AutobahnJS**
-
-https://github.com/tavendo/AutobahnJS
-
-
-Copyright (c) 2011-2014 Tavendo GmbH.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 
 ===========
 **NanoHttpd**
