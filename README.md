@@ -41,6 +41,8 @@ KadecotCoreを用いた実証実験版アプリ [Kadecot][] が Google Play か�
 
 ## ビルド及びインストール方法
 
+**一時的にKadecotSampleの使用ができません。**
+
 ### eclipse
 
 work 以下を import し KadecotSample を Run As -> Android Application してください。
